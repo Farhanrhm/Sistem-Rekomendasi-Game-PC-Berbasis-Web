@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LevelFind — Hybrid Recommender</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    
+    <script>
+        (function() {
+            var s = localStorage.getItem("lf-theme");
+            var pl = window.matchMedia("(prefers-color-scheme: light)").matches;
+            if (s === "light" || (!s && pl)) {
+                document.documentElement.setAttribute("data-theme", "light");
+            }
+        })();
+    </script>
+
+    <style>
+        /* Variabel Warna & Font */
+        :root {
+            --bg-base: #0c0c0d;
+            --bg-surface: #131315;
+            --bg-card: #1a1a1e;
+            --bg-card-hover: #202025;
+            --bg-elevated: #222228;
+            --gold: #c9993f;
+            --gold-bright: #ddb05a;
+            --gold-dim: #7a5c24;
+            --gold-subtle: rgba(201, 153, 63, 0.08);
+            --red: #d94f4f;
+            --text-1: #edeae2;
+            --text-2: #7e7c78;
+            --text-3: #3d3c3a;
+            --border: #232328;
+            --border-md: #2e2e35;
+            --font-display: "Playfair Display", Georgia, serif;
+            --font-body: "DM Sans", sans-serif;
+            --font-mono: "DM Mono", monospace;
+            --r-sm: 6px;
+            --r-md: 10px;
+            --r-lg: 16px;
+            --dot: rgba(255, 255, 255, 0.045);
+            --deco-bg: rgba(201, 153, 63, 0.04);
+        }
+
+        /* Tema Terang */
+        [data-theme="light"] {
+            --bg-base: #f3ede3;
+            --bg-surface: #faf6ef;
+            --bg-card: #ffffff;
+            --bg-card-hover: #fdf9f3;
+            --bg-elevated: #ede7d9;
+            --gold: #9a6d1a;
+            --gold-bright: #b8831f;
+            --gold-dim: #c9993f;
+            --gold-subtle: rgba(154, 109, 26, 0.07);
+            --red: #b83232;
+            --text-1: #1c1a16;
+            --text-2: #5c5750;
+            --text-3: #a09890;
+            --border: #dfd8cb;
+            --border-md: #cec6b6;
+            --dot: rgba(0, 0, 0, 0.055);
+            --deco-bg: rgba(154, 109, 26, 0.04);
+        }
+
+        /* Reset & Dasar */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: var(--bg-base); color: var(--text-1); font-family: var(--font-body); font-weight: 300; line-height: 1.6; min-height: 100vh; }
+        a { color: inherit; text-decoration: none; }
+        
+        /* Transisi */
+        body, .navbar, .search-wrap, .search-wrap input, .spotlight, .rec-card, .badge-pill, .tag, .btn-steam, .btn-detail, .footer, .empty-icon, .hero-deco, .theme-btn, .nav-tag, .rec-mini-tag {
+            transition: background-color 0.28s ease, color 0.28s ease, border-color 0.28s ease;
+        }
+        img { transition: none !important; }
+
+        /* NAVBAR */
+        .navbar { display: flex; align-items: center; justify-content: space-between; padding: 1rem 3rem; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; background: var(--bg-base); }
+        .logo { font-family: var(--font-display); font-size: 1.35rem; font-weight: 900; letter-spacing: -0.5px; color: var(--text-1); }
+        .logo span { color: var(--gold); }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .nav-tag { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 2px; text-transform: uppercase; color: var(--text-2); border: 1px solid var(--border-md); padding: 4px 12px; border-radius: 100px; }
+        .theme-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border-md); background: var(--bg-card); color: var(--gold); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.88rem; }
+        .theme-btn:hover { border-color: var(--gold); }
+        .theme-btn .i-moon { display: block; } 
+        .theme-btn .i-sun { display: none; }
+        [data-theme="light"] .theme-btn .i-moon { display: none; } 
+        [data-theme="light"] .theme-btn .i-sun { display: block; }
+
+        /* HERO */
+        .hero { display: grid; grid-template-columns: 1fr 360px; min-height: 320px; border-bottom: 1px solid var(--border); position: relative; overflow: hidden; }
+        .hero::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(circle, var(--dot) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+        .hero-left { padding: 3.2rem 3rem; display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 1; }
+        .hero-eyebrow { display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+        .hero-eyebrow::before { content: ""; width: 22px; height: 1px; background: var(--gold); flex-shrink: 0; }
+        .hero h1 { font-family: var(--font-display); font-size: clamp(1.9rem, 3vw, 2.8rem); font-weight: 900; line-height: 1.12; letter-spacing: -1px; color: var(--text-1); margin-bottom: 1rem; }
+        .hero h1 em { font-style: italic; color: var(--gold); }
+        .hero-sub { font-size: 0.92rem; color: var(--text-2); margin-bottom: 1.8rem; max-width: 420px; line-height: 1.7; }
+        .search-wrap { display: flex; max-width: 500px; border: 1px solid var(--border-md); border-radius: var(--r-md); overflow: hidden; }
+        .search-wrap:focus-within { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-subtle); }
+        .search-wrap input { flex: 1; background: var(--bg-surface); border: none; outline: none; color: var(--text-1); font-family: var(--font-body); font-size: 0.92rem; padding: 0.8rem 1.2rem; }
+        .search-wrap input::placeholder { color: var(--text-3); }
+        .search-btn { background: var(--gold); color: #0c0c0d; border: none; padding: 0 1.4rem; font-family: var(--font-body); font-size: 0.82rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; white-space: nowrap; transition: background 0.2s; }
+        .search-btn:hover { background: var(--gold-bright); }
+        .error-msg { display: inline-flex; align-items: center; gap: 8px; margin-top: 1rem; font-size: 0.82rem; color: var(--red); background: rgba(217, 79, 79, 0.07); border: 1px solid rgba(217, 79, 79, 0.18); border-radius: var(--r-sm); padding: 8px 14px; }
+
+        /* HERO DECO */
+        .hero-deco { background: var(--deco-bg); border-left: 1px solid var(--border); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; z-index: 1; }
+        .hero-deco::before { content: ""; position: absolute; width: 260px; height: 260px; border-radius: 50%; border: 1px solid var(--border-md); top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .hero-deco::after { content: ""; position: absolute; width: 155px; height: 155px; border-radius: 50%; border: 1px solid var(--border-md); top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .hero-deco-icon { font-size: 2.8rem; color: var(--gold); opacity: 0.5; position: relative; z-index: 1; }
+        .hero-stats { position: absolute; bottom: 1.4rem; left: 0; right: 0; display: flex; justify-content: center; gap: 2rem; }
+        .hero-stat { text-align: center; }
+        .hero-stat-num { font-family: var(--font-mono); font-size: 0.95rem; font-weight: 500; color: var(--gold); display: block; }
+        .hero-stat-label { font-size: 0.6rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-2); }
+
+        /* AUTOCOMPLETE */
+        .ui-autocomplete { background: var(--bg-surface) !important; border: 1px solid var(--border-md) !important; border-top: none !important; border-radius: 0 0 var(--r-md) var(--r-md); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2); z-index: 9999 !important; padding: 4px 0 !important; }
+        .ui-menu-item-wrapper { padding: 9px 16px !important; font-family: var(--font-body) !important; font-size: 0.88rem !important; color: var(--text-1) !important; border: none !important; cursor: pointer; }
+        .ui-state-active { background: var(--gold-subtle) !important; color: var(--gold) !important; border-left: 2px solid var(--gold) !important; margin: 0 !important; }
+
+        /* CONTAINER */
+        .container { max-width: 1140px; margin: 0 auto; padding: 2.8rem 3rem 5rem; }
+
+        /* SECTION HEADER */
+        .section-header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 1.6rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border); }
+        .section-title { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; color: var(--text-1); }
+        .section-meta { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 2px; text-transform: uppercase; color: var(--gold-dim); }
+
+        /* SPOTLIGHT (GAMBAR LEBIH PROPOSIONAL) */
+        .spotlight { display: grid; grid-template-columns: 440px 1fr; border: 1px solid var(--border-md); border-radius: var(--r-lg); overflow: hidden; margin-bottom: 2.8rem; background: var(--bg-card); }
+        [data-theme="light"] .spotlight { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); }
+        .spotlight-img-wrap { position: relative; overflow: hidden; height: 100%; background: var(--bg-elevated); }
+        .spotlight-img-wrap img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+        .spotlight-img-wrap::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent 70%, var(--bg-card)); }
+        
+        .spotlight-label { position: absolute; top: 12px; left: 12px; font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; background: var(--gold); color: #0c0c0d; padding: 3px 10px; border-radius: 4px; font-weight: 500; z-index: 2; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .spotlight-info { padding: 2rem 2.5rem 2rem 1.2rem; display: flex; flex-direction: column; justify-content: center; }
+        .spotlight-info h2 { font-family: var(--font-display); font-size: 1.7rem; font-weight: 900; line-height: 1.15; letter-spacing: -0.5px; margin-bottom: 0.5rem; }
+        .spotlight-meta-row { display: flex; gap: 16px; align-items: center; margin-bottom: 1.1rem; }
+        .spotlight-price { font-family: var(--font-mono); font-size: 0.95rem; color: var(--gold); }
+        .spotlight-rating { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text-2); display: flex; align-items: center; gap: 5px; }
+        .spotlight-rating i { color: var(--gold); }
+        .spotlight-desc { font-size: 0.88rem; color: var(--text-2); line-height: 1.75; margin-bottom: 1.2rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .tags-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.2rem; }
+        .tag { font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 1px; text-transform: uppercase; color: var(--text-2); border: 1px solid var(--border-md); border-radius: 4px; padding: 3px 10px; }
+        .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.6rem; }
+        .badge-pill { font-size: 0.72rem; color: var(--text-2); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 100px; padding: 4px 14px; }
+        .badge-pill i { margin-right: 5px; color: var(--gold-dim); }
+        .btn-steam { display: inline-flex; align-items: center; gap: 8px; padding: 0.6rem 1.4rem; background: transparent; border: 1px solid var(--gold); color: var(--gold); border-radius: var(--r-sm); font-family: var(--font-body); font-size: 0.85rem; font-weight: 500; cursor: pointer; align-self: flex-start; }
+        .btn-steam:hover { background: var(--gold); color: #0c0c0d; }
+
+        /* REC GRID */
+        .rec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.1rem; }
+        .rec-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-md); overflow: hidden; display: flex; flex-direction: column; }
+        .rec-card:hover { transform: translateY(-4px); border-color: var(--gold-dim); }
+        [data-theme="light"] .rec-card { box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06); }
+        [data-theme="light"] .rec-card:hover { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1); }
+        .rec-card-img { position: relative; height: 125px; overflow: hidden; }
+        .rec-card-img img { width: 100%; height: 100%; object-fit: cover; }
+        .rec-card:hover .rec-card-img img { transform: scale(1.05); transition: transform 0.3s ease; }
+        .match-badge { position: absolute; top: 8px; right: 8px; font-family: var(--font-mono); font-size: 0.63rem; background: rgba(12, 12, 13, 0.88); border: 1px solid var(--gold-dim); color: var(--gold); padding: 3px 8px; border-radius: 4px; backdrop-filter: blur(4px); }
+        .rec-card-body { padding: 0.9rem; display: flex; flex-direction: column; flex: 1; }
+        .rec-card-name { font-family: var(--font-display); font-size: 0.92rem; font-weight: 700; color: var(--text-1); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .rec-meta-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+        .rec-rating { font-size: 0.74rem; color: var(--text-2); display: flex; align-items: center; gap: 4px; }
+        .rec-rating i { color: var(--gold); }
+        .rec-card-price { font-family: var(--font-mono); font-size: 0.76rem; color: var(--gold); }
+        .rec-mini-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+        .rec-mini-tag { font-family: var(--font-mono); font-size: 0.58rem; text-transform: uppercase; background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-2); padding: 2px 7px; border-radius: 3px; }
+        .rec-card-desc { font-size: 0.8rem; color: var(--text-2); line-height: 1.6; margin-bottom: 0.9rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .btn-detail { display: block; text-align: center; padding: 0.5rem; background: transparent; border: 1px solid var(--border-md); color: var(--text-2); border-radius: var(--r-sm); font-size: 0.78rem; margin-top: auto; }
+        .btn-detail:hover { border-color: var(--gold-dim); color: var(--gold); background: var(--gold-subtle); }
+
+        /* EMPTY */
+        .empty-state { padding: 5rem 2rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+        .empty-icon { width: 62px; height: 62px; border: 1px solid var(--border-md); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-3); font-size: 1.3rem; margin-bottom: 0.4rem; background: var(--bg-card); }
+        .empty-state h3 { font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; color: var(--text-1); }
+        .empty-state p { font-size: 0.88rem; color: var(--text-2); max-width: 360px; }
+
+        /* FOOTER */
+        .footer { border-top: 1px solid var(--border); padding: 1.1rem 3rem; display: flex; align-items: center; justify-content: space-between; background: var(--bg-base); }
+        .footer-note { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 1px; color: var(--text-3); }
+
+        /* LOADING ANIMATION (NEW) */
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* RESPONSIVE */
+        @media(max-width: 900px) {
+            .hero { grid-template-columns: 1fr; } 
+            .hero-deco { display: none; }
+            .hero-left { padding: 2.5rem 1.5rem; }
+            .spotlight { grid-template-columns: 1fr; } 
+            .spotlight-img-wrap { height: 240px; }
+            .spotlight-img-wrap::after { background: linear-gradient(180deg, transparent 65%, var(--bg-card)); }
+            .spotlight-info { padding: 1.5rem; }
+            .container { padding: 2rem 1.5rem 4rem; }
+            .navbar, .footer { padding-left: 1.5rem; padding-right: 1.5rem; }
+        }
+        @media(max-width: 600px) {
+            .rec-grid { grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 0.8rem; }
+            .hero h1 { font-size: 1.8rem; } 
+            .footer { flex-direction: column; gap: 6px; text-align: center; }
+            .section-header { flex-direction: column; gap: 4px; }
+        }
+
+        /* MODAL EXPLAINABLE AI (XAI) */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(12, 12, 13, 0.85); backdrop-filter: blur(5px); z-index: 10000; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; }
+        .modal-overlay.show { display: flex; opacity: 1; }
+        .modal-content { background: var(--bg-card); border: 1px solid var(--gold-dim); border-radius: var(--r-lg); width: 90%; max-width: 550px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6); transform: translateY(20px); transition: transform 0.3s ease; overflow: hidden; position: relative; }
+        .modal-overlay.show .modal-content { transform: translateY(0); }
+        .modal-header { padding: 1.2rem 1.8rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); }
+        .modal-header h3 { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; color: var(--text-1); margin: 0; display: flex; align-items: center; gap: 8px; }
+        .modal-close { background: transparent; border: none; color: var(--text-2); font-size: 1.2rem; cursor: pointer; transition: color 0.2s; padding: 4px; display: flex; align-items: center; }
+        .modal-close:hover { color: var(--red); }
+        .modal-body { padding: 1.8rem; color: var(--text-2); font-size: 0.95rem; line-height: 1.7; }
+        .modal-body strong { color: var(--text-1); }
+        .modal-body ol { margin-top: 1rem; padding-left: 1.2rem; }
+        .modal-body li { margin-bottom: 0.8rem; }
+        .modal-footer-note { margin-top: 1.2rem; font-size: 0.85rem; color: var(--text-3); font-style: italic; border-top: 1px solid var(--border); padding-top: 1rem; }
+
+        #info-btn:hover { transform: scale(1.15) rotate(5deg); color: var(--gold-bright); }
+
+        /* SKELETON LOADING */
+        .skeleton { background: #2a2a30; background-image: linear-gradient(90deg, #2a2a30 0px, #36363d 40px, #2a2a30 80px); background-size: 600px; animation: shimmer 1.5s infinite linear; border-radius: var(--r-sm); }
+        [data-theme="light"] .skeleton { background: #e0e0e0; background-image: linear-gradient(90deg, #e0e0e0 0px, #f0f0f0 40px, #e0e0e0 80px); }
+        @keyframes shimmer { 0% { background-position: -200px 0; } 100% { background-position: calc(200px + 100%) 0; } }
+        
+        .skeleton-spotlight { width: 100%; height: 350px; border-radius: var(--r-lg); margin-bottom: 2.8rem; }
+        .skeleton-card { height: 300px; border-radius: var(--r-md); }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="logo">Level<span>Find</span></div>
+        <div class="nav-right">
+            <span class="nav-tag">Hybrid AI</span>
+            <button class="theme-btn" id="theme-btn" title="Ganti tema" aria-label="Toggle tema">
+                <i class="fas fa-moon i-moon"></i>
+                <i class="fas fa-sun i-sun"></i>
+            </button>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-left">
+            <div class="hero-eyebrow">AI-Powered Discovery</div>
+            <h1>Mulai dengan satu game<br>yang kamu <em>suka</em></h1>
+            <p class="hero-sub">Sisanya biar kami yang urus. Algoritma hybrid kami mencarikan rekomendasi paling relevan dari ribuan judul.</p>
+            
+            <form action="/" method="POST" autocomplete="off">
+                <div class="search-wrap">
+                    <input type="text" name="game_title" id="game_input"
+                           placeholder="Contoh: Elden Ring, Stardew Valley..."
+                           value="{{ search_query if search_query else '' }}" required>
+                    <button class="search-btn" type="submit">
+                        <i class="fas fa-search"></i> Temukan
+                    </button>
+                </div>
+            </form>
+
+            <div id="search-history" style="margin-top: 1rem; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; display: none;">
+                <span style="font-size: 0.75rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px;">Terakhir Dicari:</span>
+            </div>
+
+            {% if error %}
+            <div class="error-msg"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
+            {% if suggestions %}
+            <div style="margin-top: 1.2rem;">
+                <p style="font-size: 0.85rem; color: var(--text-2); margin-bottom: 8px;">Mungkin Anda mencari game populer ini?</p>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    {% for sug in suggestions %}
+                    <a href="/?q={{ sug | urlencode }}" class="tag" style="background: var(--bg-surface); cursor: pointer; transition: 0.2s; border-color: var(--gold-dim); color: var(--gold);">{{ sug }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            {% endif %}
+        </div>
+
+        <div class="hero-deco">
+            <i class="fas fa-gamepad hero-deco-icon"></i>
+            <div class="hero-stats">
+                <div class="hero-stat"><span class="hero-stat-num">2.000+</span><span class="hero-stat-label">Game</span></div>
+                <div class="hero-stat"><span class="hero-stat-num">TF-IDF</span><span class="hero-stat-label">Algoritma</span></div>
+                <div class="hero-stat"><span class="hero-stat-num">Hybrid</span><span class="hero-stat-label">Metode</span></div>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+        {% if recommendations is defined and recommendations is not none %}
+            {% for index, row in recommendations.iterrows() %}
+                {% if loop.first %}
+                <div class="section-header">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="section-title">Hasil Analisis</span>
+                        <button id="info-btn" title="Cara Kerja AI" style="background: transparent; border: none; color: var(--gold); cursor: pointer; font-size: 1.1rem; transition: transform 0.2s;">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
+                    </div>
+                    <span class="section-meta">Matched: {{ actual_title }}</span>
+                </div>
+                <div class="spotlight">
+                    <div class="spotlight-img-wrap">
+                        <span class="spotlight-label">Acuan Profil</span>
+                        <img src="{{ row['header_image'] }}" alt="{{ row['name'] }}"
+                             onerror="this.onerror=null;this.src='https://cdn.akamai.steamstatic.com/steam/apps/{{ row['steam_appid'] }}/capsule_616x353.jpg';">
+                    </div>
+                    <div class="spotlight-info">
+                        <h2>{{ row['name'] }}</h2>
+                        <div class="spotlight-meta-row">
+                            <span class="spotlight-price">
+                                {% if row['price'] == 0 %}Free to Play{% else %}${{ "%.2f"|format(row['price']) }}{% endif %}
+                            </span>
+                            <span class="spotlight-rating">
+                                {% if 'rating_score' in row and row['rating_score'] > 0 %}
+                                    <i class="fas fa-star"></i> {{ "%.0f"|format(row['rating_score']) }}% Positive
+                                {% else %}
+                                    <i class="fas fa-star-half-alt"></i> No Rating
+                                {% endif %}
+                            </span>
+                        </div>
+                        <p class="spotlight-desc">
+                            {% if 'short_description' in row and row['short_description'] %}
+                                {{ row['short_description'] | striptags }}
+                            {% elif 'detailed_description' in row and row['detailed_description'] %}
+                                {{ row['detailed_description'] | striptags | truncate(280) }}
+                            {% else %}
+                                Tidak ada deskripsi yang tersedia.
+                            {% endif %}
+                        </p>
+                        <div class="tags-row">
+                            {% if row['genres'] is string and row['genres'] %}
+                                {% for genre in row['genres'].split(';')[:5] %}
+                                    <span class="tag">{{ genre }}</span>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        <div class="badge-row">
+                            <span class="badge-pill"><i class="fas fa-trophy"></i> Rank #1 Match</span>
+                            <span class="badge-pill"><i class="fas fa-database"></i> Indexed</span>
+                        </div>
+
+                        <!-- KOMPOSISI BOBOT AI (NEW) -->
+                        <div style="background: var(--bg-elevated); padding: 1.2rem; border-radius: var(--r-md); border: 1px solid var(--border-md); margin-bottom: 1.5rem;">
+                            <p style="font-size: 0.75rem; font-weight: 500; margin-bottom: 12px; color: var(--text-1); text-transform: uppercase; letter-spacing: 1px;">Komposisi Bobot AI (Teoretis)</p>
+                            
+                            <div style="margin-bottom: 10px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-2); margin-bottom: 4px;"><span>TF-IDF Deskripsi Game</span><span>50%</span></div>
+                                <div style="height: 5px; background: var(--bg-card); border-radius: 3px; overflow: hidden;"><div style="height: 100%; width: 50%; background: var(--gold);"></div></div>
+                            </div>
+                            
+                            <div style="margin-bottom: 10px;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-2); margin-bottom: 4px;"><span>Kecocokan Genre</span><span>30%</span></div>
+                                <div style="height: 5px; background: var(--bg-card); border-radius: 3px; overflow: hidden;"><div style="height: 100%; width: 30%; background: #b85b32;"></div></div>
+                            </div>
+                            
+                            <div style="margin-bottom: 0;">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-2); margin-bottom: 4px;"><span>Kecocokan Tag Steam</span><span>20%</span></div>
+                                <div style="height: 5px; background: var(--bg-card); border-radius: 3px; overflow: hidden;"><div style="height: 100%; width: 20%; background: #5c7a24;"></div></div>
+                            </div>
+                        </div>
+
+                        <a href="https://store.steampowered.com/app/{{ row['steam_appid'] }}" target="_blank" class="btn-steam">
+                            <i class="fab fa-steam"></i> Buka di Steam
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+
+            <div class="section-header" style="justify-content: space-between; align-items: flex-end; flex-wrap: wrap;">
+                <div>
+                    <span class="section-title">Rekomendasi Serupa</span>
+                    <span class="section-meta">AI Generated Predictions</span>
+                </div>
+                
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button id="share-btn" class="btn-detail" style="margin: 0; padding: 0.45rem 1rem; color: var(--gold); border-color: var(--gold);" title="Copy Link Hasil">
+                        <i class="fas fa-link"></i> Share
+                    </button>
+                    <select id="sort-grid" style="background: var(--bg-elevated); color: var(--text-1); border: 1px solid var(--border-md); padding: 0.45rem 1rem; border-radius: var(--r-sm); font-family: var(--font-body); font-size: 0.82rem; outline: none; cursor: pointer;">
+                        <option value="match_desc">Highest Match</option>
+                        <option value="rating_desc">Best Rating</option>
+                        <option value="price_asc">Lowest Price</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="rec-grid">
+                {% for index, row in recommendations.iterrows() %}
+                    {% if not loop.first %}
+                    <div class="rec-card" 
+                         data-match="{{ row['similarity_score'] }}" 
+                         data-rating="{{ row['rating_score'] if 'rating_score' in row else 0 }}" 
+                         data-price="{{ row['price'] if 'price' in row else 0 }}">
+                        <div class="rec-card-img">
+                            <img src="{{ row['header_image'] }}" alt="{{ row['name'] }}" loading="lazy"
+                                 onerror="this.onerror=null;this.src='https://cdn.akamai.steamstatic.com/steam/apps/{{ row['steam_appid'] }}/capsule_616x353.jpg';">
+                            <span class="match-badge">{{ "%.0f"|format(row['similarity_score']) }}% match</span>
+                        </div>
+                        <div class="rec-card-body">
+                            <p class="rec-card-name" title="{{ row['name'] }}">{{ row['name'] }}</p>
+                            <div class="rec-meta-row">
+                                <span class="rec-rating">
+                                    {% if 'rating_score' in row and row['rating_score'] > 0 %}
+                                        <i class="fas fa-star"></i> {{ "%.0f"|format(row['rating_score']) }}%
+                                    {% else %}
+                                        <i class="fas fa-star-half-alt"></i> N/A
+                                    {% endif %}
+                                </span>
+                                <span class="rec-card-price">
+                                    {% if row['price'] == 0 %}Free{% else %}${{ "%.2f"|format(row['price']) }}{% endif %}
+                                </span>
+                            </div>
+                            <div class="rec-mini-tags">
+                                {% if row['genres'] is string and row['genres'] %}
+                                    {% for genre in row['genres'].split(';')[:2] %}
+                                        <span class="rec-mini-tag">{{ genre }}</span>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                            <p class="rec-card-desc">
+                                {% if 'short_description' in row and row['short_description'] %}
+                                    {{ row['short_description'] | striptags }}
+                                {% elif 'detailed_description' in row and row['detailed_description'] %}
+                                    {{ row['detailed_description'] | striptags | truncate(110) }}
+                                {% else %}
+                                    Deskripsi tidak tersedia.
+                                {% endif %}
+                            </p>
+                            <a href="https://store.steampowered.com/app/{{ row['steam_appid'] }}" target="_blank" class="btn-detail">Lihat Detail &#8594;</a>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon"><i class="fas fa-gamepad"></i></div>
+                <h3>Belum ada pencarian</h3>
+                <p>Mulai dengan satu game yang kamu suka — sisanya biar kami yang urus.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <footer class="footer">
+        <span class="footer-note">LevelFind &copy; 2026 &mdash; Hybrid Recommender System</span>
+        <span class="footer-note">TF-IDF &middot; Cosine Similarity &middot; Content-Based Filtering</span>
+    </footer>
+
+    <div id="loading-overlay" style="display: none; position: fixed; inset: 0; background: rgba(12,12,13,0.85); backdrop-filter: blur(5px); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; color: var(--gold);">
+        <div style="width: 50px; height: 50px; border: 3px solid var(--border-md); border-top: 3px solid var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1.5rem;"></div>
+        <p style="font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase;">Menganalisis Database AI...</p>
+    </div>
+
+    <!-- MODAL EXPLAINABLE AI -->
+    <div id="ai-modal" class="modal-overlay" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-brain" style="color: var(--gold);"></i> Cara Kerja AI LevelFind</h3>
+                <button id="close-modal" class="modal-close" aria-label="Tutup"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <p>Sistem ini menggunakan algoritma <strong>Content-Based Filtering</strong> dengan pemrosesan linguistik (NLP):</p>
+                <ol>
+                    <li><strong>TF-IDF Vectorizer:</strong> AI membedah atribut game (Genre, Tag, Deskripsi) menjadi matriks numerik. Kata kunci unik (seperti: <em>"Souls-like"</em> atau <em>"Roguelike"</em>) diberi bobot lebih tinggi daripada kata umum.</li>
+                    <li><strong>Cosine Similarity:</strong> Menghitung kedekatan sudut antar vektor game dalam ruang multidimensi. Skor <strong>100% Match</strong> menandakan kesamaan metadata teks secara sempurna.</li>
+                </ol>
+                <p class="modal-footer-note">
+                    *Persentase Match mencerminkan seberapa identik elemen cerita, mekanik, dan atmosfer game dibandingkan dengan judul acuan Anda.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            const gameInput = $("#game_input");
+            const html = document.documentElement;
+
+            // 1. THEME TOGGLE
+            document.getElementById("theme-btn").addEventListener("click", function() {
+                var isLight = html.getAttribute("data-theme") === "light";
+                if (isLight) {
+                    html.removeAttribute("data-theme");
+                    localStorage.setItem("lf-theme", "dark");
+                } else {
+                    html.setAttribute("data-theme", "light");
+                    localStorage.setItem("lf-theme", "light");
+                }
+            });
+
+            // 2. AUTOCOMPLETE
+            gameInput.autocomplete({
+                source: "/api/search_autocomplete",
+                minLength: 2,
+                select: function(event, ui) {
+                    gameInput.val(ui.item.value);
+                    $(this).closest("form").submit();
+                }
+            }).autocomplete("instance")._renderMenu = function(ul, items) {
+                var self = this;
+                $.each(items, function(i, item) { self._renderItemData(ul, item); });
+                $(ul).width(gameInput.outerWidth());
+            };
+
+            // 3. SEARCH HISTORY (LocalStorage)
+            function renderHistory() {
+                let history = JSON.parse(localStorage.getItem('lf-history')) || [];
+                let historyContainer = $("#search-history");
+                historyContainer.find('.hist-chip').remove(); 
+                
+                if(history.length === 0) { historyContainer.hide(); return; }
+                historyContainer.css("display", "flex");
+                
+                history.forEach(item => {
+                    let chip = $(`<a href="/?q=${encodeURIComponent(item)}" class="tag hist-chip" style="background: transparent; cursor: pointer; border-color: var(--gold-dim); color: var(--gold); flex-shrink: 0;">${item}</a>`);
+                    historyContainer.append(chip);
+                });
+            }
+            renderHistory();
+
+            // 4. SKELETON LOADING & SAVE HISTORY
+            $('form').on('submit', function() {
+                let query = gameInput.val().trim();
+                if (query !== "") {
+                    // Save History
+                    let history = JSON.parse(localStorage.getItem('lf-history')) || [];
+                    history = history.filter(item => item.toLowerCase() !== query.toLowerCase()); 
+                    history.unshift(query); 
+                    if(history.length > 5) history.pop(); 
+                    localStorage.setItem('lf-history', JSON.stringify(history));
+
+                    // Show Skeleton
+                    let skeletonHtml = `
+                        <div class="skeleton skeleton-spotlight"></div>
+                        <div class="section-header"><span class="skeleton" style="width: 150px; height: 24px;"></span></div>
+                        <div class="rec-grid">
+                            ${Array(8).fill('<div class="skeleton skeleton-card"></div>').join('')}
+                        </div>
+                    `;
+                    $(".container").html(skeletonHtml);
+                    $("#loading-overlay").css("display", "flex").hide().fadeIn(200);
+                }
+            });
+
+            // 5. CLIENT-SIDE SORTING
+            $("#sort-grid").on("change", function() {
+                let sortBy = $(this).val();
+                let grid = $(".rec-grid");
+                let cards = grid.children(".rec-card").get();
+
+                cards.sort(function(a, b) {
+                    let valA, valB;
+                    if(sortBy === "price_asc") {
+                        valA = parseFloat($(a).data("price")); valB = parseFloat($(b).data("price"));
+                        return valA - valB; 
+                    } else if(sortBy === "rating_desc") {
+                        valA = parseFloat($(a).data("rating")); valB = parseFloat($(b).data("rating"));
+                        return valB - valA; 
+                    } else {
+                        valA = parseFloat($(a).data("match")); valB = parseFloat($(b).data("match"));
+                        return valB - valA; 
+                    }
+                });
+                $.each(cards, function(index, card) { grid.append(card); }); 
+            });
+
+            // 6. SHARE LINK (COPY CLIPBOARD)
+            $("#share-btn").on("click", function() {
+                let currentUrl = window.location.origin + "/?q=" + encodeURIComponent("{{ actual_title if actual_title else search_query }}");
+                navigator.clipboard.writeText(currentUrl).then(() => {
+                    let btn = $(this);
+                    let originalHtml = btn.html();
+                    btn.html('<i class="fas fa-check"></i> Tersalin!');
+                    btn.css({"background": "var(--gold)", "color": "#000"});
+                    setTimeout(() => { 
+                        btn.html(originalHtml); 
+                        btn.css({"background": "transparent", "color": "var(--gold)"});
+                    }, 2000);
+                });
+            });
+
+            // 7. MODAL XAI LOGIC
+            const modal = document.getElementById('ai-modal');
+            const infoBtn = document.getElementById('info-btn');
+            const closeBtn = document.getElementById('close-modal');
+
+            if (infoBtn) {
+                infoBtn.addEventListener('click', function() {
+                    modal.classList.add('show');
+                    modal.setAttribute('aria-hidden', 'false');
+                });
+            }
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    modal.classList.remove('show');
+                    modal.setAttribute('aria-hidden', 'true');
+                });
+            }
+
+            window.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.classList.remove('show');
+                    modal.setAttribute('aria-hidden', 'true');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

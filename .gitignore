@@ -1,0 +1,21 @@
+# Python Environment
+venv/
+env/
+.env
+__pycache__/
+*.py[cod]
+*.txt
+*.csv
+
+# Dataset & Models (File Berat)
+dataset/processed/*.csv
+models/*.pkl
+
+# Web & OS
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Flask temporary files
+instance/
+.webassets-cache
