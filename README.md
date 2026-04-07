@@ -4,7 +4,7 @@
 
 ---
 
-## 🚀 Fitur Utama
+##  Fitur Utama
 - **Hybrid Data Scraping**: Menggabungkan data dari SteamSpy API dan Steam Store API untuk mendapatkan informasi game yang komprehensif (Genre, Tags, Rating, Deskripsi).
 - **AI Recommendation Engine**: Menggunakan pemrosesan bahasa alami (NLP) dengan metode TF-IDF dan perhitungan jarak Cosine Similarity.
 - **Explainable AI (XAI)**: Fitur transparansi yang menjelaskan kepada pengguna mengapa sebuah game direkomendasikan.
@@ -13,7 +13,7 @@
 
 ---
 
-## 🛠️ Stack Teknologi
+##  Stack Teknologi
 | Komponen | Teknologi |
 | --- | --- |
 | **Backend** | Python (Flask Framework) |
@@ -24,7 +24,7 @@
 
 ---
 
-## 🔬 Metodologi
+##  Metodologi
 Sistem ini bekerja dengan menganalisis metadata tekstual game (Judul, Genre, Tags, dan Deskripsi). Proses perhitungan kemiripan dilakukan melalui tahapan berikut:
 
 1. **Text Preprocessing**: Membersihkan tag HTML, simbol, dan melakukan normalisasi teks.
@@ -35,7 +35,7 @@ $$\text{similarity} = \cos(\theta) = \frac{\mathbf{A} \cdot \mathbf{B}}{\|\mathb
 
 ---
 
-## 📦 Instalasi dan Penggunaan
+##  Instalasi dan Penggunaan
 
 ### 1. Clone Repository
 ```bash
