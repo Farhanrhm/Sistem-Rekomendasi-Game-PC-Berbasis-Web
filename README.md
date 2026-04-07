@@ -39,8 +39,7 @@ $$\text{similarity} = \cos(\theta) = \frac{\mathbf{A} \cdot \mathbf{B}}{\|\mathb
 
 ### 1. Clone Repository
 ```bash
-git clone [https://github.com/Farhanrhm/Sistem-Rekomendasi-Game-PC-Berbasis-Web.git](https://github.com/Farhanrhm/Sistem-Rekomendasi-Game-PC-Berbasis-Web.git)
-cd Sistem-Rekomendasi-Game-PC-Berbasis-Web
+git clone https://github.com/Farhanrhm/Sistem-Rekomendasi-Game-PC-Berbasis-Web.git
 ```
 
 ### 2. Install Dependencies
