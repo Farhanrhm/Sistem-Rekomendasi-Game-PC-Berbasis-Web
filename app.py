@@ -18,11 +18,9 @@ except Exception as e:
     print("Pastikan Anda sudah menjalankan 3_build_model.py")
 
 # --- LOGIKA REKOMENDASI (DENGAN CACHING) ---
-# maxsize=100 berarti menyimpan 100 riwayat pencarian terakhir di RAM
 @lru_cache(maxsize=100)
 def get_recommendations(title):
     try:
-        # Ambil index dari game yang dicari
         idx = indices[title]
         
         # Jika ada judul duplikat, ambil yang pertama
@@ -56,7 +54,7 @@ def get_recommendations(title):
 # --- ROUTING WEB ---
 @app.route('/', methods=['GET', 'POST'])
 def home():
-    # Menangani parameter ?q=Elden+Ring (Fitur Share Link)
+    # Menangani parameter (Fitur Share Link)
     query_param = request.args.get('q', '')
     
     if request.method == 'POST':

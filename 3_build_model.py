@@ -20,7 +20,6 @@ print("Menyimpan model ke folder 'models'...")
 # Kolom wajib yang akan dikirim ke tampilan Web (HTML)
 cols_to_keep = ['steam_appid', 'name', 'price', 'genres', 'header_image', 'short_description', 'detailed_description', 'rating_score']
 
-# Pastikan semua kolom ada agar tidak error
 for col in cols_to_keep:
     if col not in df.columns:
         df[col] = ''

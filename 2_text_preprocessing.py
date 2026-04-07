@@ -4,8 +4,8 @@ import os
 
 def clean_text(text):
     if not isinstance(text, str): return ""
-    text = re.sub(r'<[^>]*>', ' ', text) # Hapus tag HTML
-    text = re.sub(r'[^a-zA-Z0-9\s]', ' ', text) # Hapus simbol
+    text = re.sub(r'<[^>]*>', ' ', text)
+    text = re.sub(r'[^a-zA-Z0-9\s]', ' ', text)
     return text.lower().strip()
 
 print("Mulai Preprocessing Data Hybrid...")
