@@ -43,18 +43,16 @@ git clone https://github.com/Farhanrhm/Sistem-Rekomendasi-Game-PC-Berbasis-Web.g
 ```
 
 ### 2. Install Dependencies
-Pastikan Anda memiliki Python 3.x terinstall.
 ```bash
 pip install -r requirements.txt
 ```
 ### 3. Persiapkan Dataset dan Model
-Jika Anda ingin memperbarui data, jalankan script secara berurutan:
 ```bash
 python smart_scraper.py
 python 2_text_preprocessing.py
 python 3_build_model.py
 ```
-### 4. Jalankan Aplikasi
+### 4. Menjalankan Aplikasi
 ```bash
 python app.py
 ```
