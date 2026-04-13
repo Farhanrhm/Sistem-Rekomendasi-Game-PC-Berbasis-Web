@@ -59,7 +59,6 @@ python 3_build_model.py
 python app.py
 ```
 ---
-Akses aplikasi melalui browser di: http://127.0.0.1:5000
 
 ## Dataset
 Data diperoleh secara hibrida menggunakan web scraping terkendali dari:
