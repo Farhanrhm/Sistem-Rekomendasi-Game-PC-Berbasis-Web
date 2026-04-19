@@ -226,6 +226,8 @@
         .modal-footer-note { margin-top: 1.2rem; font-size: 0.85rem; color: var(--text-3); font-style: italic; border-top: 1px solid var(--border); padding-top: 1rem; }
 
         #info-btn:hover { transform: scale(1.15) rotate(5deg); color: var(--gold-bright); }
+        /* ANIMASI PANAH BOBOT AI */
+        .toggle-icon.rotate { transform: rotate(180deg); }
 
         /* SKELETON LOADING */
         .skeleton { background: #2a2a30; background-image: linear-gradient(90deg, #2a2a30 0px, #36363d 40px, #2a2a30 80px); background-size: 600px; animation: shimmer 1.5s infinite linear; border-radius: var(--r-sm); }
@@ -310,7 +312,7 @@
                 </div>
                 <div class="spotlight">
                     <div class="spotlight-img-wrap">
-                        <span class="spotlight-label">Acuan Profil</span>
+                        <span class="spotlight-label">Main Game</span>
                         <img src="{{ row['header_image'] }}" alt="{{ row['name'] }}"
                              onerror="this.onerror=null;this.src='https://cdn.akamai.steamstatic.com/steam/apps/{{ row['steam_appid'] }}/capsule_616x353.jpg';">
                     </div>
@@ -351,21 +353,28 @@
 
                         <!-- KOMPOSISI BOBOT AI (NEW) -->
                         <div style="background: var(--bg-elevated); padding: 1.2rem; border-radius: var(--r-md); border: 1px solid var(--border-md); margin-bottom: 1.5rem;">
-                            <p style="font-size: 0.75rem; font-weight: 500; margin-bottom: 12px; color: var(--text-1); text-transform: uppercase; letter-spacing: 1px;">Komposisi Bobot AI (Teoretis)</p>
-                            
-                            <div style="margin-bottom: 10px;">
-                                <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-2); margin-bottom: 4px;"><span>TF-IDF Deskripsi Game</span><span>50%</span></div>
-                                <div style="height: 5px; background: var(--bg-card); border-radius: 3px; overflow: hidden;"><div style="height: 100%; width: 50%; background: var(--gold);"></div></div>
+                            <div id="toggle-bobot" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+                                <p style="font-size: 0.75rem; font-weight: 500; margin: 0; color: var(--text-1); text-transform: uppercase; letter-spacing: 1px;">
+                                    Komposisi Bobot AI (Teoretis)
+                                </p>
+                                <i class="fas fa-chevron-down toggle-icon" style="color: var(--text-2); transition: transform 0.3s ease;"></i>
                             </div>
-                            
-                            <div style="margin-bottom: 10px;">
-                                <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-2); margin-bottom: 4px;"><span>Kecocokan Genre</span><span>30%</span></div>
-                                <div style="height: 5px; background: var(--bg-card); border-radius: 3px; overflow: hidden;"><div style="height: 100%; width: 30%; background: #b85b32;"></div></div>
-                            </div>
-                            
-                            <div style="margin-bottom: 0;">
-                                <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-2); margin-bottom: 4px;"><span>Kecocokan Tag Steam</span><span>20%</span></div>
-                                <div style="height: 5px; background: var(--bg-card); border-radius: 3px; overflow: hidden;"><div style="height: 100%; width: 20%; background: #5c7a24;"></div></div>
+
+                            <div id="content-bobot" style="display: none; margin-top: 15px; border-top: 1px solid var(--border-md); padding-top: 15px;">
+                                <div style="margin-bottom: 10px;">
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-2); margin-bottom: 4px;"><span>TF-IDF Deskripsi Game</span><span>50%</span></div>
+                                    <div style="height: 5px; background: var(--bg-card); border-radius: 3px; overflow: hidden;"><div style="height: 100%; width: 50%; background: var(--gold);"></div></div>
+                                </div>
+                                
+                                <div style="margin-bottom: 10px;">
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-2); margin-bottom: 4px;"><span>Kecocokan Genre</span><span>30%</span></div>
+                                    <div style="height: 5px; background: var(--bg-card); border-radius: 3px; overflow: hidden;"><div style="height: 100%; width: 30%; background: #b85b32;"></div></div>
+                                </div>
+                                
+                                <div style="margin-bottom: 0;">
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-2); margin-bottom: 4px;"><span>Kecocokan Tag Steam</span><span>20%</span></div>
+                                    <div style="height: 5px; background: var(--bg-card); border-radius: 3px; overflow: hidden;"><div style="height: 100%; width: 20%; background: #5c7a24;"></div></div>
+                                </div>
                             </div>
                         </div>
 
@@ -616,6 +625,12 @@
                     modal.classList.remove('show');
                     modal.setAttribute('aria-hidden', 'true');
                 }
+            });
+
+            // 8. TOGGLE ACCORDION BOBOT AI
+            $("#toggle-bobot").on("click", function() {
+                $("#content-bobot").slideToggle(300);
+                $(this).find(".toggle-icon").toggleClass("rotate");
             });
         });
     </script>
