@@ -7,7 +7,7 @@ import os
 app = Flask(__name__)
 
 # --- LOAD MODEL & DATA ---
-print("Memuat model AI ke dalam memori...")
+print("Memuat model ke dalam memori...")
 try:
     df = pickle.load(open('models/game_data.pkl', 'rb'))
     cosine_sim = pickle.load(open('models/cosine_sim.pkl', 'rb'))
@@ -23,15 +23,15 @@ def get_recommendations(title):
     try:
         idx = indices[title]
         
-        # Jika ada judul duplikat, ambil yang pertama
+        # Mengambil judul pertama jika ada judul duplikat
         if type(idx) == pd.Series:
             idx = idx.iloc[0]
 
-        # Hitung skor kemiripan
+        # Menghitung skor kemiripan
         sim_scores = list(enumerate(cosine_sim[idx]))
         sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
         
-        # Ambil 12 game teratas (index 1-12 karena index 0 adalah game itu sendiri)
+        # Mengambil 12 game teratas 
         sim_scores = sim_scores[1:13]
 
         game_indices = [i[0] for i in sim_scores]
@@ -41,7 +41,7 @@ def get_recommendations(title):
         rec_df = df.iloc[game_indices].copy()
         rec_df['similarity_score'] = similarity_percentages
 
-        # Masukkan game utama di paling atas (untuk ditampilkan di Spotlight)
+        # Masukkan game utama di paling atas 
         main_game = df.iloc[[idx]].copy()
         main_game['similarity_score'] = 100.0
 
@@ -73,13 +73,19 @@ def home():
             if recommendations is not None:
                 return render_template('index.html', recommendations=recommendations, actual_title=actual_title, search_query=actual_title)
         
-        # Fitur Fallback: Game tidak ditemukan
-        error_msg = f"Game '{game_title}' tidak ditemukan di database kami."
-        # Ambil 5 game populer (berdasarkan rating) acak sebagai saran
+        # Perbaikan Saran Game jika tidak ditemukan
+        error_msg = f"Game '{game_title}' belum tersedia di database kami."
+        
+        # Jika rating_score banyak yang 0, kita ambil secara acak dari database
         try:
-            popular_games = df.sort_values(by='rating_score', ascending=False)['name'].head(50).sample(5).tolist()
+            # Mencoba ambil yang ratingnya bagus, jika gagal ambil acak
+            if df['rating_score'].max() > 0:
+                popular_games = df.sort_values(by='rating_score', ascending=False)['name'].head(50).sample(5).tolist()
+            else:
+                popular_games = df['name'].sample(5).tolist() # Ambil acak jika data rating belum ada
         except:
-            popular_games = []
+            popular_games = ["Elden Ring", "Cyberpunk 2077", "Stardew Valley", "Terraria", "Portal 2"]
+            
         return render_template('index.html', error=error_msg, search_query=game_title, suggestions=popular_games)
 
     return render_template('index.html')
