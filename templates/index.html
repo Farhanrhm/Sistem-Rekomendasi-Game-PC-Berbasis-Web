@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LevelFind — Hybrid Recommender</title>
+    <title>LevelFind — Sistem Rekomendasi Game</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -243,7 +243,7 @@
     <nav class="navbar">
         <div class="logo">Level<span>Find</span></div>
         <div class="nav-right">
-            <span class="nav-tag">Hybrid AI</span>
+            <!-- <span class="nav-tag">Hybrid AI</span> -->
             <button class="theme-btn" id="theme-btn" title="Ganti tema" aria-label="Toggle tema">
                 <i class="fas fa-moon i-moon"></i>
                 <i class="fas fa-sun i-sun"></i>
@@ -253,14 +253,14 @@
 
     <section class="hero">
         <div class="hero-left">
-            <div class="hero-eyebrow">AI-Powered Discovery</div>
+           <!-- <div class="hero-eyebrow">AI-Powered Discovery</div> -->
             <h1>Mulai dengan satu game<br>yang kamu <em>suka</em></h1>
-            <p class="hero-sub">Sisanya biar kami yang urus. Algoritma hybrid kami mencarikan rekomendasi paling relevan dari ribuan judul.</p>
+            <p class="hero-sub">Sisanya biar kami yang urus. Sistem kami mencarikan rekomendasi paling relevan dari ribuan judul menggunakan metode TF-IDF dan Cosine Similarity.</p>
             
             <form action="/" method="POST" autocomplete="off">
                 <div class="search-wrap">
                     <input type="text" name="game_title" id="game_input"
-                           placeholder="Contoh: Elden Ring, Stardew Valley..."
+                           placeholder="Contoh: Elden Ring, "
                            value="{{ search_query if search_query else '' }}" required>
                     <button class="search-btn" type="submit">
                         <i class="fas fa-search"></i> Temukan
@@ -292,7 +292,7 @@
             <div class="hero-stats">
                 <div class="hero-stat"><span class="hero-stat-num">2.000+</span><span class="hero-stat-label">Game</span></div>
                 <div class="hero-stat"><span class="hero-stat-num">TF-IDF</span><span class="hero-stat-label">Algoritma</span></div>
-                <div class="hero-stat"><span class="hero-stat-num">Hybrid</span><span class="hero-stat-label">Metode</span></div>
+                <div class="hero-stat"><span class="hero-stat-num">TF-IDF</span><span class="hero-stat-label">Metode</span></div>
             </div>
         </div>
     </section>
@@ -304,7 +304,7 @@
                 <div class="section-header">
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <span class="section-title">Hasil Analisis</span>
-                        <button id="info-btn" title="Cara Kerja AI" style="background: transparent; border: none; color: var(--gold); cursor: pointer; font-size: 1.1rem; transition: transform 0.2s;">
+                        <button id="info-btn" title="Cara Kerja Sistem" style="background: transparent; border: none; color: var(--gold); cursor: pointer; font-size: 1.1rem; transition: transform 0.2s;">
                             <i class="fas fa-info-circle"></i>
                         </button>
                     </div>
@@ -323,20 +323,20 @@
                                 {% if row['price'] == 0 %}Free to Play{% else %}${{ "%.2f"|format(row['price']) }}{% endif %}
                             </span>
                             <span class="spotlight-rating">
-                                {% if 'rating_score' in row and row['rating_score'] > 0 %}
-                                    <i class="fas fa-star"></i> {{ "%.0f"|format(row['rating_score']) }}% Positive
+                                {% if row['rating_score'] is defined and row['rating_score']|float > 0 %}
+                                    <i class="fas fa-star"></i> {{ "%.0f"|format(row['rating_score']) }}%
                                 {% else %}
                                     <i class="fas fa-star-half-alt"></i> No Rating
                                 {% endif %}
                             </span>
                         </div>
                         <p class="spotlight-desc">
-                            {% if 'short_description' in row and row['short_description'] %}
+                            {% if row['short_description'] %}
                                 {{ row['short_description'] | striptags }}
-                            {% elif 'detailed_description' in row and row['detailed_description'] %}
+                            {% elif row['detailed_description'] %}
                                 {{ row['detailed_description'] | striptags | truncate(280) }}
                             {% else %}
-                                Tidak ada deskripsi yang tersedia.
+                                Eksplorasi lebih lanjut untuk mengetahui detail mekanik dan cerita dari game ini.
                             {% endif %}
                         </p>
                         <div class="tags-row">
@@ -355,25 +355,29 @@
                         <div style="background: var(--bg-elevated); padding: 1.2rem; border-radius: var(--r-md); border: 1px solid var(--border-md); margin-bottom: 1.5rem;">
                             <div id="toggle-bobot" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
                                 <p style="font-size: 0.75rem; font-weight: 500; margin: 0; color: var(--text-1); text-transform: uppercase; letter-spacing: 1px;">
-                                    Komposisi Bobot AI (Teoretis)
+                                    Elemen Metadata Teks (Corpus)
                                 </p>
                                 <i class="fas fa-chevron-down toggle-icon" style="color: var(--text-2); transition: transform 0.3s ease;"></i>
                             </div>
 
                             <div id="content-bobot" style="display: none; margin-top: 15px; border-top: 1px solid var(--border-md); padding-top: 15px;">
-                                <div style="margin-bottom: 10px;">
-                                    <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-2); margin-bottom: 4px;"><span>TF-IDF Deskripsi Game</span><span>50%</span></div>
-                                    <div style="height: 5px; background: var(--bg-card); border-radius: 3px; overflow: hidden;"><div style="height: 100%; width: 50%; background: var(--gold);"></div></div>
+                                <p style="font-size: 0.75rem; color: var(--text-2); margin-bottom: 10px; line-height: 1.5;">
+                                    Sistem ini membaca game sebagai satu kesatuan dokumen (<em>text corpus</em>). Kemiripan dihitung berdasarkan frekuensi kemunculan kata kunci pada elemen berikut:
+                                </p>
+                                
+                                <div style="margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-align-left" style="color: var(--gold); font-size: 0.8rem;"></i>
+                                    <span style="font-size: 0.75rem; color: var(--text-1);"><strong>Deskripsi Game</strong> (Tema, Cerita, Mekanik)</span>
                                 </div>
                                 
-                                <div style="margin-bottom: 10px;">
-                                    <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-2); margin-bottom: 4px;"><span>Kecocokan Genre</span><span>30%</span></div>
-                                    <div style="height: 5px; background: var(--bg-card); border-radius: 3px; overflow: hidden;"><div style="height: 100%; width: 30%; background: #b85b32;"></div></div>
+                                <div style="margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-tags" style="color: #b85b32; font-size: 0.8rem;"></i>
+                                    <span style="font-size: 0.75rem; color: var(--text-1);"><strong>Genre Steam</strong> (Action, RPG, Indie, dll)</span>
                                 </div>
                                 
-                                <div style="margin-bottom: 0;">
-                                    <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-2); margin-bottom: 4px;"><span>Kecocokan Tag Steam</span><span>20%</span></div>
-                                    <div style="height: 5px; background: var(--bg-card); border-radius: 3px; overflow: hidden;"><div style="height: 100%; width: 20%; background: #5c7a24;"></div></div>
+                                <div style="margin-bottom: 0; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-folder-open" style="color: #5c7a24; font-size: 0.8rem;"></i>
+                                    <span style="font-size: 0.75rem; color: var(--text-1);"><strong>Kategori Steam</strong> (Singleplayer, Co-op, dll)</span>
                                 </div>
                             </div>
                         </div>
@@ -389,7 +393,7 @@
             <div class="section-header" style="justify-content: space-between; align-items: flex-end; flex-wrap: wrap;">
                 <div>
                     <span class="section-title">Rekomendasi Serupa</span>
-                    <span class="section-meta">AI Generated Predictions</span>
+                  <!--  <span class="section-meta">AI Generated Predictions</span> -->
                 </div>
                 
                 <div style="display: flex; gap: 10px; align-items: center;">
@@ -420,10 +424,10 @@
                             <p class="rec-card-name" title="{{ row['name'] }}">{{ row['name'] }}</p>
                             <div class="rec-meta-row">
                                 <span class="rec-rating">
-                                    {% if 'rating_score' in row and row['rating_score'] > 0 %}
+                                    {% if row['rating_score'] is defined and row['rating_score']|float > 0 %}
                                         <i class="fas fa-star"></i> {{ "%.0f"|format(row['rating_score']) }}%
                                     {% else %}
-                                        <i class="fas fa-star-half-alt"></i> N/A
+                                        <i class="fas fa-star-half-alt"></i> No Rating
                                     {% endif %}
                                 </span>
                                 <span class="rec-card-price">
@@ -438,12 +442,12 @@
                                 {% endif %}
                             </div>
                             <p class="rec-card-desc">
-                                {% if 'short_description' in row and row['short_description'] %}
-                                    {{ row['short_description'] | striptags }}
-                                {% elif 'detailed_description' in row and row['detailed_description'] %}
+                                {% if row['short_description'] %}
+                                    {{ row['short_description'] | striptags | truncate(110) }}
+                                {% elif row['detailed_description'] %}
                                     {{ row['detailed_description'] | striptags | truncate(110) }}
                                 {% else %}
-                                    Deskripsi tidak tersedia.
+                                    Eksplorasi lebih lanjut untuk mengetahui detail mekanik dan cerita dari game ini.
                                 {% endif %}
                             </p>
                             <a href="https://store.steampowered.com/app/{{ row['steam_appid'] }}" target="_blank" class="btn-detail">Lihat Detail &#8594;</a>
@@ -462,27 +466,28 @@
     </div>
 
     <footer class="footer">
-        <span class="footer-note">LevelFind &copy; 2026 &mdash; Hybrid Recommender System</span>
+        <span class="footer-note">LevelFind &copy; 2026 &mdash; Sistem Rekomendasi Game PC</span>
         <span class="footer-note">TF-IDF &middot; Cosine Similarity &middot; Content-Based Filtering</span>
     </footer>
 
     <div id="loading-overlay" style="display: none; position: fixed; inset: 0; background: rgba(12,12,13,0.85); backdrop-filter: blur(5px); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; color: var(--gold);">
         <div style="width: 50px; height: 50px; border: 3px solid var(--border-md); border-top: 3px solid var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1.5rem;"></div>
-        <p style="font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase;">Menganalisis Database AI...</p>
+        <p style="font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase;">Menganalisis Database Game...</p>
     </div>
 
     <!-- MODAL EXPLAINABLE AI -->
     <div id="ai-modal" class="modal-overlay" aria-hidden="true">
         <div class="modal-content">
             <div class="modal-header">
-                <h3><i class="fas fa-brain" style="color: var(--gold);"></i> Cara Kerja AI LevelFind</h3>
+                <h3><i class="fas fa-microchip" style="color: var(--gold);"></i> Cara Kerja Sistem LevelFind</h3>
                 <button id="close-modal" class="modal-close" aria-label="Tutup"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
-                <p>Sistem ini menggunakan algoritma <strong>Content-Based Filtering</strong> dengan pemrosesan linguistik (NLP):</p>
+                <p>Sistem ini menggunakan metode <strong>Content-Based Filtering</strong> dengan tahapan sebagai berikut:</p>
                 <ol>
-                    <li><strong>TF-IDF Vectorizer:</strong> AI membedah atribut game (Genre, Tag, Deskripsi) menjadi matriks numerik. Kata kunci unik (seperti: <em>"Souls-like"</em> atau <em>"Roguelike"</em>) diberi bobot lebih tinggi daripada kata umum.</li>
-                    <li><strong>Cosine Similarity:</strong> Menghitung kedekatan sudut antar vektor game dalam ruang multidimensi. Skor <strong>100% Match</strong> menandakan kesamaan metadata teks secara sempurna.</li>
+                    <li><strong>Text Preprocessing:</strong> Membersihkan tag HTML, simbol, dan melakukan normalisasi teks pada judul, genre, serta deskripsi game agar data lebih konsisten.</li>
+                    <li><strong>TF-IDF Vectorization:</strong> Mengubah korpus teks menjadi representasi numerik (vektor) berdasarkan bobot kepentingan kata unik dalam dataset.</li>
+                    <li><strong>Cosine Similarity:</strong> Menghitung sudut kosinus antara dua vektor untuk menentukan tingkat kemiripan matematis antar judul game.</li>
                 </ol>
                 <p class="modal-footer-note">
                     *Persentase Match mencerminkan seberapa identik elemen cerita, mekanik, dan atmosfer game dibandingkan dengan judul acuan Anda.
