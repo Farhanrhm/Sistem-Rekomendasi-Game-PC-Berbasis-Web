@@ -8,9 +8,9 @@ def clean_text(text):
     text = re.sub(r'[^a-zA-Z0-9\s]', ' ', text)
     return text.lower().strip()
 
-print("Mulai Preprocessing Data Hybrid...")
-input_file = 'dataset/processed/steam_merged_clean.csv'
-output_file = 'dataset/processed/steam_ready_for_model.csv'
+print("Mulai Preprocessing Dataset game...")
+input_file = 'dataset/processed/dataset_final_skripsi.csv'
+output_file = 'dataset/processed/dataset_final_skripsi.csv'
 
 if os.path.exists(input_file):
     df = pd.read_csv(input_file)
@@ -21,7 +21,7 @@ if os.path.exists(input_file):
     df['clean_desc'] = df['combined_desc'].apply(clean_text)
     df['soup'] = df['name'] + " " + df['tags'].fillna('') + " " + df['genres'].fillna('') + " " + df['clean_desc']
     
-    # Buat SOUP: gabungan tags, genres, dan deskripsi bersih untuk dibaca AI
+    # Buat SOUP: gabungan tags, genres, dan deskripsi bersih untuk diproses sistem
     df['soup'] = df['tags'].fillna('') + " " + df['genres'].fillna('') + " " + df['clean_desc']
     
     # Amankan kolom rating_score
