@@ -37,7 +37,7 @@ cosine_sim = (0.50 * sim_desc) + (0.30 * sim_genre) + (0.20 * sim_tag)
 
 print("Menyimpan model ke folder 'models'...")
 # Daftar kolom yang dibutuhkan oleh Web HTML
-cols_to_keep = ['steam_appid', 'name', 'price', 'genres', 'header_image', 'short_description', 'detailed_description', 'rating_score']
+cols_to_keep = ['steam_appid', 'name', 'price', 'genres', 'header_image', 'short_description', 'detailed_description', 'rating_score', 'rating', 'total_reviews', 'clean_desc', 'tags']
 
 # Pastikan semua kolom tersedia dan bertipe data yang benar (Mencegah TypeError)
 for col in cols_to_keep:
@@ -49,6 +49,27 @@ for col in cols_to_keep:
     
     if col in ['rating_score', 'price']:
         df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0.0)
+
+# Mapping sederhana jika rating_score masih 0 tapi rating (string) sudah ada
+# Ini membantu data lama agar tetap tampil bintangnya di UI
+def estimate_score(row):
+    if row['rating_score'] > 0:
+        return row['rating_score']
+    
+    mapping = {
+        'Overwhelmingly Positive': 95,
+        'Very Positive': 85,
+        'Mostly Positive': 75,
+        'Positive': 80,
+        'Mixed': 50,
+        'Mostly Negative': 30,
+        'Very Negative': 15,
+        'Overwhelmingly Negative': 10
+    }
+    return mapping.get(row['rating'], 0)
+
+if 'rating' in df.columns:
+    df['rating_score'] = df.apply(estimate_score, axis=1)
 
 # Simpan Data dan Model Matriks yang baru
 pickle.dump(df[cols_to_keep], open('models/game_data.pkl', 'wb'))
