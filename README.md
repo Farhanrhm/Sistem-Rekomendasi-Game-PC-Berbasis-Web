@@ -38,36 +38,6 @@ $$\text{similarity} = \cos(\theta) = \frac{\mathbf{A} \cdot \mathbf{B}}{\|\mathb
 
 ---
 
-## Instalasi dan Penggunaan
-
-### 1. Clone Repository
-
-```bash
-git clone https://github.com/Farhanrhm/Sistem-Rekomendasi-Game-PC-Berbasis-Web.git
-```
-
-### 2. Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Persiapkan Dataset dan Model
-
-```bash
-python smart_scraper.py
-python 2_text_preprocessing.py
-python 3_build_model.py
-```
-
-### 4. Menjalankan Aplikasi
-
-```bash
-python app.py
-```
-
----
-
 ## Dataset
 
 Data diperoleh melalui proses penggabungan data menggunakan web scraping terkendali dari:
