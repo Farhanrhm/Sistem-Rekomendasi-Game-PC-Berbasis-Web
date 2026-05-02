@@ -239,6 +239,26 @@
     </style>
 </head>
 <body>
+    {% macro render_rating(score, total_reviews=0) %}
+        {% set s = score|float %}
+        {% if s >= 95 %}
+            <i class="fas fa-star" style="color: var(--gold);"></i> Overwhelmingly Positive ({{ "%.0f"|format(s) }}%)
+        {% elif s >= 80 %}
+            <i class="fas fa-star" style="color: var(--gold);"></i> Very Positive ({{ "%.0f"|format(s) }}%)
+        {% elif s >= 70 %}
+            <i class="fas fa-star" style="color: var(--gold);"></i> Mostly Positive ({{ "%.0f"|format(s) }}%)
+        {% elif s >= 40 %}
+            <i class="fas fa-star-half-alt" style="color: var(--gold);"></i> Mixed ({{ "%.0f"|format(s) }}%)
+        {% elif s > 0 %}
+            <i class="fas fa-star-half-alt" style="color: var(--red);"></i> Mostly Negative ({{ "%.0f"|format(s) }}%)
+        {% else %}
+            <i class="fas fa-star-half-alt" style="color: var(--text-3);"></i> Belum Ada Ulasan
+        {% endif %}
+        
+        {% if total_reviews > 0 %}
+            <span style="font-size: 0.7rem; color: var(--text-8); margin-left: 4px;">({{ "{:,}".format(total_reviews|int) }} reviews)</span>
+        {% endif %}
+    {% endmacro %}
 
     <nav class="navbar">
         <div class="logo">Level<span>Find</span></div>
@@ -269,7 +289,7 @@
             </form>
 
             <div id="search-history" style="margin-top: 1rem; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; display: none;">
-                <span style="font-size: 0.75rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px;">Terakhir Dicari:</span>
+                <span style="font-size: 0.75rem; color: var(--text-4); text-transform: uppercase; letter-spacing: 1px;">Terakhir Dicari:</span>
             </div>
 
             {% if error %}
@@ -323,11 +343,7 @@
                                 {% if row['price'] == 0 %}Free to Play{% else %}${{ "%.2f"|format(row['price']) }}{% endif %}
                             </span>
                             <span class="spotlight-rating">
-                                {% if row['rating_score'] is defined and row['rating_score']|float > 0 %}
-                                    <i class="fas fa-star"></i> {{ "%.0f"|format(row['rating_score']) }}%
-                                {% else %}
-                                    <i class="fas fa-star-half-alt"></i> No Rating
-                                {% endif %}
+                                {{ render_rating(row['rating_score'] if 'rating_score' in row else 0, row['total_reviews'] if 'total_reviews' in row else 0) }}
                             </span>
                         </div>
                         <p class="spotlight-desc">
@@ -365,19 +381,13 @@
                                     Sistem ini membaca game sebagai satu kesatuan dokumen (<em>text corpus</em>). Kemiripan dihitung berdasarkan frekuensi kemunculan kata kunci pada elemen berikut:
                                 </p>
                                 
-                                <div style="margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-                                    <i class="fas fa-align-left" style="color: var(--gold); font-size: 0.8rem;"></i>
-                                    <span style="font-size: 0.75rem; color: var(--text-1);"><strong>Deskripsi Game</strong> (Tema, Cerita, Mekanik)</span>
+                                <div style="margin-bottom: 12px; font-size: 0.75rem; color: var(--text-2); background: var(--bg-base); padding: 10px; border-radius: 4px; border: 1px solid var(--border); font-family: var(--font-mono); max-height: 120px; overflow-y: auto;">
+                                    <strong style="color: var(--gold); font-family: var(--font-body); text-transform: uppercase; letter-spacing: 1px; font-size: 0.7rem; display: block; margin-bottom: 6px;">Preprocessed Deskripsi</strong>
+                                    {{ row['clean_desc'] if row['clean_desc'] else 'Data deskripsi tidak tersedia.' }}
                                 </div>
-                                
-                                <div style="margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
-                                    <i class="fas fa-tags" style="color: #b85b32; font-size: 0.8rem;"></i>
-                                    <span style="font-size: 0.75rem; color: var(--text-1);"><strong>Genre Steam</strong> (Action, RPG, Indie, dll)</span>
-                                </div>
-                                
-                                <div style="margin-bottom: 0; display: flex; align-items: center; gap: 8px;">
-                                    <i class="fas fa-folder-open" style="color: #5c7a24; font-size: 0.8rem;"></i>
-                                    <span style="font-size: 0.75rem; color: var(--text-1);"><strong>Kategori Steam</strong> (Singleplayer, Co-op, dll)</span>
+                                <div style="font-size: 0.75rem; color: var(--text-2); background: var(--bg-base); padding: 10px; border-radius: 4px; border: 1px solid var(--border); font-family: var(--font-mono);">
+                                    <strong style="color: var(--gold); font-family: var(--font-body); text-transform: uppercase; letter-spacing: 1px; font-size: 0.7rem; display: block; margin-bottom: 6px;">Preprocessed Tags &amp; Genres</strong>
+                                    {{ row['tags'] if row['tags'] else '-' }} | {{ row['genres'] if row['genres'] else '-' }}
                                 </div>
                             </div>
                         </div>
@@ -418,17 +428,21 @@
                         <div class="rec-card-img">
                             <img src="{{ row['header_image'] }}" alt="{{ row['name'] }}" loading="lazy"
                                  onerror="this.onerror=null;this.src='https://cdn.akamai.steamstatic.com/steam/apps/{{ row['steam_appid'] }}/capsule_616x353.jpg';">
-                            <span class="match-badge">{{ "%.0f"|format(row['similarity_score']) }}% match</span>
+                            {% set sim = row['similarity_score']|float %}
+                            {% if sim > 50 %}
+                                {% set badge_color = "#4caf50" %}
+                            {% elif sim >= 40 %}
+                                {% set badge_color = "#ff9800" %}
+                            {% else %}
+                                {% set badge_color = "#9e9e9e" %}
+                            {% endif %}
+                            <span class="match-badge" style="border-color: {{ badge_color }}; color: {{ badge_color }};">{{ "%.0f"|format(sim) }}% match</span>
                         </div>
                         <div class="rec-card-body">
                             <p class="rec-card-name" title="{{ row['name'] }}">{{ row['name'] }}</p>
                             <div class="rec-meta-row">
                                 <span class="rec-rating">
-                                    {% if row['rating_score'] is defined and row['rating_score']|float > 0 %}
-                                        <i class="fas fa-star"></i> {{ "%.0f"|format(row['rating_score']) }}%
-                                    {% else %}
-                                        <i class="fas fa-star-half-alt"></i> No Rating
-                                    {% endif %}
+                                    {{ render_rating(row['rating_score'] if 'rating_score' in row else 0, row['total_reviews'] if 'total_reviews' in row else 0) }}
                                 </span>
                                 <span class="rec-card-price">
                                     {% if row['price'] == 0 %}Free{% else %}${{ "%.2f"|format(row['price']) }}{% endif %}
