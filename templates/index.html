@@ -255,7 +255,7 @@
             <i class="fas fa-star-half-alt" style="color: var(--text-3);"></i> Belum Ada Ulasan
         {% endif %}
         
-        {% if total_reviews > 0 %}
+        {% if total_reviews|int > 0 %}
             <span style="font-size: 0.7rem; color: var(--text-8); margin-left: 4px;">({{ "{:,}".format(total_reviews|int) }} reviews)</span>
         {% endif %}
     {% endmacro %}
@@ -310,7 +310,7 @@
         <div class="hero-deco">
             <i class="fas fa-gamepad hero-deco-icon"></i>
             <div class="hero-stats">
-                <div class="hero-stat"><span class="hero-stat-num">2.000+</span><span class="hero-stat-label">Game</span></div>
+                <div class="hero-stat"><span class="hero-stat-num">10.000+</span><span class="hero-stat-label">Game</span></div>
                 <div class="hero-stat"><span class="hero-stat-num">TF-IDF</span><span class="hero-stat-label">Algoritma</span></div>
                 <div class="hero-stat"><span class="hero-stat-num">TF-IDF</span><span class="hero-stat-label">Metode</span></div>
             </div>
