@@ -9,8 +9,8 @@ def clean_text(text):
     return text.lower().strip()
 
 print("Mulai Preprocessing Dataset game...")
-input_file = 'dataset/processed/dataset_final_skripsi.csv'
-output_file = 'dataset/processed/dataset_final_skripsi.csv'
+input_file = 'dataset/processed/steam_new_and_fav.csv'
+output_file = 'dataset/processed/steam_new_and_fav.csv'
 
 if os.path.exists(input_file):
     df = pd.read_csv(input_file)
