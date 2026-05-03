@@ -19,10 +19,6 @@ if os.path.exists(input_file):
     # Gabungkan deskripsi
     df['combined_desc'] = df['detailed_description'].fillna('') + " " + df['short_description'].fillna('')
     df['clean_desc'] = df['combined_desc'].apply(clean_text)
-    df['soup'] = df['name'] + " " + df['tags'].fillna('') + " " + df['genres'].fillna('') + " " + df['clean_desc']
-    
-    # Buat SOUP: gabungan tags, genres, dan deskripsi bersih untuk diproses sistem
-    df['soup'] = df['tags'].fillna('') + " " + df['genres'].fillna('') + " " + df['clean_desc']
     
     # Amankan kolom rating_score
     if 'rating_score' in df.columns:
