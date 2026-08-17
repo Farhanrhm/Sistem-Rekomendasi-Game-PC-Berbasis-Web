@@ -86,8 +86,12 @@ def get_recommendations_data(title, top_n=10):
     if df is None or tfidf_matrix is None:
         return None, "Model belum dimuat ke RAM peladen."
 
-    # Search Case-Insensitive
-    matches = df[df['name'].str.lower() == title.lower().strip()]
+    # Search Case-Insensitive dengan Partial Match (contains) & Fallback Exact Match
+    query_clean = title.lower().strip()
+    matches = df[df['name'].str.lower() == query_clean]
+    if matches.empty:
+        matches = df[df['name'].str.lower().str.contains(query_clean, regex=False, na=False)]
+        
     if matches.empty:
         return None, f"Game '{title}' tidak ditemukan dalam database."
 

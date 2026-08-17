@@ -7,7 +7,7 @@ __pycache__/
 
 # Dataset & Models (File Berat)
 dataset/processed/*.csv
-models/*.pkl
+models/cosine_sim.pkl
 
 # Web & OS
 .DS_Store
