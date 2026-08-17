@@ -348,9 +348,9 @@
                             </span>
                         </div>
                         <p class="spotlight-desc">
-                            {% if row['short_description'] %}
+                            {% if row['short_description'] is string and row['short_description'] and row['short_description'] != 'nan' %}
                                 {{ row['short_description'] | striptags }}
-                            {% elif row['detailed_description'] %}
+                            {% elif row['detailed_description'] is string and row['detailed_description'] and row['detailed_description'] != 'nan' %}
                                 {{ row['detailed_description'] | striptags | truncate(280) }}
                             {% else %}
                                 Eksplorasi lebih lanjut untuk mengetahui detail mekanik dan cerita dari game ini.
@@ -457,9 +457,9 @@
                                 {% endif %}
                             </div>
                             <p class="rec-card-desc">
-                                {% if row['short_description'] %}
+                                {% if row['short_description'] is string and row['short_description'] and row['short_description'] != 'nan' %}
                                     {{ row['short_description'] | striptags | truncate(110) }}
-                                {% elif row['detailed_description'] %}
+                                {% elif row['detailed_description'] is string and row['detailed_description'] and row['detailed_description'] != 'nan' %}
                                     {{ row['detailed_description'] | striptags | truncate(110) }}
                                 {% else %}
                                     Eksplorasi lebih lanjut untuk mengetahui detail mekanik dan cerita dari game ini.
