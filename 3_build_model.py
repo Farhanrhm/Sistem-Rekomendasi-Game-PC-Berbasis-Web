@@ -1,55 +1,76 @@
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import linear_kernel
 import pickle
 import os
+import re
 
+# Memastikan direktori penyimpan model siap
 os.makedirs('models', exist_ok=True)
 
-print("Membaca data...")
-df = pd.read_csv('dataset/processed/steam_new_and_fav.csv')
+print("[INFO] Membaca dataset game...")
+dataset_path = 'dataset/processed/steam_new_and_fav.csv'
 
-df['clean_desc'] = df['clean_desc'].fillna('')
-df['genres'] = df['genres'].fillna('')
-df['tags'] = df['tags'].fillna('')
+if not os.path.exists(dataset_path):
+    raise FileNotFoundError(f"File dataset {dataset_path} tidak ditemukan. Harap jalankan scraper/preprocessing terlebih dahulu.")
 
-print("Menghitung matriks TF-IDF untuk masing-masing elemen...")
+df = pd.read_csv(dataset_path)
 
-# --- 1. MODEL TF-IDF: DESKRIPSI (Bobot 50%) ---
-tfidf_desc = TfidfVectorizer(stop_words='english')
-tfidf_matrix_desc = tfidf_desc.fit_transform(df['clean_desc'])
-sim_desc = linear_kernel(tfidf_matrix_desc, tfidf_matrix_desc)
+# ==============================================================================
+# PREPROCESSING TEKS & PEMBENTUKAN FITUR GABUNGAN
+# ==============================================================================
+def clean_text(text):
+    if not isinstance(text, str):
+        return ""
+    text = re.sub(r'<[^>]*>', ' ', text)  # Hapus tag HTML
+    text = re.sub(r'[^a-zA-Z0-9\s]', ' ', text)  # Hapus karakter spesial
+    return text.lower().strip()
 
-# --- 2. MODEL TF-IDF: GENRE (Bobot 30%) ---
-tfidf_genre = TfidfVectorizer(stop_words='english')
-tfidf_matrix_genre = tfidf_genre.fit_transform(df['genres'])
-sim_genre = linear_kernel(tfidf_matrix_genre, tfidf_matrix_genre)
+# Memastikan kolom teks memiliki nilai string default
+if 'clean_desc' not in df.columns or df['clean_desc'].isnull().all():
+    detailed = df['detailed_description'].fillna('') if 'detailed_description' in df.columns else ''
+    short = df['short_description'].fillna('') if 'short_description' in df.columns else ''
+    df['clean_desc'] = (detailed + " " + short).apply(clean_text)
+else:
+    df['clean_desc'] = df['clean_desc'].fillna('')
 
-# --- 3. MODEL TF-IDF: TAGS STEAM (Bobot 20%) ---
-tfidf_tag = TfidfVectorizer(stop_words='english')
-tfidf_matrix_tag = tfidf_tag.fit_transform(df['tags'])
-sim_tag = linear_kernel(tfidf_matrix_tag, tfidf_matrix_tag)
+df['genres'] = df['genres'].fillna('').astype(str)
+df['tags'] = df['tags'].fillna('').astype(str)
 
-print("Mengkalkulasi Pembobotan (Weighted Cosine Similarity)...")
-# Rumus Matematika: Sim_Total = (0.5 * Sim_Desc) + (0.3 * Sim_Genre) + (0.2 * Sim_Tag)
-cosine_sim = (0.50 * sim_desc) + (0.30 * sim_genre) + (0.20 * sim_tag)
+# BATASAN PROPOSAL: "Ekstraksi fitur teks gabungan"
+# Menggabungkan atribut teks (deskripsi bersih, genres, dan tags) menjadi satu dokumen fitur teks
+df['combined_features'] = (
+    df['clean_desc'] + " " +
+    df['genres'].str.replace(';', ' ') + " " +
+    df['tags'].str.replace(';', ' ')
+)
 
-print("Menyimpan model ke folder 'models'...")
-# Daftar kolom yang dibutuhkan oleh Web HTML
-cols_to_keep = ['steam_appid', 'name', 'price', 'genres', 'header_image', 'short_description', 'detailed_description', 'rating_score', 'rating', 'total_reviews', 'clean_desc', 'tags']
+print("[INFO] Ekstraksi fitur menggunakan TfidfVectorizer (Scikit-Learn)...")
+# BATASAN PROPOSAL: Ekstraksi fitur teks gabungan menggunakan TfidfVectorizer
+tfidf_vectorizer = TfidfVectorizer(stop_words='english', max_features=50000)
+tfidf_matrix = tfidf_vectorizer.fit_transform(df['combined_features'])
+
+print(f"[INFO] Ukuran Matriks Sparse TF-IDF: {tfidf_matrix.shape} (Baris: Game, Kolom: Fitur Kata)")
+
+# ==============================================================================
+# PENYIAPAN COLUMNS DATAFRAME & METRIK
+# ==============================================================================
+cols_to_keep = [
+    'steam_appid', 'name', 'price', 'genres', 'header_image', 
+    'short_description', 'detailed_description', 'rating_score', 
+    'rating', 'positive_reviews', 'total_reviews', 'clean_desc', 'tags'
+]
 
 for col in cols_to_keep:
     if col not in df.columns:
-        if col in ['rating_score', 'price', 'total_reviews']:
+        if col in ['rating_score', 'price', 'positive_reviews', 'total_reviews']:
             df[col] = 0.0
         else:
             df[col] = ''
     
-    if col in ['rating_score', 'price', 'total_reviews']:
+    if col in ['rating_score', 'price', 'positive_reviews', 'total_reviews']:
         df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0.0)
 
-# Mapping sederhana jika rating_score masih 0 tapi rating (string) sudah ada
-# Ini membantu data lama agar tetap tampil bintangnya di UI
+# Menghitung estimasi rating_score jika belum terisi
 def estimate_score(row):
     if row['rating_score'] > 0:
         return row['rating_score']
@@ -66,14 +87,28 @@ def estimate_score(row):
     }
     return mapping.get(row['rating'], 0)
 
-if 'rating' in df.columns:
-    df['rating_score'] = df.apply(estimate_score, axis=1)
+df['rating_score'] = df.apply(estimate_score, axis=1)
 
-# Simpan Data dan Model Matriks yang baru
-pickle.dump(df[cols_to_keep], open('models/game_data.pkl', 'wb'))
-pickle.dump(cosine_sim, open('models/cosine_sim.pkl', 'wb'))
+# ==============================================================================
+# ARSITEKTUR IN-MEMORY STORAGE (MEMORI SANGAT RINGAN 50-80 MB)
+# BATASAN PROPOSAL:
+# Menyimpan hasil TF-IDF berupa matriks sparse, vectorizer, dan dataframe bersih
+# ke dalam format Pickle (.pkl) agar estimasi penggunaan RAM server sangat ringan.
+# ==============================================================================
+print("[INFO] Menyimpan model dan data ke format Pickle (.pkl)...")
 
-indices = pd.Series(df.index, index=df['name']).drop_duplicates()
+# 1. Simpan DataFrame Bersih
+df_clean = df[cols_to_keep].copy()
+pickle.dump(df_clean, open('models/game_data.pkl', 'wb'))
+
+# 2. Simpan Matriks Sparse TF-IDF (Bukan matriks kemiripan dense 15k x 15k yang berat)
+pickle.dump(tfidf_matrix, open('models/tfidf_matrix.pkl', 'wb'))
+
+# 3. Simpan Model TfidfVectorizer
+pickle.dump(tfidf_vectorizer, open('models/tfidf_vectorizer.pkl', 'wb'))
+
+# 4. Simpan Indeks Pemetaan Judul -> Indeks
+indices = pd.Series(df_clean.index, index=df_clean['name']).drop_duplicates()
 pickle.dump(indices, open('models/indices.pkl', 'wb'))
 
-print("--- MODEL BERHASIL DIBUAT ---")
+print("[SUCCESS] --- MODEL DAN METADATA TF-IDF SPARSE BERHASIL DIBUAT ---")
