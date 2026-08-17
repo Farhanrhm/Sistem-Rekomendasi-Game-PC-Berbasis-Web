@@ -1,10 +1,8 @@
 # Python Environment
 venv/
 env/
-.env
 __pycache__/
 *.py[cod]
-*.txt
 *.csv
 
 # Dataset & Models (File Berat)
