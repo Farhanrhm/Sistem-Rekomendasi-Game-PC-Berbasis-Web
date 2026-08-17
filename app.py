@@ -1,31 +1,35 @@
 from flask import Flask, render_template, request, jsonify
+import pandas as pd
+import numpy as np
 from sklearn.metrics.pairwise import linear_kernel
 import pickle
-import pandas as pd
+import Levenshtein
 import os
-import Levenshtein  # BATASAN PROPOSAL: Pustaka Levenshtein untuk Diversification Filtering
 
 app = Flask(__name__)
 
 # ==============================================================================
-# BATASAN PROPOSAL: LAZY LOADING
-# Memuat file .pkl ke dalam RAM peladen HANYA saat aplikasi Flask menyala
-# (global scope, di luar fungsi route)
+# 2. BATASAN PEMODELAN & MEMORI & 3. LAZY LOADING
+# Muat file .pkl ke dalam RAM peladen HANYA saat aplikasi Flask menyala (bukan di dalam fungsi route)
 # ==============================================================================
-print("[INFO] [LAZY LOADING] Memuat file model .pkl ke dalam RAM peladen...")
+print("🚀 [LAZY LOADING] Memuat file model .pkl ke dalam RAM peladen...")
 df = None
 tfidf_matrix = None
 tfidf_vectorizer = None
 indices = None
 
 try:
-    df = pickle.load(open('models/game_data.pkl', 'rb'))
-    tfidf_matrix = pickle.load(open('models/tfidf_matrix.pkl', 'rb'))
-    tfidf_vectorizer = pickle.load(open('models/tfidf_vectorizer.pkl', 'rb'))
-    indices = pickle.load(open('models/indices.pkl', 'rb'))
-    print("[SUCCESS] Model dan data sparse TF-IDF berhasil dimuat ke RAM peladen!")
+    with open('models/game_data.pkl', 'rb') as f:
+        df = pickle.load(f)
+    with open('models/tfidf_matrix.pkl', 'rb') as f:
+        tfidf_matrix = pickle.load(f)
+    with open('models/tfidf_vectorizer.pkl', 'rb') as f:
+        tfidf_vectorizer = pickle.load(f)
+    with open('models/indices.pkl', 'rb') as f:
+        indices = pickle.load(f)
+    print("✅ Model dan data sparse TF-IDF berhasil dimuat ke RAM peladen!")
 except Exception as e:
-    print(f"[ERROR] Error memuat file model .pkl: {e}")
+    print(f"❌ Error memuat file model .pkl: {e}")
     print("Harap pastikan Anda sudah menjalankan 3_build_model.py terlebih dahulu.")
 
 
@@ -36,7 +40,7 @@ def calc_edit_distance_ratio(title1, title2):
     """
     BATASAN PROPOSAL: Diversification Filtering
     Menghitung rasio Levenshtein Distance antara dua judul game.
-    Rasio < 0.3 berarti kemiripan string > 70% (kemungkinan besar sekuel/versi ulang).
+    Rasio < 0.3 berarti kemiripan string > 70% (mengeliminasi sekuel game yang berulang).
     """
     t1 = str(title1).lower().strip()
     t2 = str(title2).lower().strip()
@@ -76,8 +80,8 @@ def get_recommendations_data(title, top_n=10):
     3. Diversification Filtering (Levenshtein Distance)
     4. Explainable AI (XAI) Template-Based Text Generation
     """
-    if df is None or tfidf_matrix is None or indices is None:
-        return None, "Model belum dimuat ke RAM."
+    if df is None or tfidf_matrix is None:
+        return None, "Model belum dimuat ke RAM peladen."
 
     # Search Case-Insensitive
     matches = df[df['name'].str.lower() == title.lower().strip()]
@@ -106,7 +110,7 @@ def get_recommendations_data(title, top_n=10):
             'positive_reviews': pos_rev
         })
 
-    # Urutkan primer berdasarkan sim_score (descending), sekunder berdasarkan positive_reviews (descending)
+    # Urutkan primer berdasarkan sim_score (descending), sekunder berdasarkan positive_reviews (descending) untuk Tie-Breaker
     candidates = sorted(
         candidates,
         key=lambda x: (x['sim_score'], x['positive_reviews']),
@@ -125,7 +129,7 @@ def get_recommendations_data(title, top_n=10):
         is_duplicate_sequel = False
         for acc_title in accepted_titles:
             edit_ratio = calc_edit_distance_ratio(cand_name, acc_title)
-            # Jika edit distance ratio < 0.3 (kemiripan string > 70%), abaikan sekuel berulang ini
+            # Jika edit distance ratio < 0.3 (kemiripan string > 70%), filter salah satunya (mengeliminasi sekuel game yang berulang)
             if edit_ratio < 0.3:
                 is_duplicate_sequel = True
                 break
@@ -192,9 +196,33 @@ def get_recommendations_data(title, top_n=10):
 # ROUTING API & WEB
 # ==============================================================================
 
-# BATASAN PROPOSAL: Endpoint API JSON untuk Frontend HTML/JS
+@app.route('/')
+def home():
+    """
+    Halaman Web Utama.
+    """
+    return render_template('index.html')
+
+
+@app.route('/api/search_titles', methods=['GET'])
+def api_search_titles():
+    """
+    Endpoint Autocomplete Judul Game untuk Frontend.
+    """
+    query = request.args.get('q', '').strip().lower()
+    if not query or df is None:
+        return jsonify([])
+    
+    matches = df[df['name'].str.lower().str.contains(query, regex=False)]['name'].head(10).tolist()
+    return jsonify(matches)
+
+
 @app.route('/api/recommend', methods=['GET', 'POST'])
 def api_recommend():
+    """
+    BATASAN PROPOSAL: Endpoint API JSON untuk Frontend HTML/JS.
+    Mengembalikan response JSON lengkap dengan target game dan rekomendasi Top-N.
+    """
     if request.method == 'POST':
         data = request.get_json(silent=True) or {}
         game_title = data.get('game_title') or request.form.get('game_title', '')
@@ -211,73 +239,10 @@ def api_recommend():
 
     return jsonify({
         'status': 'success',
-        'actual_title': result['target_game']['name'],
-        'target_game': result['target_game'],
-        'recommendations': result['recommendations']
+        'data': result
     })
 
 
-@app.route('/', methods=['GET', 'POST'])
-def home():
-    query_param = request.args.get('q', '')
-    wants_json = (
-        request.args.get('format') == 'json' or 
-        request.is_json or 
-        'application/json' in request.headers.get('Accept', '')
-    )
-    
-    if request.method == 'POST':
-        game_title = request.form.get('game_title', '').strip()
-    else:
-        game_title = query_param.strip()
-
-    if game_title:
-        result, error_msg = get_recommendations_data(game_title)
-        
-        # Jika client meminta format JSON
-        if wants_json:
-            if error_msg:
-                return jsonify({'status': 'error', 'message': error_msg}), 404
-            return jsonify({
-                'status': 'success',
-                'actual_title': result['target_game']['name'],
-                'target_game': result['target_game'],
-                'recommendations': result['recommendations']
-            })
-
-        if result is not None:
-            # Konversi data ke DataFrame agar kompatibel dengan template index.html Jinja2 existing
-            target_df = pd.DataFrame([result['target_game']])
-            rec_df = pd.DataFrame(result['recommendations'])
-            final_df = pd.concat([target_df, rec_df], ignore_index=True)
-            
-            return render_template(
-                'index.html', 
-                recommendations=final_df, 
-                actual_title=result['target_game']['name'], 
-                search_query=result['target_game']['name']
-            )
-
-        # Jika game tidak ditemukan
-        try:
-            suggestions = df.sort_values(by='rating_score', ascending=False)['name'].head(50).sample(5).tolist()
-        except Exception:
-            suggestions = ["Elden Ring", "Cyberpunk 2077", "Stardew Valley", "Terraria", "Portal 2"]
-            
-        return render_template('index.html', error=error_msg, search_query=game_title, suggestions=suggestions)
-
-    return render_template('index.html')
-
-
-@app.route('/api/search_autocomplete', methods=['GET'])
-def autocomplete():
-    query = request.args.get('term', '').lower().strip()
-    if not query or df is None:
-        return jsonify([])
-    matches = df[df['name'].str.lower().str.contains(query, na=False)]['name'].head(10).tolist()
-    return jsonify(matches)
-
-
 if __name__ == '__main__':
-    # Memilih port 5000 untuk pengujian lokal
     app.run(debug=True, port=5000)
+
