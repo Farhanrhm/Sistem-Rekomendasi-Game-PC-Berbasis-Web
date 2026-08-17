@@ -12,6 +12,8 @@ app = Flask(__name__)
 # 2. BATASAN PEMODELAN & MEMORI & 3. LAZY LOADING
 # Muat file .pkl ke dalam RAM peladen HANYA saat aplikasi Flask menyala (bukan di dalam fungsi route)
 # ==============================================================================
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 print("🚀 [LAZY LOADING] Memuat file model .pkl ke dalam RAM peladen...")
 df = None
 tfidf_matrix = None
@@ -19,15 +21,16 @@ tfidf_vectorizer = None
 indices = None
 
 try:
-    with open('models/game_data.pkl', 'rb') as f:
+    with open(os.path.join(BASE_DIR, 'models', 'game_data.pkl'), 'rb') as f:
         df = pickle.load(f)
-    with open('models/tfidf_matrix.pkl', 'rb') as f:
+    with open(os.path.join(BASE_DIR, 'models', 'tfidf_matrix.pkl'), 'rb') as f:
         tfidf_matrix = pickle.load(f)
-    with open('models/tfidf_vectorizer.pkl', 'rb') as f:
+    with open(os.path.join(BASE_DIR, 'models', 'tfidf_vectorizer.pkl'), 'rb') as f:
         tfidf_vectorizer = pickle.load(f)
-    with open('models/indices.pkl', 'rb') as f:
+    with open(os.path.join(BASE_DIR, 'models', 'indices.pkl'), 'rb') as f:
         indices = pickle.load(f)
     print("✅ Model dan data sparse TF-IDF berhasil dimuat ke RAM peladen!")
+
 except Exception as e:
     print(f"❌ Error memuat file model .pkl: {e}")
     print("Harap pastikan Anda sudah menjalankan 3_build_model.py terlebih dahulu.")
@@ -196,20 +199,49 @@ def get_recommendations_data(title, top_n=10):
 # ROUTING API & WEB
 # ==============================================================================
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def home():
     """
-    Halaman Web Utama.
+    Halaman Web Utama - Mendukung pencarian via GET (?q=...) dan POST (form submission)
     """
-    return render_template('index.html')
+    search_query = ""
+    error = None
+    target_game = None
+    recommendations = []
+
+    if request.method == 'POST':
+        search_query = request.form.get('game_title', '').strip()
+    else:
+        search_query = request.args.get('q', '').strip() or request.args.get('game_title', '').strip()
+
+    if search_query:
+        result, error_msg = get_recommendations_data(search_query)
+        if error_msg:
+            error = error_msg
+        else:
+            target_game = result['target_game']
+            rec_list = result['recommendations']
+            
+            # Gabungkan target game di baris 0 agar kompatibel dengan template index.html
+            combined_list = [target_game] + rec_list
+            recommendations = pd.DataFrame(combined_list)
+
+    return render_template(
+        'index.html',
+        search_query=search_query,
+        actual_title=target_game['name'] if target_game else search_query,
+        recommendations=recommendations if target_game else None,
+        error=error
+    )
 
 
+@app.route('/api/search_autocomplete', methods=['GET'])
 @app.route('/api/search_titles', methods=['GET'])
 def api_search_titles():
     """
     Endpoint Autocomplete Judul Game untuk Frontend.
     """
-    query = request.args.get('q', '').strip().lower()
+    query = request.args.get('term', '').strip().lower() or request.args.get('q', '').strip().lower()
     if not query or df is None:
         return jsonify([])
     
@@ -245,4 +277,5 @@ def api_recommend():
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
+
 
