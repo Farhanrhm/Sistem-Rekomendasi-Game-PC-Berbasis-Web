@@ -9,7 +9,6 @@ os.makedirs('models', exist_ok=True)
 print("Membaca data...")
 df = pd.read_csv('dataset/processed/steam_new_and_fav.csv')
 
-# Pastikan tidak ada data yang kosong (NaN) pada kolom fitur
 df['clean_desc'] = df['clean_desc'].fillna('')
 df['genres'] = df['genres'].fillna('')
 df['tags'] = df['tags'].fillna('')
@@ -39,7 +38,6 @@ print("Menyimpan model ke folder 'models'...")
 # Daftar kolom yang dibutuhkan oleh Web HTML
 cols_to_keep = ['steam_appid', 'name', 'price', 'genres', 'header_image', 'short_description', 'detailed_description', 'rating_score', 'rating', 'total_reviews', 'clean_desc', 'tags']
 
-# Pastikan semua kolom tersedia dan bertipe data yang benar (Mencegah TypeError)
 for col in cols_to_keep:
     if col not in df.columns:
         if col in ['rating_score', 'price', 'total_reviews']:
