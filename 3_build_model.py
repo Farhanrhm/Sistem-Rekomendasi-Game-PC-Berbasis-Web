@@ -77,4 +77,4 @@ indices = pd.Series(df_clean.index, index=df_clean['name'].str.lower()).drop_dup
 with open('models/indices.pkl', 'wb') as f:
     pickle.dump(indices, f)
 
-print("✅ --- PROSES PEMODELAN IN-MEMORY (.PKL) SELESAI ---")
+print("[OK] --- PROSES PEMODELAN IN-MEMORY (.PKL) SELESAI ---")
