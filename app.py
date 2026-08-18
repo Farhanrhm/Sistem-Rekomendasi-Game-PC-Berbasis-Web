@@ -154,6 +154,12 @@ def get_recommendations_data(title, top_n=10):
                 f"dengan skor {sim_percentage}% terhadap {game_target_name}."
             )
 
+            cand_pos = float(cand_row.get('positive_reviews', 0))
+            cand_tot = float(cand_row.get('total_reviews', 0))
+            cand_rating_score = float(cand_row.get('rating_score', 0))
+            if cand_rating_score == 0 and cand_tot > 0:
+                cand_rating_score = round((cand_pos / cand_tot) * 100, 1)
+
             rec_item = {
                 'steam_appid': int(cand_row['steam_appid']),
                 'name': str(cand_name),
@@ -163,10 +169,10 @@ def get_recommendations_data(title, top_n=10):
                 'header_image': str(cand_row['header_image']),
                 'short_description': str(cand_row['short_description']),
                 'detailed_description': str(cand_row['detailed_description']),
-                'rating_score': float(cand_row['rating_score']),
-                'rating': str(cand_row['rating']),
-                'positive_reviews': float(cand_row['positive_reviews']),
-                'total_reviews': float(cand_row['total_reviews']),
+                'rating_score': cand_rating_score,
+                'rating': str(cand_row.get('rating', 'Very Positive')),
+                'positive_reviews': cand_pos,
+                'total_reviews': cand_tot,
                 'similarity_score': sim_percentage,
                 'explanation': xai_explanation  # Teks XAI Statis berbasis Template
             }
@@ -176,6 +182,12 @@ def get_recommendations_data(title, top_n=10):
             break
 
     # Format data game target
+    target_pos = float(target_row.get('positive_reviews', 0))
+    target_tot = float(target_row.get('total_reviews', 0))
+    target_rating_score = float(target_row.get('rating_score', 0))
+    if target_rating_score == 0 and target_tot > 0:
+        target_rating_score = round((target_pos / target_tot) * 100, 1)
+
     target_data = {
         'steam_appid': int(target_row['steam_appid']),
         'name': str(target_row['name']),
@@ -185,10 +197,10 @@ def get_recommendations_data(title, top_n=10):
         'header_image': str(target_row['header_image']),
         'short_description': str(target_row['short_description']),
         'detailed_description': str(target_row['detailed_description']),
-        'rating_score': float(target_row['rating_score']),
-        'rating': str(target_row['rating']),
-        'positive_reviews': float(target_row['positive_reviews']),
-        'total_reviews': float(target_row['total_reviews']),
+        'rating_score': target_rating_score,
+        'rating': str(target_row.get('rating', 'Very Positive')),
+        'positive_reviews': target_pos,
+        'total_reviews': target_tot,
         'similarity_score': 100.0,
         'explanation': f"Game target pencarian utama."
     }
