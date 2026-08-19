@@ -379,28 +379,28 @@
                         <div style="background: var(--bg-elevated); padding: 1.2rem; border-radius: var(--r-md); border: 1px solid var(--border-md); margin-bottom: 1.5rem;">
                             <div id="toggle-bobot" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
                                 <p style="font-size: 0.75rem; font-weight: 500; margin: 0; color: var(--text-1); text-transform: uppercase; letter-spacing: 1px;">
-                                    Representasi Dokumen Teks (Corpus Fitur Gabungan)
+                                    Profil &amp; Karakteristik Game
                                 </p>
                                 <i class="fas fa-chevron-down toggle-icon" style="color: var(--text-2); transition: transform 0.3s ease;"></i>
                             </div>
 
                             <div id="content-bobot" style="display: none; margin-top: 15px; border-top: 1px solid var(--border-md); padding-top: 15px;">
                                 <p style="font-size: 0.75rem; color: var(--text-2); margin-bottom: 10px; line-height: 1.5;">
-                                    Sistem membaca setiap game sebagai kesatuan korpus teks (<em>feature vector space</em>). Kemiripan Cosine Similarity dihitung dari gabungan metadata berikut:
+                                    Sistem mempelajari dan mencocokkan game ini dengan game lain berdasarkan informasi berikut:
                                 </p>
                                 
                                 <div style="margin-bottom: 12px; font-size: 0.75rem; color: var(--text-2); background: var(--bg-base); padding: 10px; border-radius: 4px; border: 1px solid var(--border); font-family: var(--font-mono); max-height: 120px; overflow-y: auto;">
-                                    <strong style="color: var(--gold); font-family: var(--font-body); text-transform: uppercase; letter-spacing: 1px; font-size: 0.7rem; display: block; margin-bottom: 6px;">Deskripsi Teks Asli (Raw Description)</strong>
+                                    <strong style="color: var(--gold); font-family: var(--font-body); text-transform: uppercase; letter-spacing: 1px; font-size: 0.7rem; display: block; margin-bottom: 6px;">Sinopsis / Deskripsi Game</strong>
                                     {% if row['short_description'] is string and row['short_description'] and row['short_description'] != 'nan' %}
                                         {{ row['short_description'] | striptags }}
                                     {% elif row['detailed_description'] is string and row['detailed_description'] and row['detailed_description'] != 'nan' %}
                                         {{ row['detailed_description'] | striptags }}
                                     {% else %}
-                                        Data deskripsi tidak tersedia.
+                                        Deskripsi ringkas untuk game ini belum tersedia di basis data. Sistem mengelompokkan game ini berdasarkan kategori dan fitur: {{ row['genres']|string|replace(';', ', ') if row['genres'] else 'Steam Game' }}.
                                     {% endif %}
                                 </div>
                                 <div style="font-size: 0.75rem; color: var(--text-2); background: var(--bg-base); padding: 10px; border-radius: 4px; border: 1px solid var(--border); font-family: var(--font-mono);">
-                                    <strong style="color: var(--gold); font-family: var(--font-body); text-transform: uppercase; letter-spacing: 1px; font-size: 0.7rem; display: block; margin-bottom: 6px;">Metadata Fitur Gabungan (Processed Tags &amp; Genres)</strong>
+                                    <strong style="color: var(--gold); font-family: var(--font-body); text-transform: uppercase; letter-spacing: 1px; font-size: 0.7rem; display: block; margin-bottom: 6px;">Kategori &amp; Fitur (Tags &amp; Genres)</strong>
                                     {% set tags_clean = (row['tags']|string).replace(';', ' ') if row['tags'] else '' %}
                                     {% set genres_clean = (row['genres']|string).replace(';', ' ') if row['genres'] else '' %}
                                     {{ (tags_clean ~ ' ' ~ genres_clean).strip().lower() if (tags_clean or genres_clean) else '-' }}
