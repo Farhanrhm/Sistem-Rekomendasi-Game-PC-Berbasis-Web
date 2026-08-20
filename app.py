@@ -139,17 +139,20 @@ def _cached_get_recommendations(query_clean, top_n=10):
             sim_percentage = round(cand['sim_score'] * 100, 1)
             dominant_genre = extract_dominant_genre(target_row['genres'], cand_row['genres'])
             
-            # 4. EXPLAINABLE AI (XAI) TEMPLATE-BASED GENERATION (BILINGUAL)
-            matched_tags = ", ".join([t.strip() for t in cand_row['tags'].split(';')[:3] if t.strip()])
-            matched_genres = dominant_genre
+            # 4. EXPLAINABLE AI (XAI) TEMPLATE-BASED GENERATION (BILINGUAL & COMPACT)
+            cand_genres_list = [g.strip() for g in str(cand_row['genres']).split(';') if g.strip()]
+            matched_genre = dominant_genre if dominant_genre else (cand_genres_list[0] if cand_genres_list else 'Action')
+            
+            cand_tags_list = [t.strip() for t in str(cand_row['tags']).split(';') if t.strip()]
+            matched_tag = ", ".join(cand_tags_list[:2]) if cand_tags_list else 'Single-player'
 
             xai_explanation_id = (
-                f"Game {cand_name} direkomendasikan karena memiliki kesamaan genre {matched_genres} "
-                f"dan tag {matched_tags} sebesar {sim_percentage}% dengan game {game_target_name}."
+                f"Direkomendasikan karena memiliki kesamaan genre <strong class=\"xai-highlight\">{matched_genre}</strong> "
+                f"dan tag <strong class=\"xai-highlight\">{matched_tag}</strong>."
             )
             xai_explanation_en = (
-                f"{cand_name} is recommended because it shares the {matched_genres} genres "
-                f"and {matched_tags} tags with a {sim_percentage}% similarity score to {game_target_name}."
+                f"Recommended because it shares the <strong class=\"xai-highlight\">{matched_genre}</strong> genre "
+                f"and <strong class=\"xai-highlight\">{matched_tag}</strong> tag."
             )
 
             cand_pos = float(cand_row.get('positive_reviews', 0))

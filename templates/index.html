@@ -166,7 +166,7 @@
         .rec-card-img { position: relative; height: 125px; overflow: hidden; }
         .rec-card-img img { width: 100%; height: 100%; object-fit: cover; }
         .rec-card:hover .rec-card-img img { transform: scale(1.05); transition: transform 0.3s ease; }
-        .match-badge { position: absolute; top: 8px; right: 8px; font-family: var(--font-mono); font-size: 0.63rem; background: rgba(12, 12, 13, 0.88); border: 1px solid var(--gold-dim); color: var(--gold); padding: 3px 8px; border-radius: 4px; backdrop-filter: blur(4px); }
+        .match-badge { position: absolute; top: 8px; right: 8px; font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; background: rgba(12, 12, 13, 0.82); border: 1px solid var(--border-md); padding: 3px 9px; border-radius: var(--r-sm); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 4px 12px rgba(0,0,0,0.6); z-index: 2; }
         .rec-card-body { padding: 0.9rem; display: flex; flex-direction: column; flex: 1; }
         .rec-card-name { font-family: var(--font-display); font-size: 0.92rem; font-weight: 700; color: var(--text-1); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .rec-meta-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
@@ -176,7 +176,9 @@
         .rec-mini-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
         .rec-mini-tag { font-family: var(--font-mono); font-size: 0.58rem; text-transform: uppercase; background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-2); padding: 2px 7px; border-radius: 3px; }
         .rec-card-desc { font-size: 0.8rem; color: var(--text-2); line-height: 1.6; margin-bottom: 0.9rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-        .btn-detail { display: block; text-align: center; padding: 0.5rem; background: transparent; border: 1px solid var(--border-md); color: var(--text-2); border-radius: var(--r-sm); font-size: 0.78rem; margin-top: auto; }
+        .xai-highlight { color: var(--gold); font-weight: 600; }
+        .xai-text { font-size: 0.78rem; line-height: 1.45; color: var(--text-2); margin-top: 6px; margin-bottom: 0.9rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; }
+        .btn-detail { display: block; text-align: center; padding: 0.5rem; background: transparent; border: 1px solid var(--border-md); color: var(--text-2); border-radius: var(--r-sm); font-size: 0.78rem; margin-top: auto; cursor: pointer; width: 100%; transition: all 0.2s ease; }
         .btn-detail:hover { border-color: var(--gold-dim); color: var(--gold); background: var(--gold-subtle); }
 
         /* EMPTY */
@@ -456,10 +458,17 @@
                 {% for index, row in recommendations.iterrows() %}
                     {% if not loop.first %}
                     <div class="rec-card" 
+                         data-name="{{ row['name'] }}"
+                         data-appid="{{ row['steam_appid'] }}"
+                         data-image="{{ row['header_image'] }}"
+                         data-match-val="{{ "%.0f"|format(row['similarity_score']|float) }}"
                          data-match="{{ row['similarity_score'] }}" 
                          data-rating="{{ row['rating_score'] if 'rating_score' in row else 0 }}" 
                          data-price="{{ row['price'] if 'price' in row else 0 }}"
                          data-genres="{{ (row['genres'] ~ ' ' ~ row['tags']) | lower if 'genres' in row else '' }}"
+                         data-genres-raw="{{ row['genres'] if 'genres' in row else '' }}"
+                         data-tags-raw="{{ row['tags'] if 'tags' in row else '' }}"
+                         data-desc="{{ (row['short_description'] | striptags) if ('short_description' in row and row['short_description'] and row['short_description'] != 'nan') else (row['detailed_description'] | striptags | truncate(250)) if ('detailed_description' in row and row['detailed_description'] and row['detailed_description'] != 'nan') else '' }}"
                          data-exp-id="{{ row['explanation_id'] if 'explanation_id' in row else row['explanation'] if 'explanation' in row else '' }}"
                          data-exp-en="{{ row['explanation_en'] if 'explanation_en' in row else '' }}">
                         <div class="rec-card-img">
@@ -492,10 +501,10 @@
                                     {% endfor %}
                                 {% endif %}
                             </div>
-                            <p class="rec-card-desc xai-text" style="font-size: 0.78rem; line-height: 1.4; color: var(--text-2); margin-top: 6px;">
-                                {{ row['explanation_id'] if 'explanation_id' in row else row['explanation'] if 'explanation' in row else '' }}
+                            <p class="rec-card-desc xai-text">
+                                {{ (row['explanation_id'] if 'explanation_id' in row else row['explanation'] if 'explanation' in row else '') | safe }}
                             </p>
-                            <a href="https://store.steampowered.com/app/{{ row['steam_appid'] }}" target="_blank" class="btn-detail"><span data-i18n="detail-btn">Lihat Detail &#8594;</span></a>
+                            <button class="btn-detail btn-open-game-modal" type="button"><span data-i18n="detail-btn">Lihat Detail &#8594;</span></button>
                         </div>
                     </div>
                     {% endif %}
@@ -537,6 +546,44 @@
                 <p class="modal-footer-note" data-i18n="modal-note">
                     *Persentase Match mencerminkan seberapa identik elemen cerita, mekanik, dan atmosfer game dibandingkan dengan judul acuan Anda.
                 </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL GAME DETAIL & XAI -->
+    <div id="game-detail-modal" class="modal-overlay" aria-hidden="true">
+        <div class="modal-content" style="max-width: 520px; padding: 0; overflow: hidden;">
+            <div style="position: relative; width: 100%; height: 210px; overflow: hidden; background: #000;">
+                <img id="gmodal-img" src="" alt="" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.85;">
+                <div style="position: absolute; inset: 0; background: linear-gradient(to top, var(--bg-card) 5%, transparent 80%);"></div>
+                <button id="close-gmodal" class="modal-close" aria-label="Tutup" style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.6); color: #fff; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); z-index: 5;"><i class="fas fa-times"></i></button>
+                <span id="gmodal-match" class="match-badge" style="top: 12px; left: 12px; font-size: 0.82rem; padding: 4px 10px;"></span>
+            </div>
+            <div style="padding: 1.5rem;">
+                <h3 id="gmodal-title" style="font-family: var(--font-display); font-size: 1.35rem; color: var(--text-1); margin-bottom: 0.8rem; font-weight: 700;"></h3>
+                
+                <!-- XAI Explanation -->
+                <div style="background: var(--bg-elevated); padding: 0.85rem 1rem; border-radius: var(--r-sm); border-left: 3px solid var(--gold); margin-bottom: 1.2rem;">
+                    <p style="font-size: 0.7rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-weight: 600;" data-i18n="xai-title">Penjelasan Rekomendasi (XAI)</p>
+                    <p id="gmodal-xai" style="font-size: 0.84rem; color: var(--text-1); line-height: 1.45; margin: 0;"></p>
+                </div>
+
+                <!-- Genres & Tags -->
+                <div style="margin-bottom: 1.2rem;">
+                    <strong style="font-size: 0.72rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 6px;" data-i18n="gmodal-features">Kategori &amp; Fitur Irisan:</strong>
+                    <div id="gmodal-tags" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+                </div>
+
+                <!-- Description -->
+                <div style="margin-bottom: 1.5rem;">
+                    <strong style="font-size: 0.72rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 6px;" data-i18n="synopsis-label">Sinopsis / Deskripsi Game:</strong>
+                    <p id="gmodal-desc" style="font-size: 0.82rem; color: var(--text-2); line-height: 1.5; margin: 0; max-height: 110px; overflow-y: auto;"></p>
+                </div>
+
+                <!-- Steam Link Button -->
+                <a id="gmodal-steam" href="#" target="_blank" class="btn-steam" style="width: 100%; text-align: center; justify-content: center; padding: 0.65rem; display: flex; align-items: center; gap: 8px;">
+                    <i class="fab fa-steam"></i> <span data-i18n="open-steam">Buka di Steam</span>
+                </a>
             </div>
         </div>
     </div>
@@ -772,7 +819,10 @@
                     "modal-step1": "<strong>Text Preprocessing:</strong> Membersihkan tag HTML, simbol, dan melakukan normalisasi teks pada judul, genre, serta deskripsi game agar data lebih konsisten.",
                     "modal-step2": "<strong>TF-IDF Vectorization:</strong> Mengubah korpus teks menjadi representasi numerik (vektor) berdasarkan bobot kepentingan kata unik dalam dataset.",
                     "modal-step3": "<strong>Cosine Similarity:</strong> Menghitung sudut kosinus antara dua vektor untuk menentukan tingkat kemiripan matematis antar judul game.",
-                    "modal-note": "*Persentase Match mencerminkan seberapa identik elemen cerita, mekanik, dan atmosfer game dibandingkan dengan judul acuan Anda."
+                    "modal-note": "*Persentase Match mencerminkan seberapa identik elemen cerita, mekanik, dan atmosfer game dibandingkan dengan judul acuan Anda.",
+                    "rating-na": "<i class=\"fas fa-minus-circle\" style=\"color: var(--text-3);\"></i> N/A (Belum Ada Data Ulasan)",
+                    "xai-title": "Penjelasan Rekomendasi (XAI)",
+                    "gmodal-features": "Kategori & Fitur Irisan:"
                 },
                 en: {
                     "hero-title": "Start with a game<br>you <em>love</em>",
@@ -815,7 +865,10 @@
                     "modal-step1": "<strong>Text Preprocessing:</strong> Cleans HTML tags, symbols, and normalizes text in game titles, genres, and descriptions.",
                     "modal-step2": "<strong>TF-IDF Vectorization:</strong> Converts text corpora into numerical vector representations based on unique term weights.",
                     "modal-step3": "<strong>Cosine Similarity:</strong> Calculates the cosine angle between two vectors to determine mathematical similarity.",
-                    "modal-note": "*Match Percentage reflects how identical the story elements, mechanics, and atmosphere are compared to your search title."
+                    "modal-note": "*Match Percentage reflects how identical the story elements, mechanics, and atmosphere are compared to your search title.",
+                    "rating-na": "<i class=\"fas fa-minus-circle\" style=\"color: var(--text-3);\"></i> N/A (No Reviews Yet)",
+                    "xai-title": "Recommendation Explanation (XAI)",
+                    "gmodal-features": "Matching Categories & Features:"
                 }
             };
 
@@ -841,9 +894,9 @@
                     let expId = $(this).attr('data-exp-id');
                     let expEn = $(this).attr('data-exp-en');
                     if (lang === 'en' && expEn) {
-                        $(this).find('.xai-text').text(expEn);
+                        $(this).find('.xai-text').html(expEn);
                     } else if (lang === 'id' && expId) {
-                        $(this).find('.xai-text').text(expId);
+                        $(this).find('.xai-text').html(expId);
                     }
                 });
             }
@@ -855,6 +908,62 @@
                 let currentLang = localStorage.getItem('lf-lang') || 'id';
                 let nextLang = (currentLang === 'id') ? 'en' : 'id';
                 setLanguage(nextLang);
+            });
+
+            // 10. GAME DETAIL MODAL
+            const gmodal = document.getElementById('game-detail-modal');
+            const closeGModal = document.getElementById('close-gmodal');
+
+            $(document).on('click', '.btn-open-game-modal', function(e) {
+                e.preventDefault();
+                let card = $(this).closest('.rec-card');
+                let name = card.attr('data-name');
+                let appid = card.attr('data-appid');
+                let image = card.attr('data-image');
+                let matchVal = card.attr('data-match-val');
+                let genresRaw = card.attr('data-genres-raw') || '';
+                let tagsRaw = card.attr('data-tags-raw') || '';
+                let desc = card.attr('data-desc') || '';
+                let currentLang = localStorage.getItem('lf-lang') || 'id';
+                let exp = (currentLang === 'en') ? card.attr('data-exp-en') : card.attr('data-exp-id');
+
+                let badgeColor = "#9e9e9e";
+                let simFloat = parseFloat(matchVal);
+                if (simFloat > 50) badgeColor = "#4caf50";
+                else if (simFloat >= 40) badgeColor = "#ff9800";
+
+                $('#gmodal-img').attr('src', image);
+                $('#gmodal-title').text(name);
+                $('#gmodal-match').text(matchVal + '% match').css({'border-color': badgeColor, 'color': badgeColor});
+                $('#gmodal-xai').html(exp);
+                $('#gmodal-desc').text(desc || (currentLang === 'en' ? 'Description not available yet.' : 'Deskripsi belum tersedia.'));
+                $('#gmodal-steam').attr('href', 'https://store.steampowered.com/app/' + appid);
+
+                // Build tags pills
+                let tagsHtml = '';
+                let allItems = (genresRaw + ';' + tagsRaw).split(';').map(s => s.trim()).filter(s => s.length > 0);
+                let uniqueItems = [...new Set(allItems)].slice(0, 8);
+                uniqueItems.forEach(item => {
+                    tagsHtml += `<span class="tag" style="background: var(--bg-surface); font-size: 0.72rem; padding: 3px 8px; border-color: var(--border-md);">${item}</span>`;
+                });
+                $('#gmodal-tags').html(tagsHtml);
+
+                gmodal.classList.add('show');
+                gmodal.setAttribute('aria-hidden', 'false');
+            });
+
+            if (closeGModal) {
+                closeGModal.addEventListener('click', function() {
+                    gmodal.classList.remove('show');
+                    gmodal.setAttribute('aria-hidden', 'true');
+                });
+            }
+
+            window.addEventListener('click', function(e) {
+                if (e.target === gmodal) {
+                    gmodal.classList.remove('show');
+                    gmodal.setAttribute('aria-hidden', 'true');
+                }
             });
         });
     </script>
