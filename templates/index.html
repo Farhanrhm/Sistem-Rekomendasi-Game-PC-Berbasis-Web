@@ -419,14 +419,31 @@
             <div class="section-header" style="justify-content: space-between; align-items: flex-end; flex-wrap: wrap;">
                 <div>
                     <span class="section-title">Rekomendasi Serupa</span>
-                  <!--  <span class="section-meta">AI Generated Predictions</span> -->
                 </div>
                 
-                <div style="display: flex; gap: 10px; align-items: center;">
+                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                     <button id="share-btn" class="btn-detail" style="margin: 0; padding: 0.45rem 1rem; color: var(--gold); border-color: var(--gold);" title="Copy Link Hasil">
                         <i class="fas fa-link"></i> Share
                     </button>
-                    <select id="sort-grid" style="background: var(--bg-elevated); color: var(--text-1); border: 1px solid var(--border-md); padding: 0.45rem 1rem; border-radius: var(--r-sm); font-family: var(--font-body); font-size: 0.82rem; outline: none; cursor: pointer;">
+                    <select id="filter-genre" style="background: var(--bg-elevated); color: var(--text-1); border: 1px solid var(--border-md); padding: 0.45rem 0.8rem; border-radius: var(--r-sm); font-family: var(--font-body); font-size: 0.82rem; outline: none; cursor: pointer;">
+                        <option value="all">🎮 Semua Genre</option>
+                        <option value="action">Action</option>
+                        <option value="adventure">Adventure</option>
+                        <option value="rpg">RPG</option>
+                        <option value="strategy">Strategy</option>
+                        <option value="indie">Indie</option>
+                        <option value="casual">Casual</option>
+                        <option value="simulation">Simulation</option>
+                        <option value="sports">Sports</option>
+                    </select>
+                    <select id="filter-price" style="background: var(--bg-elevated); color: var(--text-1); border: 1px solid var(--border-md); padding: 0.45rem 0.8rem; border-radius: var(--r-sm); font-family: var(--font-body); font-size: 0.82rem; outline: none; cursor: pointer;">
+                        <option value="all">🏷️ Semua Harga</option>
+                        <option value="free">Gratis (Free to Play)</option>
+                        <option value="under10">Di bawah $10</option>
+                        <option value="under30">Di bawah $30</option>
+                        <option value="above30">Di atas $30</option>
+                    </select>
+                    <select id="sort-grid" style="background: var(--bg-elevated); color: var(--text-1); border: 1px solid var(--border-md); padding: 0.45rem 0.8rem; border-radius: var(--r-sm); font-family: var(--font-body); font-size: 0.82rem; outline: none; cursor: pointer;">
                         <option value="match_desc">Highest Match</option>
                         <option value="rating_desc">Best Rating</option>
                         <option value="price_asc">Lowest Price</option>
@@ -440,7 +457,8 @@
                     <div class="rec-card" 
                          data-match="{{ row['similarity_score'] }}" 
                          data-rating="{{ row['rating_score'] if 'rating_score' in row else 0 }}" 
-                         data-price="{{ row['price'] if 'price' in row else 0 }}">
+                         data-price="{{ row['price'] if 'price' in row else 0 }}"
+                         data-genres="{{ (row['genres'] ~ ' ' ~ row['tags']) | lower if 'genres' in row else '' }}">
                         <div class="rec-card-img">
                             <img src="{{ row['header_image'] }}" alt="{{ row['name'] }}" loading="lazy"
                                  onerror="this.onerror=null;this.src='https://cdn.akamai.steamstatic.com/steam/apps/{{ row['steam_appid'] }}/capsule_616x353.jpg';">
@@ -620,6 +638,52 @@
                 });
                 $.each(cards, function(index, card) { grid.append(card); }); 
             });
+
+            // 5.1 CLIENT-SIDE FILTERING (GENRE & PRICE)
+            function applyFilters() {
+                let genreVal = $("#filter-genre").val() ? $("#filter-genre").val().toLowerCase() : "all";
+                let priceVal = $("#filter-price").val() || "all";
+                let visibleCount = 0;
+
+                $(".rec-card").each(function() {
+                    let cardGenres = ($(this).attr("data-genres") || "").toLowerCase();
+                    let cardPrice = parseFloat($(this).attr("data-price")) || 0;
+
+                    let matchGenre = (genreVal === "all") || cardGenres.includes(genreVal);
+                    let matchPrice = false;
+
+                    if (priceVal === "all") {
+                        matchPrice = true;
+                    } else if (priceVal === "free") {
+                        matchPrice = (cardPrice === 0);
+                    } else if (priceVal === "under10") {
+                        matchPrice = (cardPrice > 0 && cardPrice <= 10);
+                    } else if (priceVal === "under30") {
+                        matchPrice = (cardPrice > 0 && cardPrice <= 30);
+                    } else if (priceVal === "above30") {
+                        matchPrice = (cardPrice > 30);
+                    }
+
+                    if (matchGenre && matchPrice) {
+                        $(this).fadeIn(200);
+                        visibleCount++;
+                    } else {
+                        $(this).hide();
+                    }
+                });
+
+                if (visibleCount === 0) {
+                    if ($("#empty-filter-msg").length === 0) {
+                        $(".rec-grid").after('<div id="empty-filter-msg" style="text-align: center; padding: 2rem; color: var(--text-2); background: var(--bg-elevated); border-radius: var(--r-md); border: 1px dashed var(--border-md); margin-top: 1rem;"><i class="fas fa-filter" style="font-size: 2rem; color: var(--text-3); margin-bottom: 0.5rem; display: block;"></i> Tidak ada game rekomendasi yang cocok dengan kombinasi filter ini.</div>');
+                    } else {
+                        $("#empty-filter-msg").show();
+                    }
+                } else {
+                    $("#empty-filter-msg").hide();
+                }
+            }
+
+            $("#filter-genre, #filter-price").on("change", applyFilters);
 
             // 6. SHARE LINK (COPY CLIPBOARD)
             $("#share-btn").on("click", function() {
