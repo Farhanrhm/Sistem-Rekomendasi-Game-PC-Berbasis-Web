@@ -139,10 +139,17 @@ def _cached_get_recommendations(query_clean, top_n=10):
             sim_percentage = round(cand['sim_score'] * 100, 1)
             dominant_genre = extract_dominant_genre(target_row['genres'], cand_row['genres'])
             
-            # 4. EXPLAINABLE AI (XAI) TEMPLATE-BASED GENERATION
-            xai_explanation = (
-                f"Game {cand_name} direkomendasikan karena memiliki kesamaan {dominant_genre} "
-                f"dengan skor {sim_percentage}% terhadap {game_target_name}."
+            # 4. EXPLAINABLE AI (XAI) TEMPLATE-BASED GENERATION (BILINGUAL)
+            matched_tags = ", ".join([t.strip() for t in cand_row['tags'].split(';')[:3] if t.strip()])
+            matched_genres = dominant_genre
+
+            xai_explanation_id = (
+                f"Game {cand_name} direkomendasikan karena memiliki kesamaan genre {matched_genres} "
+                f"dan tag {matched_tags} sebesar {sim_percentage}% dengan game {game_target_name}."
+            )
+            xai_explanation_en = (
+                f"{cand_name} is recommended because it shares the {matched_genres} genres "
+                f"and {matched_tags} tags with a {sim_percentage}% similarity score to {game_target_name}."
             )
 
             cand_pos = float(cand_row.get('positive_reviews', 0))
@@ -165,7 +172,9 @@ def _cached_get_recommendations(query_clean, top_n=10):
                 'positive_reviews': cand_pos,
                 'total_reviews': cand_tot,
                 'similarity_score': sim_percentage,
-                'explanation': xai_explanation
+                'explanation': xai_explanation_id,
+                'explanation_id': xai_explanation_id,
+                'explanation_en': xai_explanation_en
             }
             accepted_recommendations.append(rec_item)
 

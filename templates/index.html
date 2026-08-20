@@ -271,7 +271,9 @@
     <nav class="navbar">
         <div class="logo">Level<span>Find</span></div>
         <div class="nav-right">
-            <!-- <span class="nav-tag">Hybrid AI</span> -->
+            <button class="lang-btn" id="lang-btn" title="Ubah Bahasa / Switch Language" aria-label="Toggle language" style="background: var(--bg-surface); border: 1px solid var(--border-md); color: var(--gold); border-radius: var(--r-sm); padding: 0.35rem 0.75rem; font-family: var(--font-body); font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s ease;">
+                <i class="fas fa-globe"></i> <span id="lang-label">ID</span>
+            </button>
             <button class="theme-btn" id="theme-btn" title="Ganti tema" aria-label="Toggle tema">
                 <i class="fas fa-moon i-moon"></i>
                 <i class="fas fa-sun i-sun"></i>
@@ -281,30 +283,29 @@
 
     <section class="hero">
         <div class="hero-left">
-           <!-- <div class="hero-eyebrow">AI-Powered Discovery</div> -->
-            <h1>Mulai dengan satu game<br>yang kamu <em>suka</em></h1>
-            <p class="hero-sub">Sisanya biar kami yang urus. Sistem kami mencarikan rekomendasi paling relevan dari ribuan judul menggunakan metode TF-IDF dan Cosine Similarity.</p>
+            <h1 data-i18n="hero-title">Mulai dengan satu game<br>yang kamu <em>suka</em></h1>
+            <p class="hero-sub" data-i18n="hero-sub">Sisanya biar kami yang urus. Sistem kami mencarikan rekomendasi paling relevan dari ribuan judul menggunakan metode TF-IDF dan Cosine Similarity.</p>
             
             <form action="/" method="POST" autocomplete="off">
                 <div class="search-wrap">
                     <input type="text" name="game_title" id="game_input"
-                           placeholder="Contoh: Elden Ring, "
+                           placeholder="Contoh: Elden Ring, Palworld..." data-i18n-placeholder="search-placeholder"
                            value="{{ search_query if search_query else '' }}" required>
                     <button class="search-btn" type="submit">
-                        <i class="fas fa-search"></i> Temukan
+                        <i class="fas fa-search"></i> <span data-i18n="search-btn">Temukan</span>
                     </button>
                 </div>
             </form>
 
             <div id="search-history" style="margin-top: 1rem; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; display: none;">
-                <span style="font-size: 0.75rem; color: var(--text-4); text-transform: uppercase; letter-spacing: 1px;">Terakhir Dicari:</span>
+                <span data-i18n="history-label" style="font-size: 0.75rem; color: var(--text-4); text-transform: uppercase; letter-spacing: 1px;">Terakhir Dicari:</span>
             </div>
 
             {% if error %}
             <div class="error-msg"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
             {% if suggestions %}
             <div style="margin-top: 1.2rem;">
-                <p style="font-size: 0.85rem; color: var(--text-2); margin-bottom: 8px;">Mungkin Anda mencari game populer ini?</p>
+                <p style="font-size: 0.85rem; color: var(--text-2); margin-bottom: 8px;" data-i18n="suggestion-title">Mungkin Anda mencari game populer ini?</p>
                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                     {% for sug in suggestions %}
                     <a href="/?q={{ sug | urlencode }}" class="tag" style="background: var(--bg-surface); cursor: pointer; transition: 0.2s; border-color: var(--gold-dim); color: var(--gold);">{{ sug }}</a>
@@ -318,9 +319,9 @@
         <div class="hero-deco">
             <i class="fas fa-gamepad hero-deco-icon"></i>
             <div class="hero-stats">
-                <div class="hero-stat"><span class="hero-stat-num">10.000+</span><span class="hero-stat-label">Game</span></div>
-                <div class="hero-stat"><span class="hero-stat-num">TF-IDF</span><span class="hero-stat-label">Algoritma</span></div>
-                <div class="hero-stat"><span class="hero-stat-num">COSINE</span><span class="hero-stat-label">Similarity</span></div>
+                <div class="hero-stat"><span class="hero-stat-num">10.000+</span><span class="hero-stat-label" data-i18n="stat-games">Game</span></div>
+                <div class="hero-stat"><span class="hero-stat-num">TF-IDF</span><span class="hero-stat-label" data-i18n="stat-algo">Algoritma</span></div>
+                <div class="hero-stat"><span class="hero-stat-num">COSINE</span><span class="hero-stat-label" data-i18n="stat-sim">Similarity</span></div>
             </div>
         </div>
     </section>
@@ -331,7 +332,7 @@
                 {% if loop.first %}
                 <div class="section-header">
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <span class="section-title">Hasil Analisis</span>
+                        <span class="section-title" data-i18n="analysis-result">Hasil Analisis</span>
                         <button id="info-btn" title="Cara Kerja Sistem" style="background: transparent; border: none; color: var(--gold); cursor: pointer; font-size: 1.1rem; transition: transform 0.2s;">
                             <i class="fas fa-info-circle"></i>
                         </button>
@@ -340,7 +341,7 @@
                 </div>
                 <div class="spotlight">
                     <div class="spotlight-img-wrap" style="--bg-img: url('{{ row['header_image'] }}');">
-                        <span class="spotlight-label">Main Game</span>
+                        <span class="spotlight-label" data-i18n="main-game">Main Game</span>
                         <img src="{{ row['header_image'] }}" alt="{{ row['name'] }}"
                              onerror="this.onerror=null; let fb='https://cdn.akamai.steamstatic.com/steam/apps/{{ row['steam_appid'] }}/capsule_616x353.jpg'; this.src=fb; this.parentElement.style.setProperty('--bg-img', 'url('+fb+')');">
                     </div>
@@ -360,7 +361,7 @@
                             {% elif row['detailed_description'] is string and row['detailed_description'] and row['detailed_description'] != 'nan' %}
                                 {{ row['detailed_description'] | striptags | truncate(280) }}
                             {% else %}
-                                Eksplorasi lebih lanjut untuk mengetahui detail mekanik dan cerita dari game ini.
+                                <span data-i18n="desc-fallback">Eksplorasi lebih lanjut untuk mengetahui detail mekanik dan cerita dari game ini.</span>
                             {% endif %}
                         </p>
                         <div class="tags-row">
@@ -371,36 +372,36 @@
                             {% endif %}
                         </div>
                         <div class="badge-row">
-                            <span class="badge-pill"><i class="fas fa-trophy"></i> Rank #1 Match</span>
-                            <span class="badge-pill"><i class="fas fa-database"></i> Indexed</span>
+                            <span class="badge-pill"><i class="fas fa-trophy"></i> <span data-i18n="rank-1">Rank #1 Match</span></span>
+                            <span class="badge-pill"><i class="fas fa-database"></i> <span data-i18n="indexed">Indexed</span></span>
                         </div>
 
                         <!-- KOMPOSISI ELEMEN CORPUS & METADATA -->
                         <div style="background: var(--bg-elevated); padding: 1.2rem; border-radius: var(--r-md); border: 1px solid var(--border-md); margin-bottom: 1.5rem;">
                             <div id="toggle-bobot" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
-                                <p style="font-size: 0.75rem; font-weight: 500; margin: 0; color: var(--text-1); text-transform: uppercase; letter-spacing: 1px;">
+                                <p style="font-size: 0.75rem; font-weight: 500; margin: 0; color: var(--text-1); text-transform: uppercase; letter-spacing: 1px;" data-i18n="game-profile">
                                     Profil &amp; Karakteristik Game
                                 </p>
                                 <i class="fas fa-chevron-down toggle-icon" style="color: var(--text-2); transition: transform 0.3s ease;"></i>
                             </div>
 
                             <div id="content-bobot" style="display: none; margin-top: 15px; border-top: 1px solid var(--border-md); padding-top: 15px;">
-                                <p style="font-size: 0.75rem; color: var(--text-2); margin-bottom: 10px; line-height: 1.5;">
+                                <p style="font-size: 0.75rem; color: var(--text-2); margin-bottom: 10px; line-height: 1.5;" data-i18n="profile-sub">
                                     Sistem mempelajari dan mencocokkan game ini dengan game lain berdasarkan informasi berikut:
                                 </p>
                                 
                                 <div style="margin-bottom: 12px; font-size: 0.75rem; color: var(--text-2); background: var(--bg-base); padding: 10px; border-radius: 4px; border: 1px solid var(--border); font-family: var(--font-mono); max-height: 120px; overflow-y: auto;">
-                                    <strong style="color: var(--gold); font-family: var(--font-body); text-transform: uppercase; letter-spacing: 1px; font-size: 0.7rem; display: block; margin-bottom: 6px;">Sinopsis / Deskripsi Game</strong>
+                                    <strong style="color: var(--gold); font-family: var(--font-body); text-transform: uppercase; letter-spacing: 1px; font-size: 0.7rem; display: block; margin-bottom: 6px;" data-i18n="synopsis-label">Sinopsis / Deskripsi Game</strong>
                                     {% if row['short_description'] is string and row['short_description'] and row['short_description'] != 'nan' %}
                                         {{ row['short_description'] | striptags }}
                                     {% elif row['detailed_description'] is string and row['detailed_description'] and row['detailed_description'] != 'nan' %}
                                         {{ row['detailed_description'] | striptags }}
                                     {% else %}
-                                        Deskripsi ringkas untuk game ini belum tersedia di basis data. Sistem mengelompokkan game ini berdasarkan kategori dan fitur: {{ row['genres']|string|replace(';', ', ') if row['genres'] else 'Steam Game' }}.
+                                        <span data-i18n="synopsis-fallback">Deskripsi ringkas untuk game ini belum tersedia di basis data. Sistem mengelompokkan game ini berdasarkan kategori dan fitur: </span>{{ row['genres']|string|replace(';', ', ') if row['genres'] else 'Steam Game' }}.
                                     {% endif %}
                                 </div>
                                 <div style="font-size: 0.75rem; color: var(--text-2); background: var(--bg-base); padding: 10px; border-radius: 4px; border: 1px solid var(--border); font-family: var(--font-mono);">
-                                    <strong style="color: var(--gold); font-family: var(--font-body); text-transform: uppercase; letter-spacing: 1px; font-size: 0.7rem; display: block; margin-bottom: 6px;">Kategori &amp; Fitur (Tags &amp; Genres)</strong>
+                                    <strong style="color: var(--gold); font-family: var(--font-body); text-transform: uppercase; letter-spacing: 1px; font-size: 0.7rem; display: block; margin-bottom: 6px;" data-i18n="categories-label">Kategori &amp; Fitur (Tags &amp; Genres)</strong>
                                     {% set tags_clean = (row['tags']|string).replace(';', ' ') if row['tags'] else '' %}
                                     {% set genres_clean = (row['genres']|string).replace(';', ' ') if row['genres'] else '' %}
                                     {{ (tags_clean ~ ' ' ~ genres_clean).strip().lower() if (tags_clean or genres_clean) else '-' }}
@@ -409,7 +410,7 @@
                         </div>
 
                         <a href="https://store.steampowered.com/app/{{ row['steam_appid'] }}" target="_blank" class="btn-steam">
-                            <i class="fab fa-steam"></i> Buka di Steam
+                            <i class="fab fa-steam"></i> <span data-i18n="open-steam">Buka di Steam</span>
                         </a>
                     </div>
                 </div>
@@ -418,15 +419,15 @@
 
             <div class="section-header" style="justify-content: space-between; align-items: flex-end; flex-wrap: wrap;">
                 <div>
-                    <span class="section-title">Rekomendasi Serupa</span>
+                    <span class="section-title" data-i18n="similar-rec">Rekomendasi Serupa</span>
                 </div>
                 
                 <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                     <button id="share-btn" class="btn-detail" style="margin: 0; padding: 0.45rem 1rem; color: var(--gold); border-color: var(--gold);" title="Copy Link Hasil">
-                        <i class="fas fa-link"></i> Share
+                        <i class="fas fa-link"></i> <span data-i18n="share-btn">Share</span>
                     </button>
                     <select id="filter-genre" style="background: var(--bg-elevated); color: var(--text-1); border: 1px solid var(--border-md); padding: 0.45rem 0.8rem; border-radius: var(--r-sm); font-family: var(--font-body); font-size: 0.82rem; outline: none; cursor: pointer;">
-                        <option value="all">🎮 Semua Genre</option>
+                        <option value="all" data-i18n="genre-all">🎮 Semua Genre</option>
                         <option value="action">Action</option>
                         <option value="adventure">Adventure</option>
                         <option value="rpg">RPG</option>
@@ -437,16 +438,16 @@
                         <option value="sports">Sports</option>
                     </select>
                     <select id="filter-price" style="background: var(--bg-elevated); color: var(--text-1); border: 1px solid var(--border-md); padding: 0.45rem 0.8rem; border-radius: var(--r-sm); font-family: var(--font-body); font-size: 0.82rem; outline: none; cursor: pointer;">
-                        <option value="all">🏷️ Semua Harga</option>
-                        <option value="free">Gratis (Free to Play)</option>
-                        <option value="under10">Di bawah $10</option>
-                        <option value="under30">Di bawah $30</option>
-                        <option value="above30">Di atas $30</option>
+                        <option value="all" data-i18n="price-all">🏷️ Semua Harga</option>
+                        <option value="free" data-i18n="price-free">Gratis (Free to Play)</option>
+                        <option value="under10" data-i18n="price-under10">Di bawah $10</option>
+                        <option value="under30" data-i18n="price-under30">Di bawah $30</option>
+                        <option value="above30" data-i18n="price-above30">Di atas $30</option>
                     </select>
                     <select id="sort-grid" style="background: var(--bg-elevated); color: var(--text-1); border: 1px solid var(--border-md); padding: 0.45rem 0.8rem; border-radius: var(--r-sm); font-family: var(--font-body); font-size: 0.82rem; outline: none; cursor: pointer;">
-                        <option value="match_desc">Highest Match</option>
-                        <option value="rating_desc">Best Rating</option>
-                        <option value="price_asc">Lowest Price</option>
+                        <option value="match_desc" data-i18n="sort-match">Highest Match</option>
+                        <option value="rating_desc" data-i18n="sort-rating">Best Rating</option>
+                        <option value="price_asc" data-i18n="sort-price">Lowest Price</option>
                     </select>
                 </div>
             </div>
@@ -458,7 +459,9 @@
                          data-match="{{ row['similarity_score'] }}" 
                          data-rating="{{ row['rating_score'] if 'rating_score' in row else 0 }}" 
                          data-price="{{ row['price'] if 'price' in row else 0 }}"
-                         data-genres="{{ (row['genres'] ~ ' ' ~ row['tags']) | lower if 'genres' in row else '' }}">
+                         data-genres="{{ (row['genres'] ~ ' ' ~ row['tags']) | lower if 'genres' in row else '' }}"
+                         data-exp-id="{{ row['explanation_id'] if 'explanation_id' in row else row['explanation'] if 'explanation' in row else '' }}"
+                         data-exp-en="{{ row['explanation_en'] if 'explanation_en' in row else '' }}">
                         <div class="rec-card-img">
                             <img src="{{ row['header_image'] }}" alt="{{ row['name'] }}" loading="lazy"
                                  onerror="this.onerror=null;this.src='https://cdn.akamai.steamstatic.com/steam/apps/{{ row['steam_appid'] }}/capsule_616x353.jpg';">
@@ -489,16 +492,10 @@
                                     {% endfor %}
                                 {% endif %}
                             </div>
-                            <p class="rec-card-desc">
-                                {% if row['short_description'] is string and row['short_description'] and row['short_description'] != 'nan' %}
-                                    {{ row['short_description'] | striptags | truncate(110) }}
-                                {% elif row['detailed_description'] is string and row['detailed_description'] and row['detailed_description'] != 'nan' %}
-                                    {{ row['detailed_description'] | striptags | truncate(110) }}
-                                {% else %}
-                                    Eksplorasi lebih lanjut untuk mengetahui detail mekanik dan cerita dari game ini.
-                                {% endif %}
+                            <p class="rec-card-desc xai-text" style="font-size: 0.78rem; line-height: 1.4; color: var(--text-2); margin-top: 6px;">
+                                {{ row['explanation_id'] if 'explanation_id' in row else row['explanation'] if 'explanation' in row else '' }}
                             </p>
-                            <a href="https://store.steampowered.com/app/{{ row['steam_appid'] }}" target="_blank" class="btn-detail">Lihat Detail &#8594;</a>
+                            <a href="https://store.steampowered.com/app/{{ row['steam_appid'] }}" target="_blank" class="btn-detail"><span data-i18n="detail-btn">Lihat Detail &#8594;</span></a>
                         </div>
                     </div>
                     {% endif %}
@@ -507,8 +504,8 @@
         {% else %}
             <div class="empty-state">
                 <div class="empty-icon"><i class="fas fa-gamepad"></i></div>
-                <h3>Belum ada pencarian</h3>
-                <p>Mulai dengan satu game yang kamu suka — sisanya biar kami yang urus.</p>
+                <h3 data-i18n="no-search-title">Belum ada pencarian</h3>
+                <p data-i18n="no-search-sub">Mulai dengan satu game yang kamu suka — sisanya biar kami yang urus.</p>
             </div>
         {% endif %}
     </div>
@@ -520,24 +517,24 @@
 
     <div id="loading-overlay" style="display: none; position: fixed; inset: 0; background: rgba(12,12,13,0.85); backdrop-filter: blur(5px); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; color: var(--gold);">
         <div style="width: 50px; height: 50px; border: 3px solid var(--border-md); border-top: 3px solid var(--gold); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 1.5rem;"></div>
-        <p style="font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase;">Menganalisis Database Game...</p>
+        <p style="font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase;" data-i18n="loading-text">Menganalisis Database Game...</p>
     </div>
 
     <!-- MODAL EXPLAINABLE AI -->
     <div id="ai-modal" class="modal-overlay" aria-hidden="true">
         <div class="modal-content">
             <div class="modal-header">
-                <h3><i class="fas fa-microchip" style="color: var(--gold);"></i> Cara Kerja Sistem LevelFind</h3>
+                <h3><i class="fas fa-microchip" style="color: var(--gold);"></i> <span data-i18n="modal-title">Cara Kerja Sistem LevelFind</span></h3>
                 <button id="close-modal" class="modal-close" aria-label="Tutup"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
-                <p>Sistem ini menggunakan metode <strong>Content-Based Filtering</strong> dengan tahapan sebagai berikut:</p>
+                <p data-i18n="modal-intro">Sistem ini menggunakan metode <strong>Content-Based Filtering</strong> dengan tahapan sebagai berikut:</p>
                 <ol>
-                    <li><strong>Text Preprocessing:</strong> Membersihkan tag HTML, simbol, dan melakukan normalisasi teks pada judul, genre, serta deskripsi game agar data lebih konsisten.</li>
-                    <li><strong>TF-IDF Vectorization:</strong> Mengubah korpus teks menjadi representasi numerik (vektor) berdasarkan bobot kepentingan kata unik dalam dataset.</li>
-                    <li><strong>Cosine Similarity:</strong> Menghitung sudut kosinus antara dua vektor untuk menentukan tingkat kemiripan matematis antar judul game.</li>
+                    <li data-i18n="modal-step1"><strong>Text Preprocessing:</strong> Membersihkan tag HTML, simbol, dan melakukan normalisasi teks pada judul, genre, serta deskripsi game agar data lebih konsisten.</li>
+                    <li data-i18n="modal-step2"><strong>TF-IDF Vectorization:</strong> Mengubah korpus teks menjadi representasi numerik (vektor) berdasarkan bobot kepentingan kata unik dalam dataset.</li>
+                    <li data-i18n="modal-step3"><strong>Cosine Similarity:</strong> Menghitung sudut kosinus antara dua vektor untuk menentukan tingkat kemiripan matematis antar judul game.</li>
                 </ol>
-                <p class="modal-footer-note">
+                <p class="modal-footer-note" data-i18n="modal-note">
                     *Persentase Match mencerminkan seberapa identik elemen cerita, mekanik, dan atmosfer game dibandingkan dengan judul acuan Anda.
                 </p>
             </div>
@@ -730,6 +727,134 @@
             $("#toggle-bobot").on("click", function() {
                 $("#content-bobot").slideToggle(300);
                 $(this).find(".toggle-icon").toggleClass("rotate");
+            });
+
+            // 9. BILINGUAL (ID / EN) MULTI-LANGUAGE SYSTEM
+            const i18nDict = {
+                id: {
+                    "hero-title": "Mulai dengan satu game<br>yang kamu <em>suka</em>",
+                    "hero-sub": "Sisanya biar kami yang urus. Sistem kami mencarikan rekomendasi paling relevan dari ribuan judul menggunakan metode TF-IDF dan Cosine Similarity.",
+                    "search-placeholder": "Contoh: Elden Ring, Palworld...",
+                    "search-btn": "Temukan",
+                    "history-label": "Terakhir Dicari:",
+                    "suggestion-title": "Mungkin Anda mencari game populer ini?",
+                    "stat-games": "Game",
+                    "stat-algo": "Algoritma",
+                    "stat-sim": "Similarity",
+                    "analysis-result": "Hasil Analisis",
+                    "main-game": "Main Game",
+                    "game-profile": "Profil & Karakteristik Game",
+                    "profile-sub": "Sistem mempelajari dan mencocokkan game ini dengan game lain berdasarkan informasi berikut:",
+                    "synopsis-label": "Sinopsis / Deskripsi Game",
+                    "synopsis-fallback": "Deskripsi ringkas untuk game ini belum tersedia di basis data. Sistem mengelompokkan game ini berdasarkan kategori dan fitur: ",
+                    "desc-fallback": "Eksplorasi lebih lanjut untuk mengetahui detail mekanik dan cerita dari game ini.",
+                    "categories-label": "Kategori & Fitur (Tags & Genres)",
+                    "open-steam": "Buka di Steam",
+                    "similar-rec": "Rekomendasi Serupa",
+                    "share-btn": "Share",
+                    "genre-all": "🎮 Semua Genre",
+                    "price-all": "🏷️ Semua Harga",
+                    "price-free": "Gratis (Free to Play)",
+                    "price-under10": "Di bawah $10",
+                    "price-under30": "Di bawah $30",
+                    "price-above30": "Di atas $30",
+                    "sort-match": "Highest Match",
+                    "sort-rating": "Best Rating",
+                    "sort-price": "Lowest Price",
+                    "no-search-title": "Belum ada pencarian",
+                    "no-search-sub": "Mulai dengan satu game yang kamu suka — sisanya biar kami yang urus.",
+                    "rank-1": "Rank #1 Match",
+                    "indexed": "Indexed",
+                    "detail-btn": "Lihat Detail &#8594;",
+                    "loading-text": "Menganalisis Database Game...",
+                    "modal-title": "Cara Kerja Sistem LevelFind",
+                    "modal-intro": "Sistem ini menggunakan metode <strong>Content-Based Filtering</strong> dengan tahapan sebagai berikut:",
+                    "modal-step1": "<strong>Text Preprocessing:</strong> Membersihkan tag HTML, simbol, dan melakukan normalisasi teks pada judul, genre, serta deskripsi game agar data lebih konsisten.",
+                    "modal-step2": "<strong>TF-IDF Vectorization:</strong> Mengubah korpus teks menjadi representasi numerik (vektor) berdasarkan bobot kepentingan kata unik dalam dataset.",
+                    "modal-step3": "<strong>Cosine Similarity:</strong> Menghitung sudut kosinus antara dua vektor untuk menentukan tingkat kemiripan matematis antar judul game.",
+                    "modal-note": "*Persentase Match mencerminkan seberapa identik elemen cerita, mekanik, dan atmosfer game dibandingkan dengan judul acuan Anda."
+                },
+                en: {
+                    "hero-title": "Start with a game<br>you <em>love</em>",
+                    "hero-sub": "We will handle the rest. Our system discovers the most relevant recommendations from thousands of titles using TF-IDF and Cosine Similarity.",
+                    "search-placeholder": "e.g., Elden Ring, Palworld...",
+                    "search-btn": "Discover",
+                    "history-label": "Recently Searched:",
+                    "suggestion-title": "Did you mean one of these popular games?",
+                    "stat-games": "Games",
+                    "stat-algo": "Algorithm",
+                    "stat-sim": "Similarity",
+                    "analysis-result": "Analysis Results",
+                    "main-game": "Main Game",
+                    "game-profile": "Game Profile & Characteristics",
+                    "profile-sub": "The system analyzes and matches this game with others based on the following information:",
+                    "synopsis-label": "Synopsis / Game Description",
+                    "synopsis-fallback": "A concise summary for this game is not available in the database yet. The system categorizes it by features & genres: ",
+                    "desc-fallback": "Explore further to learn more about the mechanics and story of this game.",
+                    "categories-label": "Category & Features (Tags & Genres)",
+                    "open-steam": "Open on Steam",
+                    "similar-rec": "Similar Recommendations",
+                    "share-btn": "Share",
+                    "genre-all": "🎮 All Genres",
+                    "price-all": "🏷️ All Prices",
+                    "price-free": "Free to Play",
+                    "price-under10": "Under $10",
+                    "price-under30": "Under $30",
+                    "price-above30": "Over $30",
+                    "sort-match": "Highest Match",
+                    "sort-rating": "Best Rating",
+                    "sort-price": "Lowest Price",
+                    "no-search-title": "No search performed yet",
+                    "no-search-sub": "Start with one game you love — we will handle the rest.",
+                    "rank-1": "Rank #1 Match",
+                    "indexed": "Indexed",
+                    "detail-btn": "View Details &#8594;",
+                    "loading-text": "Analyzing Game Database...",
+                    "modal-title": "How LevelFind Works",
+                    "modal-intro": "This system uses <strong>Content-Based Filtering</strong> through the following steps:",
+                    "modal-step1": "<strong>Text Preprocessing:</strong> Cleans HTML tags, symbols, and normalizes text in game titles, genres, and descriptions.",
+                    "modal-step2": "<strong>TF-IDF Vectorization:</strong> Converts text corpora into numerical vector representations based on unique term weights.",
+                    "modal-step3": "<strong>Cosine Similarity:</strong> Calculates the cosine angle between two vectors to determine mathematical similarity.",
+                    "modal-note": "*Match Percentage reflects how identical the story elements, mechanics, and atmosphere are compared to your search title."
+                }
+            };
+
+            function setLanguage(lang) {
+                localStorage.setItem('lf-lang', lang);
+                $('#lang-label').text(lang.toUpperCase());
+                
+                $('[data-i18n]').each(function() {
+                    let key = $(this).data('i18n');
+                    if (i18nDict[lang] && i18nDict[lang][key]) {
+                        $(this).html(i18nDict[lang][key]);
+                    }
+                });
+
+                $('[data-i18n-placeholder]').each(function() {
+                    let key = $(this).data('i18n-placeholder');
+                    if (i18nDict[lang] && i18nDict[lang][key]) {
+                        $(this).attr('placeholder', i18nDict[lang][key]);
+                    }
+                });
+
+                $('.rec-card').each(function() {
+                    let expId = $(this).attr('data-exp-id');
+                    let expEn = $(this).attr('data-exp-en');
+                    if (lang === 'en' && expEn) {
+                        $(this).find('.xai-text').text(expEn);
+                    } else if (lang === 'id' && expId) {
+                        $(this).find('.xai-text').text(expId);
+                    }
+                });
+            }
+
+            let savedLang = localStorage.getItem('lf-lang') || 'id';
+            setLanguage(savedLang);
+
+            $('#lang-btn').on('click', function() {
+                let currentLang = localStorage.getItem('lf-lang') || 'id';
+                let nextLang = (currentLang === 'id') ? 'en' : 'id';
+                setLanguage(nextLang);
             });
         });
     </script>
