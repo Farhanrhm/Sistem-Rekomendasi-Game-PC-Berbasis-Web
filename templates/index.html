@@ -157,8 +157,14 @@
         .btn-steam { display: inline-flex; align-items: center; gap: 8px; padding: 0.6rem 1.4rem; background: transparent; border: 1px solid var(--gold); color: var(--gold); border-radius: var(--r-sm); font-family: var(--font-body); font-size: 0.85rem; font-weight: 500; cursor: pointer; align-self: flex-start; }
         .btn-steam:hover { background: var(--gold); color: #0c0c0d; }
 
-        /* REC GRID */
-        .rec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.1rem; }
+        /* REC GRID (2 Rows x 4 Columns = 8 Cards on Desktop) */
+        .rec-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.1rem; }
+        @media(max-width: 1024px) {
+            .rec-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media(max-width: 600px) {
+            .rec-grid { grid-template-columns: repeat(1, 1fr); gap: 0.8rem; }
+        }
         .rec-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-md); overflow: hidden; display: flex; flex-direction: column; }
         .rec-card:hover { transform: translateY(-4px); border-color: var(--gold-dim); }
         [data-theme="light"] .rec-card { box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06); }
@@ -822,7 +828,8 @@
                     "modal-note": "*Persentase Match mencerminkan seberapa identik elemen cerita, mekanik, dan atmosfer game dibandingkan dengan judul acuan Anda.",
                     "rating-na": "<i class=\"fas fa-minus-circle\" style=\"color: var(--text-3);\"></i> N/A (Belum Ada Data Ulasan)",
                     "xai-title": "Penjelasan Rekomendasi (XAI)",
-                    "gmodal-features": "Kategori & Fitur Irisan:"
+                    "gmodal-features": "Kategori & Fitur Irisan:",
+                    "modal-desc-fallback": "Deskripsi cerita tidak tersedia. Game direkomendasikan berdasarkan kemiripan metadata genre dan tag."
                 },
                 en: {
                     "hero-title": "Start with a game<br>you <em>love</em>",
@@ -868,7 +875,8 @@
                     "modal-note": "*Match Percentage reflects how identical the story elements, mechanics, and atmosphere are compared to your search title.",
                     "rating-na": "<i class=\"fas fa-minus-circle\" style=\"color: var(--text-3);\"></i> N/A (No Reviews Yet)",
                     "xai-title": "Recommendation Explanation (XAI)",
-                    "gmodal-features": "Matching Categories & Features:"
+                    "gmodal-features": "Matching Categories & Features:",
+                    "modal-desc-fallback": "Detailed description unavailable. Game recommended based on matching genre and tag metadata."
                 }
             };
 
@@ -936,7 +944,8 @@
                 $('#gmodal-title').text(name);
                 $('#gmodal-match').text(matchVal + '% match').css({'border-color': badgeColor, 'color': badgeColor});
                 $('#gmodal-xai').html(exp);
-                $('#gmodal-desc').text(desc || (currentLang === 'en' ? 'Description not available yet.' : 'Deskripsi belum tersedia.'));
+                let fallbackText = (i18nDict[currentLang] && i18nDict[currentLang]['modal-desc-fallback']) ? i18nDict[currentLang]['modal-desc-fallback'] : 'Deskripsi cerita tidak tersedia.';
+                $('#gmodal-desc').text(desc || fallbackText);
                 $('#gmodal-steam').attr('href', 'https://store.steampowered.com/app/' + appid);
 
                 // Build tags pills

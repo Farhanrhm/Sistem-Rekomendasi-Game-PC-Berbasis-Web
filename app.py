@@ -78,7 +78,7 @@ from functools import lru_cache
 # ALGORITMA REKOMENDASI UTAMA DENGAN IN-MEMORY LRU CACHE
 # ==============================================================================
 @lru_cache(maxsize=256)
-def _cached_get_recommendations(query_clean, top_n=10):
+def _cached_get_recommendations(query_clean, top_n=8):
     """
     IN-MEMORY LRU CACHE (OPTIMASI LATENSI ENGINERING):
     Menyimpan hasil kalkulasi Cosine Similarity & Diversification untuk pencarian
@@ -147,12 +147,12 @@ def _cached_get_recommendations(query_clean, top_n=10):
             matched_tag = ", ".join(cand_tags_list[:2]) if cand_tags_list else 'Single-player'
 
             xai_explanation_id = (
-                f"Direkomendasikan karena memiliki kesamaan genre <strong class=\"xai-highlight\">{matched_genre}</strong> "
+                f"💡 Cocok karena memiliki kesamaan genre <strong class=\"xai-highlight\">{matched_genre}</strong> "
                 f"dan tag <strong class=\"xai-highlight\">{matched_tag}</strong>."
             )
             xai_explanation_en = (
-                f"Recommended because it shares the <strong class=\"xai-highlight\">{matched_genre}</strong> genre "
-                f"and <strong class=\"xai-highlight\">{matched_tag}</strong> tag."
+                f"💡 Matches your taste in <strong class=\"xai-highlight\">{matched_genre}</strong> genre "
+                f"and <strong class=\"xai-highlight\">{matched_tag}</strong> tags."
             )
 
             cand_pos = float(cand_row.get('positive_reviews', 0))
@@ -213,7 +213,7 @@ def _cached_get_recommendations(query_clean, top_n=10):
     }, None
 
 
-def get_recommendations_data(title, top_n=10):
+def get_recommendations_data(title, top_n=8):
     """
     Wrapper publik yang memanggil cache LRU In-Memory.
     """
