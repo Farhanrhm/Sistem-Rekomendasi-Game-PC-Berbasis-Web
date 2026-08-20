@@ -78,7 +78,7 @@ from functools import lru_cache
 # ALGORITMA REKOMENDASI UTAMA DENGAN IN-MEMORY LRU CACHE
 # ==============================================================================
 @lru_cache(maxsize=256)
-def _cached_get_recommendations(query_clean, top_n=8):
+def _cached_get_recommendations(query_clean, top_n=12):
     """
     IN-MEMORY LRU CACHE (OPTIMASI LATENSI ENGINERING):
     Menyimpan hasil kalkulasi Cosine Similarity & Diversification untuk pencarian
@@ -213,7 +213,7 @@ def _cached_get_recommendations(query_clean, top_n=8):
     }, None
 
 
-def get_recommendations_data(title, top_n=8):
+def get_recommendations_data(title, top_n=12):
     """
     Wrapper publik yang memanggil cache LRU In-Memory.
     """

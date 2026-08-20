@@ -463,7 +463,8 @@
             <div class="rec-grid">
                 {% for index, row in recommendations.iterrows() %}
                     {% if not loop.first %}
-                    <div class="rec-card" 
+                    <div class="rec-card {% if loop.index >= 10 %}extra-card{% endif %}" 
+                         {% if loop.index >= 10 %}style="display: none;"{% endif %}
                          data-name="{{ row['name'] }}"
                          data-appid="{{ row['steam_appid'] }}"
                          data-image="{{ row['header_image'] }}"
@@ -516,6 +517,14 @@
                     {% endif %}
                 {% endfor %}
             </div>
+
+            {% if recommendations|length > 9 %}
+            <div id="load-more-container" style="text-align: center; margin-top: 2.2rem;">
+                <button id="load-more-btn" type="button" style="background: var(--bg-card); border: 1px solid var(--gold); color: var(--gold); padding: 0.75rem 2.2rem; border-radius: var(--r-sm); font-family: var(--font-body); font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-plus-circle"></i> <span data-i18n="load-more-btn">Tampilkan Lebih Banyak (12 Game)</span>
+                </button>
+            </div>
+            {% endif %}
         {% else %}
             <div class="empty-state">
                 <div class="empty-icon"><i class="fas fa-gamepad"></i></div>
@@ -829,7 +838,8 @@
                     "rating-na": "<i class=\"fas fa-minus-circle\" style=\"color: var(--text-3);\"></i> N/A (Belum Ada Data Ulasan)",
                     "xai-title": "Penjelasan Rekomendasi (XAI)",
                     "gmodal-features": "Kategori & Fitur Irisan:",
-                    "modal-desc-fallback": "Deskripsi cerita tidak tersedia. Game direkomendasikan berdasarkan kemiripan metadata genre dan tag."
+                    "modal-desc-fallback": "Deskripsi cerita tidak tersedia. Game direkomendasikan berdasarkan kemiripan metadata genre dan tag.",
+                    "load-more-btn": "Tampilkan Lebih Banyak (12 Game)"
                 },
                 en: {
                     "hero-title": "Start with a game<br>you <em>love</em>",
@@ -876,7 +886,8 @@
                     "rating-na": "<i class=\"fas fa-minus-circle\" style=\"color: var(--text-3);\"></i> N/A (No Reviews Yet)",
                     "xai-title": "Recommendation Explanation (XAI)",
                     "gmodal-features": "Matching Categories & Features:",
-                    "modal-desc-fallback": "Detailed description unavailable. Game recommended based on matching genre and tag metadata."
+                    "modal-desc-fallback": "Detailed description unavailable. Game recommended based on matching genre and tag metadata.",
+                    "load-more-btn": "Load More (12 Games)"
                 }
             };
 
@@ -973,6 +984,12 @@
                     gmodal.classList.remove('show');
                     gmodal.setAttribute('aria-hidden', 'true');
                 }
+            });
+
+            // 11. LOAD MORE RECOMMENDATIONS TOGGLE
+            $(document).on('click', '#load-more-btn', function() {
+                $('.extra-card').fadeIn(400);
+                $('#load-more-container').fadeOut(300);
             });
         });
     </script>
