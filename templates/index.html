@@ -668,14 +668,14 @@
                 <button id="close-modal" class="modal-close" aria-label="Tutup"><i class="fas fa-times"></i></button>
             </div>
             <div class="modal-body">
-                <p data-i18n="modal-intro">Sistem ini menggunakan metode <strong>Content-Based Filtering</strong> dengan tahapan sebagai berikut:</p>
+                <p data-i18n="modal-intro">Sistem ini merekomendasikan game berdasarkan kemiripan konten melalui 3 langkah sederhana:</p>
                 <ol>
-                    <li data-i18n="modal-step1"><strong>Text Preprocessing:</strong> Membersihkan tag HTML, simbol, dan melakukan normalisasi teks pada judul, genre, serta deskripsi game agar data lebih konsisten.</li>
-                    <li data-i18n="modal-step2"><strong>TF-IDF Vectorization:</strong> Mengubah korpus teks menjadi representasi numerik (vektor) berdasarkan bobot kepentingan kata unik dalam dataset.</li>
-                    <li data-i18n="modal-step3"><strong>Cosine Similarity:</strong> Menghitung sudut kosinus antara dua vektor untuk menentukan tingkat kemiripan matematis antar judul game.</li>
+                    <li data-i18n="modal-step1"><strong>Pembersihan Data:</strong> Sistem merapikan teks deskripsi, tag, dan genre game agar mudah dibaca oleh mesin.</li>
+                    <li data-i18n="modal-step2"><strong>Pemberian Nilai Kata:</strong> Sistem mencari kata kunci unik dari sebuah game yang paling membedakannya dari game lain.</li>
+                    <li data-i18n="modal-step3"><strong>Pencocokan Kemiripan:</strong> Sistem menghitung seberapa mirip kata kunci game target dengan ribuan game lain di database kami untuk menemukan kecocokan terbaik.</li>
                 </ol>
                 <p class="modal-footer-note" data-i18n="modal-note">
-                    *Persentase Match mencerminkan seberapa identik elemen cerita, mekanik, dan atmosfer game dibandingkan dengan judul acuan Anda.
+                    *Persentase Kecocokan menunjukkan seberapa identik elemen cerita, mekanik, dan atmosfer game dibandingkan dengan judul pencarian Anda.
                 </p>
             </div>
         </div>
@@ -956,16 +956,16 @@
                     "detail-btn": "Lihat Detail &#8594;",
                     "loading-text": "Menganalisis Database Game...",
                     "modal-title": "Cara Kerja Sistem LevelFind",
-                    "modal-intro": "Sistem ini menggunakan metode <strong>Content-Based Filtering</strong> dengan tahapan sebagai berikut:",
-                    "modal-step1": "<strong>Text Preprocessing:</strong> Membersihkan tag HTML, simbol, dan melakukan normalisasi teks pada judul, genre, serta deskripsi game agar data lebih konsisten.",
-                    "modal-step2": "<strong>TF-IDF Vectorization:</strong> Mengubah korpus teks menjadi representasi numerik (vektor) berdasarkan bobot kepentingan kata unik dalam dataset.",
-                    "modal-step3": "<strong>Cosine Similarity:</strong> Menghitung sudut kosinus antara dua vektor untuk menentukan tingkat kemiripan matematis antar judul game.",
-                    "modal-note": "*Persentase Match mencerminkan seberapa identik elemen cerita, mekanik, dan atmosfer game dibandingkan dengan judul acuan Anda.",
+                    "modal-intro": "Sistem ini merekomendasikan game berdasarkan kemiripan konten melalui 3 langkah sederhana:",
+                    "modal-step1": "<strong>Pembersihan Data:</strong> Sistem merapikan teks deskripsi, tag, dan genre game agar mudah dibaca oleh mesin.",
+                    "modal-step2": "<strong>Pembobotan Kata:</strong> Sistem mencari kata kunci unik dari sebuah game yang paling membedakannya dari game lain.",
+                    "modal-step3": "<strong>Pencocokan Kemiripan:</strong> Sistem menghitung seberapa mirip kata kunci game target dengan ribuan game lain di database kami untuk menemukan kecocokan terbaik.",
+                    "modal-note": "*Persentase Kecocokan menunjukkan seberapa identik elemen cerita, mekanik, dan atmosfer game dibandingkan dengan judul pencarian Anda.",
                     "rating-na": "<i class=\"fas fa-minus-circle\" style=\"color: var(--text-3);\"></i> N/A (Belum Ada Data Ulasan)",
                     "xai-title": "Penjelasan Rekomendasi (XAI)",
                     "gmodal-features": "Kategori & Fitur Irisan:",
                     "modal-desc-fallback": "Deskripsi cerita tidak tersedia. Game direkomendasikan berdasarkan kemiripan metadata genre dan tag.",
-                    "load-more-btn": "Tampilkan Lebih Banyak (12 Game)"
+                    "load-more-btn": "Tampilkan Lebih Banyak"
                 },
                 en: {
                     "hero-title": "Start with a game<br>you <em>love</em>",
@@ -1004,16 +1004,16 @@
                     "detail-btn": "View Details &#8594;",
                     "loading-text": "Analyzing Game Database...",
                     "modal-title": "How LevelFind Works",
-                    "modal-intro": "This system uses <strong>Content-Based Filtering</strong> through the following steps:",
-                    "modal-step1": "<strong>Text Preprocessing:</strong> Cleans HTML tags, symbols, and normalizes text in game titles, genres, and descriptions.",
-                    "modal-step2": "<strong>TF-IDF Vectorization:</strong> Converts text corpora into numerical vector representations based on unique term weights.",
-                    "modal-step3": "<strong>Cosine Similarity:</strong> Calculates the cosine angle between two vectors to determine mathematical similarity.",
+                    "modal-intro": "This system recommends games based on content similarity through 3 simple steps:",
+                    "modal-step1": "<strong>Data Cleaning:</strong> Cleans and organizes game descriptions, tags, and genres to make them machine-readable.",
+                    "modal-step2": "<strong>Keyword Weighting:</strong> Identifies unique keywords of a game that distinguish it most from other games.",
+                    "modal-step3": "<strong>Similarity Matching:</strong> Calculates how similar the target game keywords are to thousands of other games in our database to find the best match.",
                     "modal-note": "*Match Percentage reflects how identical the story elements, mechanics, and atmosphere are compared to your search title.",
                     "rating-na": "<i class=\"fas fa-minus-circle\" style=\"color: var(--text-3);\"></i> N/A (No Reviews Yet)",
                     "xai-title": "Recommendation Explanation (XAI)",
                     "gmodal-features": "Matching Categories & Features:",
                     "modal-desc-fallback": "Detailed description unavailable. Game recommended based on matching genre and tag metadata.",
-                    "load-more-btn": "Load More (12 Games)"
+                    "load-more-btn": "Load More"
                 }
             };
 
@@ -1080,6 +1080,13 @@
                         $(this).find('.xai-text').html(expId);
                     }
                 });
+
+                // Hitung Sisa Game Dinamis untuk Tombol Load More
+                let remainingCards = $('.extra-card:hidden').length;
+                if (remainingCards > 0) {
+                    let btnText = (lang === 'en') ? `Load More (${remainingCards} Games)` : `Tampilkan Lebih Banyak (${remainingCards} Game)`;
+                    $('[data-i18n="load-more-btn"]').text(btnText);
+                }
             }
 
             let savedLang = localStorage.getItem('lf-lang') || 'id';
