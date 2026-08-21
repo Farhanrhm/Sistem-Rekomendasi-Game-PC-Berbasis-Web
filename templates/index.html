@@ -76,10 +76,60 @@
         a { color: inherit; text-decoration: none; }
         
         /* Transisi */
-        body, .navbar, .search-wrap, .search-wrap input, .spotlight, .rec-card, .badge-pill, .tag, .btn-steam, .btn-detail, .footer, .empty-icon, .hero-deco, .theme-btn, .nav-tag, .rec-mini-tag {
-            transition: background-color 0.28s ease, color 0.28s ease, border-color 0.28s ease;
+        body, .navbar, .search-wrap, .search-wrap input, .spotlight, .rec-card, .badge-pill, .tag, .btn-steam, .btn-detail, .footer, .empty-icon, .hero-deco, .theme-btn, .nav-tag, .rec-mini-tag, .lang-btn {
+            transition: background-color 0.28s ease, color 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease, transform 0.28s ease;
         }
         img { transition: none !important; }
+
+        /* ANIMASI BILINGUAL & LOKALISASI (i18n) */
+        .lang-btn {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-md);
+            color: var(--gold);
+            border-radius: var(--r-sm);
+            padding: 0.35rem 0.75rem;
+            font-family: var(--font-body);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+        .lang-btn:hover {
+            border-color: var(--gold);
+            box-shadow: 0 0 12px var(--gold-subtle);
+        }
+        .lang-btn .fa-globe {
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .lang-btn:hover .fa-globe, .lang-btn.rotating .fa-globe {
+            transform: rotate(180deg);
+        }
+        .lang-badge {
+            display: inline-block;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+        .lang-badge.flip {
+            transform: translateY(-8px) scale(0.75);
+            opacity: 0;
+        }
+        .i18n-transition {
+            transition: opacity 0.25s ease, transform 0.25s ease !important;
+            will-change: opacity, transform;
+        }
+        .i18n-fade-out {
+            opacity: 0 !important;
+            transform: translateY(-4px) !important;
+        }
+        .placeholder-transition {
+            transition: opacity 0.25s ease !important;
+        }
+        .placeholder-fade {
+            opacity: 0.2 !important;
+        }
 
         /* NAVBAR */
         .navbar { display: flex; align-items: center; justify-content: space-between; padding: 1rem 3rem; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; background: var(--bg-base); }
@@ -279,8 +329,8 @@
     <nav class="navbar">
         <div class="logo">Level<span>Find</span></div>
         <div class="nav-right">
-            <button class="lang-btn" id="lang-btn" title="Ubah Bahasa / Switch Language" aria-label="Toggle language" style="background: var(--bg-surface); border: 1px solid var(--border-md); color: var(--gold); border-radius: var(--r-sm); padding: 0.35rem 0.75rem; font-family: var(--font-body); font-size: 0.8rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s ease;">
-                <i class="fas fa-globe"></i> <span id="lang-label">ID</span>
+            <button class="lang-btn" id="lang-btn" title="Ubah Bahasa / Switch Language" aria-label="Toggle language">
+                <i class="fas fa-globe"></i> <span id="lang-label" class="lang-badge">ID</span>
             </button>
             <button class="theme-btn" id="theme-btn" title="Ganti tema" aria-label="Toggle tema">
                 <i class="fas fa-moon i-moon"></i>
@@ -891,10 +941,46 @@
                 }
             };
 
-            function setLanguage(lang) {
+            function setLanguage(lang, animate = false) {
                 localStorage.setItem('lf-lang', lang);
-                $('#lang-label').text(lang.toUpperCase());
                 
+                const $langBtn = $('#lang-btn');
+                const $langLabel = $('#lang-label');
+                
+                if (animate) {
+                    $langBtn.addClass('rotating');
+                    $langLabel.addClass('flip');
+                    setTimeout(() => {
+                        $langLabel.text(lang.toUpperCase());
+                        $langLabel.removeClass('flip');
+                        $langBtn.removeClass('rotating');
+                    }, 200);
+                } else {
+                    $langLabel.text(lang.toUpperCase());
+                }
+
+                const $i18nElements = $('[data-i18n]');
+                const $placeholders = $('[data-i18n-placeholder]');
+                const $xaiCards = $('.rec-card');
+
+                if (animate) {
+                    $i18nElements.addClass('i18n-transition i18n-fade-out');
+                    $placeholders.addClass('placeholder-transition placeholder-fade');
+                    $xaiCards.find('.xai-text').addClass('i18n-transition i18n-fade-out');
+
+                    setTimeout(() => {
+                        updateDOMText(lang);
+                        $i18nElements.removeClass('i18n-fade-out');
+                        $placeholders.removeClass('placeholder-fade');
+                        $xaiCards.find('.xai-text').removeClass('i18n-fade-out');
+                    }, 200);
+                } else {
+                    $i18nElements.addClass('i18n-transition');
+                    updateDOMText(lang);
+                }
+            }
+
+            function updateDOMText(lang) {
                 $('[data-i18n]').each(function() {
                     let key = $(this).data('i18n');
                     if (i18nDict[lang] && i18nDict[lang][key]) {
@@ -921,12 +1007,12 @@
             }
 
             let savedLang = localStorage.getItem('lf-lang') || 'id';
-            setLanguage(savedLang);
+            setLanguage(savedLang, false);
 
             $('#lang-btn').on('click', function() {
                 let currentLang = localStorage.getItem('lf-lang') || 'id';
                 let nextLang = (currentLang === 'id') ? 'en' : 'id';
-                setLanguage(nextLang);
+                setLanguage(nextLang, true);
             });
 
             // 10. GAME DETAIL MODAL
