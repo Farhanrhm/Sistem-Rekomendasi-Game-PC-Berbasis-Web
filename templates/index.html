@@ -322,8 +322,39 @@
         [data-theme="light"] .skeleton { background: #e0e0e0; background-image: linear-gradient(90deg, #e0e0e0 0px, #f0f0f0 40px, #e0e0e0 80px); }
         @keyframes shimmer { 0% { background-position: -200px 0; } 100% { background-position: calc(200px + 100%) 0; } }
         
-        .skeleton-spotlight { width: 100%; height: 350px; border-radius: var(--r-lg); margin-bottom: 2.8rem; }
-        .skeleton-card { height: 300px; border-radius: var(--r-md); }
+        /* FLOATING SCROLL TO TOP BUTTON */
+        #scroll-top-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(15px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 999;
+        }
+        #scroll-top-btn.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        #scroll-top-btn:hover {
+            background: var(--gold);
+            color: #0c0c0d;
+            transform: translateY(-4px);
+        }
     </style>
 </head>
 <body>
@@ -378,6 +409,12 @@
                     <input type="text" name="game_title" id="game_input"
                            placeholder="Contoh: Elden Ring, Palworld..." data-i18n-placeholder="search-placeholder"
                            value="{{ search_query if search_query else '' }}" required>
+                    <select name="top_n" id="top_n_select" title="Jumlah Rekomendasi" style="background: var(--bg-surface); color: var(--gold); border: none; border-left: 1px solid var(--border-md); padding: 0 0.8rem; font-family: var(--font-body); font-size: 0.82rem; font-weight: 500; outline: none; cursor: pointer;">
+                        <option value="5" {% if top_n == 5 %}selected{% endif %}>Top 5</option>
+                        <option value="10" {% if top_n == 10 %}selected{% endif %}>Top 10</option>
+                        <option value="12" {% if not top_n or top_n == 12 %}selected{% endif %}>Top 12</option>
+                        <option value="15" {% if top_n == 15 %}selected{% endif %}>Top 15</option>
+                    </select>
                     <button class="search-btn" type="submit">
                         <i class="fas fa-search"></i> <span data-i18n="search-btn">Temukan</span>
                     </button>
@@ -680,7 +717,10 @@
                 </a>
             </div>
         </div>
-    </div>
+    <!-- FLOATING SCROLL TO TOP BUTTON -->
+    <button id="scroll-top-btn" title="Scroll to Top" aria-label="Scroll to top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
@@ -708,9 +748,9 @@
                 }, 400);
             });
 
-            // 2. AUTOCOMPLETE
+            // 2. AUTOCOMPLETE (DINAMIS SKELETON & SEARCH SUGGESTIONS)
             gameInput.autocomplete({
-                source: "/api/search_autocomplete",
+                source: "/api/search-suggestions",
                 minLength: 2,
                 select: function(event, ui) {
                     gameInput.val(ui.item.value);
@@ -1112,6 +1152,39 @@
             $(document).on('click', '#load-more-btn', function() {
                 $('.extra-card').fadeIn(400);
                 $('#load-more-container').fadeOut(300);
+            });
+
+            // 12. FLOATING SCROLL TO TOP
+            $(window).on('scroll', function() {
+                if ($(this).scrollTop() > 250) {
+                    $('#scroll-top-btn').addClass('show');
+                } else {
+                    $('#scroll-top-btn').removeClass('show');
+                }
+            });
+
+            $('#scroll-top-btn').on('click', function() {
+                $('html, body').animate({ scrollTop: 0 }, 400);
+            });
+
+            // 13. ANIMATED PERCENTAGE COUNTER (0% -> target %)
+            $('.match-badge').each(function() {
+                let $this = $(this);
+                let text = $this.text().trim();
+                let match = text.match(/(\d+)/);
+                if (match) {
+                    let targetVal = parseInt(match[1]);
+                    $({ countNum: 0 }).animate({ countNum: targetVal }, {
+                        duration: 1000,
+                        easing: 'swing',
+                        step: function() {
+                            $this.text(Math.floor(this.countNum) + '% match');
+                        },
+                        complete: function() {
+                            $this.text(targetVal + '% match');
+                        }
+                    });
+                }
             });
         });
     </script>

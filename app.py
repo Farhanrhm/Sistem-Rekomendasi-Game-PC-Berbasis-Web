@@ -293,13 +293,15 @@ def home():
     target_game = None
     recommendations = []
 
+    top_n = request.form.get('top_n', type=int) or request.args.get('top_n', type=int) or 12
+
     if request.method == 'POST':
         search_query = request.form.get('game_title', '').strip()
     else:
         search_query = request.args.get('q', '').strip() or request.args.get('game_title', '').strip()
 
     if search_query:
-        result, error_msg = get_recommendations_data(search_query)
+        result, error_msg = get_recommendations_data(search_query, top_n=top_n)
         if error_msg:
             error = error_msg
         else:
@@ -313,23 +315,25 @@ def home():
     return render_template(
         'index.html',
         search_query=search_query,
+        top_n=top_n,
         actual_title=target_game['name'] if target_game else search_query,
         recommendations=recommendations if target_game else None,
         error=error
     )
 
 
+@app.route('/api/search-suggestions', methods=['GET'])
 @app.route('/api/search_autocomplete', methods=['GET'])
 @app.route('/api/search_titles', methods=['GET'])
 def api_search_titles():
     """
-    Endpoint Autocomplete Judul Game untuk Frontend.
+    Endpoint Autocomplete Judul Game untuk Frontend (Maksimal 7 judul game).
     """
     query = request.args.get('term', '').strip().lower() or request.args.get('q', '').strip().lower()
     if not query or df is None:
         return jsonify([])
     
-    matches = df[df['name'].str.lower().str.contains(query, regex=False)]['name'].head(10).tolist()
+    matches = df[df['name'].str.lower().str.contains(query, regex=False)]['name'].head(7).tolist()
     return jsonify(matches)
 
 
