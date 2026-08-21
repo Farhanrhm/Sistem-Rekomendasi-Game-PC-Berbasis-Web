@@ -72,6 +72,53 @@ def extract_dominant_genre(target_genres_str, rec_genres_str):
     return "Genre"
 
 
+def is_generic_or_meta_tag(tag_str):
+    """
+    Memeriksa apakah tag merupakan metadata teknis/platform Steam (bukan fitur gameplay utama).
+    """
+    t_low = str(tag_str).lower().strip()
+    meta_keywords = [
+        'single-player', 'singleplayer', 'multi-player', 'multiplayer', 'co-op', 'online co-op',
+        'soundtrack', 'achievements', 'controller', '2d', '3d', 'casual', 'indie',
+        'camera', 'volume', 'audio', 'sound', 'stereo', 'subtitle', 'captions', 'cloud', 'trading card',
+        'family sharing', 'hdr', 'remote play', 'level editor', 'leaderboard', 'vr support',
+        'stats', 'workshop', 'commentary', 'timed input', 'input', 'toggle', 'menu',
+        'accessibility', 'text size', 'color alternatives', 'support'
+    ]
+    return any(kw in t_low for kw in meta_keywords)
+
+
+def extract_xai_features(target_genres, target_tags, cand_genres, cand_tags):
+    """
+    Ekstraksi 2 fitur teratas yang beririsan (1 Genre + 1 Tag Gameplay Spesifik).
+    Memfilter tag generik agar narasi XAI lebih berbobot dan bermakna bagi gamer.
+    """
+    t_genres = [g.strip() for g in str(target_genres).split(';') if g.strip()]
+    c_genres = [g.strip() for g in str(cand_genres).split(';') if g.strip()]
+    intersect_genres = [g for g in c_genres if g in t_genres]
+    matched_genre = intersect_genres[0] if intersect_genres else (c_genres[0] if c_genres else 'Action')
+
+    t_tags = [t.strip() for t in str(target_tags).split(';') if t.strip()]
+    c_tags = [t.strip() for t in str(cand_tags).split(';') if t.strip()]
+    
+    specific_matched = [t for t in c_tags if t in t_tags and not is_generic_or_meta_tag(t)]
+    all_matched = [t for t in c_tags if t in t_tags]
+    specific_cand = [t for t in c_tags if not is_generic_or_meta_tag(t)]
+    
+    if specific_matched:
+        matched_tag = specific_matched[0]
+    elif specific_cand:
+        matched_tag = specific_cand[0]
+    elif all_matched:
+        matched_tag = all_matched[0]
+    elif c_tags:
+        matched_tag = c_tags[0]
+    else:
+        matched_tag = 'Gameplay'
+        
+    return matched_genre, matched_tag
+
+
 from functools import lru_cache
 
 # ==============================================================================
@@ -139,21 +186,30 @@ def _cached_get_recommendations(query_clean, top_n=12):
             sim_percentage = round(cand['sim_score'] * 100, 1)
             dominant_genre = extract_dominant_genre(target_row['genres'], cand_row['genres'])
             
-            # 4. EXPLAINABLE AI (XAI) TEMPLATE-BASED GENERATION (BILINGUAL & COMPACT)
-            cand_genres_list = [g.strip() for g in str(cand_row['genres']).split(';') if g.strip()]
-            matched_genre = dominant_genre if dominant_genre else (cand_genres_list[0] if cand_genres_list else 'Action')
-            
-            cand_tags_list = [t.strip() for t in str(cand_row['tags']).split(';') if t.strip()]
-            matched_tag = ", ".join(cand_tags_list[:2]) if cand_tags_list else 'Single-player'
+            # 4. EXPLAINABLE AI (XAI) TEMPLATE-BASED GENERATION (NATURAL & BILINGUAL)
+            matched_genre, matched_tag = extract_xai_features(
+                target_row['genres'], target_row['tags'],
+                cand_row['genres'], cand_row['tags']
+            )
 
-            xai_explanation_id = (
-                f"💡 Cocok karena memiliki kesamaan genre <strong class=\"xai-highlight\">{matched_genre}</strong> "
-                f"dan tag <strong class=\"xai-highlight\">{matched_tag}</strong>."
-            )
-            xai_explanation_en = (
-                f"💡 Matches your taste in <strong class=\"xai-highlight\">{matched_genre}</strong> genre "
-                f"and <strong class=\"xai-highlight\">{matched_tag}</strong> tags."
-            )
+            if matched_genre and matched_tag:
+                xai_explanation_id = (
+                    f"💡 Suasana serupa: Gameplay <strong class=\"xai-highlight\">{matched_genre}</strong> "
+                    f"dengan elemen <strong class=\"xai-highlight\">{matched_tag}</strong>."
+                )
+                xai_explanation_en = (
+                    f"💡 Similar vibes: <strong class=\"xai-highlight\">{matched_genre}</strong> gameplay "
+                    f"with <strong class=\"xai-highlight\">{matched_tag}</strong> elements."
+                )
+            else:
+                f1 = matched_genre or 'Action'
+                f2 = matched_tag or 'Gameplay'
+                xai_explanation_id = (
+                    f"💡 Kesamaan fitur: <strong class=\"xai-highlight\">{f1}</strong> • <strong class=\"xai-highlight\">{f2}</strong>"
+                )
+                xai_explanation_en = (
+                    f"💡 Matched on: <strong class=\"xai-highlight\">{f1}</strong> • <strong class=\"xai-highlight\">{f2}</strong>"
+                )
 
             cand_pos = float(cand_row.get('positive_reviews', 0))
             cand_tot = float(cand_row.get('total_reviews', 0))
