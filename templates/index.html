@@ -190,15 +190,78 @@
         .search-btn:hover { background: var(--gold-bright); }
         .error-msg { display: inline-flex; align-items: center; gap: 8px; margin-top: 1rem; font-size: 0.82rem; color: var(--red); background: rgba(217, 79, 79, 0.07); border: 1px solid rgba(217, 79, 79, 0.18); border-radius: var(--r-sm); padding: 8px 14px; }
 
-        /* HERO DECO */
+        /* HERO DECO & ANIMASI RADAR AI */
         .hero-deco { background: var(--deco-bg); border-left: 1px solid var(--border); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; z-index: 1; }
-        .hero-deco::before { content: ""; position: absolute; width: 260px; height: 260px; border-radius: 50%; border: 1px solid var(--border-md); top: 50%; left: 50%; transform: translate(-50%, -50%); }
-        .hero-deco::after { content: ""; position: absolute; width: 155px; height: 155px; border-radius: 50%; border: 1px solid var(--border-md); top: 50%; left: 50%; transform: translate(-50%, -50%); }
-        .hero-deco-icon { font-size: 2.8rem; color: var(--gold); opacity: 0.5; position: relative; z-index: 1; }
-        .hero-stats { position: absolute; bottom: 1.4rem; left: 0; right: 0; display: flex; justify-content: center; gap: 2rem; }
+        .hero-deco-ring-outer {
+            position: absolute; width: 260px; height: 260px; border-radius: 50%;
+            border: 1px dashed var(--gold); top: 50%; left: 50%;
+            margin-top: -130px; margin-left: -130px;
+            animation: slowRotate 28s linear infinite;
+            opacity: 0.35;
+        }
+        .hero-deco-ring-inner {
+            position: absolute; width: 155px; height: 155px; border-radius: 50%;
+            border: 1px solid var(--gold); top: 50%; left: 50%;
+            margin-top: -77.5px; margin-left: -77.5px;
+            animation: radarPulse 3s ease-out infinite;
+        }
+        @keyframes slowRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @keyframes radarPulse {
+            0% { transform: scale(0.92); opacity: 0.2; box-shadow: 0 0 0 0 rgba(201, 153, 63, 0.4); }
+            50% { opacity: 0.65; box-shadow: 0 0 24px 8px rgba(201, 153, 63, 0.2); }
+            100% { transform: scale(1.08); opacity: 0.2; box-shadow: 0 0 0 0 rgba(201, 153, 63, 0); }
+        }
+        .hero-deco-icon { font-size: 2.8rem; color: var(--gold); opacity: 0.75; position: relative; z-index: 2; filter: drop-shadow(0 0 10px var(--gold-subtle)); }
+        .hero-stats { position: absolute; bottom: 1.4rem; left: 0; right: 0; display: flex; justify-content: center; gap: 2rem; z-index: 2; }
         .hero-stat { text-align: center; }
         .hero-stat-num { font-family: var(--font-mono); font-size: 0.95rem; font-weight: 500; color: var(--gold); display: block; }
         .hero-stat-label { font-size: 0.6rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-2); }
+
+        /* GLASSMORPHISM BACKDROP BLUR */
+        .navbar {
+            display: flex; align-items: center; justify-content: space-between; padding: 1rem 3rem; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;
+            background: rgba(12, 12, 13, 0.82) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+        }
+        [data-theme="light"] .navbar {
+            background: rgba(243, 237, 227, 0.85) !important;
+        }
+
+        /* HOVER LIFT & HIGH MATCH GOLDEN GLOW */
+        .rec-card {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease, border-color 0.3s ease !important;
+        }
+        .rec-card:hover {
+            transform: translateY(-6px) !important;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35) !important;
+        }
+        .rec-card.high-match:hover {
+            border-color: var(--gold) !important;
+            box-shadow: 0 12px 32px var(--gold-subtle), 0 0 18px rgba(201, 153, 63, 0.22) !important;
+        }
+
+        /* XAI PILL BADGES */
+        .rec-mini-tag {
+            font-family: var(--font-mono);
+            font-size: 0.64rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            background: var(--gold-subtle);
+            border: 1px solid var(--border-md);
+            color: var(--gold);
+            padding: 3px 10px;
+            border-radius: 100px;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+        }
+        .rec-mini-tag:hover {
+            background: var(--gold);
+            color: #0c0c0d;
+        }
 
         /* AUTOCOMPLETE */
         .ui-autocomplete { background: var(--bg-surface) !important; border: 1px solid var(--border-md) !important; border-top: none !important; border-radius: 0 0 var(--r-md) var(--r-md); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2); z-index: 9999 !important; padding: 4px 0 !important; }
@@ -441,6 +504,8 @@
         </div>
 
         <div class="hero-deco">
+            <div class="hero-deco-ring-outer"></div>
+            <div class="hero-deco-ring-inner"></div>
             <i class="fas fa-gamepad hero-deco-icon"></i>
             <div class="hero-stats">
                 <div class="hero-stat"><span class="hero-stat-num">10.000+</span><span class="hero-stat-label" data-i18n="stat-games">Game</span></div>
@@ -579,7 +644,7 @@
             <div class="rec-grid">
                 {% for index, row in recommendations.iterrows() %}
                     {% if not loop.first %}
-                    <div class="rec-card {% if loop.index >= 10 %}extra-card{% endif %}" 
+                    <div class="rec-card {% if loop.index >= 10 %}extra-card{% endif %} {% if (row['similarity_score']|float) >= 80 %}high-match{% endif %}" 
                          {% if loop.index >= 10 %}style="display: none;"{% endif %}
                          data-name="{{ row['name'] }}"
                          data-appid="{{ row['steam_appid'] }}"
@@ -958,7 +1023,7 @@
                     "modal-title": "Cara Kerja Sistem LevelFind",
                     "modal-intro": "Sistem ini merekomendasikan game berdasarkan kemiripan konten melalui 3 langkah sederhana:",
                     "modal-step1": "<strong>Pembersihan Data:</strong> Sistem merapikan teks deskripsi, tag, dan genre game agar mudah dibaca oleh mesin.",
-                    "modal-step2": "<strong>Pembobotan Kata:</strong> Sistem mencari kata kunci unik dari sebuah game yang paling membedakannya dari game lain.",
+                    "modal-step2": "<strong>Pemberian Nilai Kata:</strong> Sistem mencari kata kunci unik dari sebuah game yang paling membedakannya dari game lain.",
                     "modal-step3": "<strong>Pencocokan Kemiripan:</strong> Sistem menghitung seberapa mirip kata kunci game target dengan ribuan game lain di database kami untuk menemukan kecocokan terbaik.",
                     "modal-note": "*Persentase Kecocokan menunjukkan seberapa identik elemen cerita, mekanik, dan atmosfer game dibandingkan dengan judul pencarian Anda.",
                     "rating-na": "<i class=\"fas fa-minus-circle\" style=\"color: var(--text-3);\"></i> N/A (Belum Ada Data Ulasan)",
