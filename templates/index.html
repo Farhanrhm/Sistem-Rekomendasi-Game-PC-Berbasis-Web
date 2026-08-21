@@ -137,12 +137,41 @@
         .logo span { color: var(--gold); }
         .nav-right { display: flex; align-items: center; gap: 12px; }
         .nav-tag { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 2px; text-transform: uppercase; color: var(--text-2); border: 1px solid var(--border-md); padding: 4px 12px; border-radius: 100px; }
-        .theme-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border-md); background: var(--bg-card); color: var(--gold); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.88rem; }
-        .theme-btn:hover { border-color: var(--gold); }
+        /* ANIMASI TEMA LIGHT/DARK MODE */
+        .theme-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 1px solid var(--border-md);
+            background: var(--bg-card);
+            color: var(--gold);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.88rem;
+            transition: transform 0.3s ease, border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .theme-btn:hover {
+            border-color: var(--gold);
+            box-shadow: 0 0 12px var(--gold-subtle);
+            transform: scale(1.08);
+        }
+        .theme-btn i {
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+        }
+        .theme-btn.rotating i {
+            transform: rotate(360deg) scale(0.75);
+        }
         .theme-btn .i-moon { display: block; } 
         .theme-btn .i-sun { display: none; }
         [data-theme="light"] .theme-btn .i-moon { display: none; } 
         [data-theme="light"] .theme-btn .i-sun { display: block; }
+
+        /* Transisi Global Pergantian Tema (Eye-comfort 0.4s) */
+        body, .navbar, .hero, .spotlight, .rec-card, .search-wrap, .search-wrap input, .footer, .modal-content, .btn-detail, .btn-steam {
+            transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease !important;
+        }
 
         /* HERO */
         .hero { display: grid; grid-template-columns: 1fr 360px; min-height: 320px; border-bottom: 1px solid var(--border); position: relative; overflow: hidden; }
@@ -660,8 +689,11 @@
             const gameInput = $("#game_input");
             const html = document.documentElement;
 
-            // 1. THEME TOGGLE
+            // 1. THEME TOGGLE (DARK / LIGHT MODE WITH ANIMATION & LOCALSTORAGE)
             document.getElementById("theme-btn").addEventListener("click", function() {
+                const btn = this;
+                btn.classList.add("rotating");
+                
                 var isLight = html.getAttribute("data-theme") === "light";
                 if (isLight) {
                     html.removeAttribute("data-theme");
@@ -670,6 +702,10 @@
                     html.setAttribute("data-theme", "light");
                     localStorage.setItem("lf-theme", "light");
                 }
+                
+                setTimeout(() => {
+                    btn.classList.remove("rotating");
+                }, 400);
             });
 
             // 2. AUTOCOMPLETE
