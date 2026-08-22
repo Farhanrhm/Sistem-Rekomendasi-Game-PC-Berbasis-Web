@@ -1,12 +1,40 @@
 from flask import Flask, render_template, request, jsonify
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_cors import CORS
 import pandas as pd
 import numpy as np
 from sklearn.metrics.pairwise import linear_kernel
 import pickle
 import Levenshtein
 import os
+import re
+import html
 
 app = Flask(__name__)
+
+# ==============================================================================
+# 1. PENGAMANAN RATE LIMITING & CORS
+# Rate limiter menggunakan RAM (memory://) agar latensi tetap 0ms
+# ==============================================================================
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["300 per day", "100 per hour"],
+    storage_uri="memory://"
+)
+
+CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5000", "http://127.0.0.1:5000", "https://levelfind.vercel.app"]}})
+
+def sanitize_input(user_input):
+    """
+    Sanitasi kata kunci pencarian dari potensi injeksi karakter berbahaya/HTML tags.
+    """
+    if not user_input or not isinstance(user_input, str):
+        return ""
+    clean_str = re.sub(r'<[^>]*>', '', user_input)
+    clean_str = html.escape(clean_str.strip())
+    return clean_str[:100]
 
 # ==============================================================================
 # 2. BATASAN PEMODELAN & MEMORI & 3. LAZY LOADING
@@ -275,7 +303,7 @@ def get_recommendations_data(title, top_n=12):
     """
     if df is None or tfidf_matrix is None:
         return None, "Model belum dimuat ke RAM peladen."
-    query_clean = title.lower().strip()
+    query_clean = sanitize_input(title).lower().strip()
     return _cached_get_recommendations(query_clean, top_n)
 
 
@@ -284,6 +312,7 @@ def get_recommendations_data(title, top_n=12):
 # ==============================================================================
 
 @app.route('/', methods=['GET', 'POST'])
+@limiter.limit("30 per minute")
 def home():
     """
     Halaman Web Utama - Mendukung pencarian via GET (?q=...) dan POST (form submission)
@@ -296,9 +325,9 @@ def home():
     top_n = request.form.get('top_n', type=int) or request.args.get('top_n', type=int) or 12
 
     if request.method == 'POST':
-        search_query = request.form.get('game_title', '').strip()
+        search_query = sanitize_input(request.form.get('game_title', ''))
     else:
-        search_query = request.args.get('q', '').strip() or request.args.get('game_title', '').strip()
+        search_query = sanitize_input(request.args.get('q', '') or request.args.get('game_title', ''))
 
     if search_query:
         result, error_msg = get_recommendations_data(search_query, top_n=top_n)
@@ -325,11 +354,13 @@ def home():
 @app.route('/api/search-suggestions', methods=['GET'])
 @app.route('/api/search_autocomplete', methods=['GET'])
 @app.route('/api/search_titles', methods=['GET'])
+@limiter.limit("60 per minute")
 def api_search_titles():
     """
     Endpoint Autocomplete Judul Game untuk Frontend (Maksimal 7 judul game).
     """
-    query = request.args.get('term', '').strip().lower() or request.args.get('q', '').strip().lower()
+    raw_query = request.args.get('term', '').strip().lower() or request.args.get('q', '').strip().lower()
+    query = sanitize_input(raw_query).lower()
     if not query or df is None:
         return jsonify([])
     
@@ -338,6 +369,7 @@ def api_search_titles():
 
 
 @app.route('/api/recommend', methods=['GET', 'POST'])
+@limiter.limit("30 per minute")
 def api_recommend():
     """
     BATASAN PROPOSAL: Endpoint API JSON untuk Frontend HTML/JS.
@@ -349,7 +381,7 @@ def api_recommend():
     else:
         game_title = request.args.get('q') or request.args.get('game_title', '')
 
-    game_title = game_title.strip()
+    game_title = sanitize_input(game_title)
     if not game_title:
         return jsonify({'status': 'error', 'message': 'Parameter game_title tidak boleh kosong.'}), 400
 
@@ -363,7 +395,30 @@ def api_recommend():
     })
 
 
+# ==============================================================================
+# ERROR HANDLER UNTUK KEAMANAN STACK TRACE
+# ==============================================================================
+@app.errorhandler(429)
+def ratelimit_handler(e):
+    if request.path.startswith('/api/'):
+        return jsonify({'status': 'error', 'message': 'Batas permintaan terlampaui. Silakan tunggu 1 menit.'}), 429
+    return render_template('index.html', error="Batas permintaan pencarian terlampaui. Silakan tunggu 1 menit."), 429
+
+@app.errorhandler(500)
+def internal_error_handler(e):
+    if request.path.startswith('/api/'):
+        return jsonify({'status': 'error', 'message': 'Terjadi kesalahan internal peladen.'}), 500
+    return render_template('index.html', error="Terjadi kesalahan internal peladen saat mengolah rekomendasi."), 500
+
+@app.errorhandler(404)
+def not_found_handler(e):
+    if request.path.startswith('/api/'):
+        return jsonify({'status': 'error', 'message': 'Endpoint tidak ditemukan.'}), 404
+    return render_template('index.html', error="Halaman tidak ditemukan."), 404
+
+
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # Modus produksi: Nonaktifkan debug mode untuk mencegah kebocoran stack trace
+    app.run(debug=False, port=5000)
 
 

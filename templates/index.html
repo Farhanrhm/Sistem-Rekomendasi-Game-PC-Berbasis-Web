@@ -1167,6 +1167,17 @@
             const gmodal = document.getElementById('game-detail-modal');
             const closeGModal = document.getElementById('close-gmodal');
 
+            // XSS SANITIZATION HELPER FOR FRONTEND
+            function escapeHtml(str) {
+                if (!str) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
             $(document).on('click', '.btn-open-game-modal', function(e) {
                 e.preventDefault();
                 let card = $(this).closest('.rec-card');
@@ -1186,19 +1197,20 @@
                 else if (simFloat >= 40) badgeColor = "#ff9800";
 
                 $('#gmodal-img').attr('src', image);
-                $('#gmodal-title').text(name);
+                $('#gmodal-title').text(name); // .text() Mencegah Reflected XSS
                 $('#gmodal-match').text(matchVal + '% match').css({'border-color': badgeColor, 'color': badgeColor});
-                $('#gmodal-xai').html(exp);
+                $('#gmodal-xai').html(exp); // XAI Narasi Server-side terstruktur
                 let fallbackText = (i18nDict[currentLang] && i18nDict[currentLang]['modal-desc-fallback']) ? i18nDict[currentLang]['modal-desc-fallback'] : 'Deskripsi cerita tidak tersedia.';
-                $('#gmodal-desc').text(desc || fallbackText);
-                $('#gmodal-steam').attr('href', 'https://store.steampowered.com/app/' + appid);
+                $('#gmodal-desc').text(desc || fallbackText); // .text() Mencegah Stored XSS dari Deskripsi Game
+                $('#gmodal-steam').attr('href', 'https://store.steampowered.com/app/' + encodeURIComponent(appid));
 
-                // Build tags pills
+                // Build tags pills dengan sanitasi HTML
                 let tagsHtml = '';
                 let allItems = (genresRaw + ';' + tagsRaw).split(';').map(s => s.trim()).filter(s => s.length > 0);
                 let uniqueItems = [...new Set(allItems)].slice(0, 8);
                 uniqueItems.forEach(item => {
-                    tagsHtml += `<span class="tag" style="background: var(--bg-surface); font-size: 0.72rem; padding: 3px 8px; border-color: var(--border-md);">${item}</span>`;
+                    let safeItem = escapeHtml(item);
+                    tagsHtml += `<span class="tag" style="background: var(--bg-surface); font-size: 0.72rem; padding: 3px 8px; border-color: var(--border-md);">${safeItem}</span>`;
                 });
                 $('#gmodal-tags').html(tagsHtml);
 
