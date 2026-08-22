@@ -1,6 +1,7 @@
-# Python Environment
+# Python Environment & Environment Secrets
 venv/
 env/
+.env
 __pycache__/
 *.py[cod]
 *.csv
