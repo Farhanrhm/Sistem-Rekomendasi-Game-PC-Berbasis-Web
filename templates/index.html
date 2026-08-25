@@ -496,7 +496,7 @@
         {% elif s > 0 %}
             <i class="fas fa-star-half-alt" style="color: var(--red);"></i> Mostly Negative ({{ "%.0f"|format(s) }}%)
         {% else %}
-            <i class="fas fa-minus-circle" style="color: var(--text-3);"></i> N/A (Belum Ada Data Ulasan)
+            <span data-i18n="rating-na"><i class="fas fa-minus-circle" style="color: var(--text-3);"></i> N/A (Belum Ada Ulasan)</span>
         {% endif %}
         
         {% if tot|int > 0 %}
@@ -1081,7 +1081,7 @@
                     "modal-step2": "<strong>Pemberian Nilai Kata:</strong> Sistem mencari kata kunci unik dari sebuah game yang paling membedakannya dari game lain.",
                     "modal-step3": "<strong>Pencocokan Kemiripan:</strong> Sistem menghitung seberapa mirip kata kunci game target dengan ribuan game lain di database kami untuk menemukan kecocokan terbaik.",
                     "modal-note": "*Persentase Kecocokan menunjukkan seberapa identik elemen cerita, mekanik, dan atmosfer game dibandingkan dengan judul pencarian Anda.",
-                    "rating-na": "<i class=\"fas fa-minus-circle\" style=\"color: var(--text-3);\"></i> N/A (Belum Ada Data Ulasan)",
+                    "rating-na": "<i class=\"fas fa-minus-circle\" style=\"color: var(--text-3);\"></i> N/A (Belum Ada Ulasan)",
                     "xai-title": "Penjelasan Rekomendasi (XAI)",
                     "gmodal-features": "Kategori & Fitur Irisan:",
                     "modal-desc-fallback": "Deskripsi cerita tidak tersedia. Game direkomendasikan berdasarkan kemiripan metadata genre dan tag.",
