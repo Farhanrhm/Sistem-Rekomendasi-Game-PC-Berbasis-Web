@@ -35,8 +35,8 @@
             --gold-subtle: rgba(201, 153, 63, 0.08);
             --red: #d94f4f;
             --text-1: #edeae2;
-            --text-2: #7e7c78;
-            --text-3: #3d3c3a;
+            --text-2: #a3a098;
+            --text-3: #585652;
             --border: #232328;
             --border-md: #2e2e35;
             --font-display: "Playfair Display", Georgia, serif;
@@ -182,11 +182,12 @@
         .hero h1 { font-family: var(--font-display); font-size: clamp(1.9rem, 3vw, 2.8rem); font-weight: 900; line-height: 1.12; letter-spacing: -1px; color: var(--text-1); margin-bottom: 1rem; }
         .hero h1 em { font-style: italic; color: var(--gold); }
         .hero-sub { font-size: 0.92rem; color: var(--text-2); margin-bottom: 1.8rem; max-width: 420px; line-height: 1.7; }
-        .search-wrap { display: flex; max-width: 500px; border: 1px solid var(--border-md); border-radius: var(--r-md); overflow: hidden; }
+        .search-wrap { display: flex; max-width: 500px; min-height: 44px; border: 1px solid var(--border-md); border-radius: var(--r-md); overflow: hidden; }
         .search-wrap:focus-within { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-subtle); }
-        .search-wrap input { flex: 1; background: var(--bg-surface); border: none; outline: none; color: var(--text-1); font-family: var(--font-body); font-size: 0.92rem; padding: 0.8rem 1.2rem; }
+        .search-wrap input { flex: 1; min-height: 44px; background: var(--bg-surface); border: none; outline: none; color: var(--text-1); font-family: var(--font-body); font-size: 0.92rem; padding: 0.6rem 1.2rem; }
         .search-wrap input::placeholder { color: var(--text-3); }
-        .search-btn { background: var(--gold); color: #0c0c0d; border: none; padding: 0 1.4rem; font-family: var(--font-body); font-size: 0.82rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; white-space: nowrap; transition: background 0.2s; }
+        .search-wrap select#top_n_select { min-height: 44px; height: 44px; }
+        .search-btn { min-height: 44px; height: 44px; background: var(--gold); color: #0c0c0d; border: none; padding: 0 1.4rem; font-family: var(--font-body); font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; transition: background 0.2s; }
         .search-btn:hover { background: var(--gold-bright); }
         .error-msg { display: inline-flex; align-items: center; gap: 8px; margin-top: 1rem; font-size: 0.82rem; color: var(--red); background: rgba(217, 79, 79, 0.07); border: 1px solid rgba(217, 79, 79, 0.18); border-radius: var(--r-sm); padding: 8px 14px; }
 
@@ -342,7 +343,33 @@
         /* LOADING ANIMATION (NEW) */
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* RESPONSIVE */
+        /* MOBILE UTILITY & HORIZONTAL SCROLL */
+        .scroll-horizontal {
+            display: flex !important;
+            flex-wrap: nowrap !important;
+            overflow-x: auto !important;
+            white-space: nowrap !important;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 6px;
+            gap: 8px;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE/Edge */
+        }
+        .scroll-horizontal::-webkit-scrollbar {
+            display: none; /* Chrome/Safari */
+        }
+        .scroll-horizontal > * {
+            flex-shrink: 0;
+        }
+
+        .filter-bar-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* RESPONSIVE MEDIA QUERIES */
         @media(max-width: 900px) {
             .hero { grid-template-columns: 1fr; } 
             .hero-deco { display: none; }
@@ -354,11 +381,39 @@
             .container { padding: 2rem 1.5rem 4rem; }
             .navbar, .footer { padding-left: 1.5rem; padding-right: 1.5rem; }
         }
+        @media(max-width: 768px) {
+            .section-header {
+                flex-direction: column !alignment;
+                align-items: flex-start !important;
+                gap: 12px !important;
+            }
+            .filter-bar-container {
+                width: 100%;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .filter-bar-container select#filter-genre,
+            .filter-bar-container select#filter-price {
+                flex: 1 1 calc(50% - 4px) !important;
+                min-width: 0 !important;
+                box-sizing: border-box;
+            }
+            .filter-bar-container select#sort-grid {
+                flex: 1 1 100% !important;
+            }
+            .filter-bar-container button#share-btn {
+                flex: 1 1 100% !important;
+                margin: 0 !important;
+                text-align: center;
+                justify-content: center;
+            }
+        }
         @media(max-width: 600px) {
-            .rec-grid { grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 0.8rem; }
+            .rec-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.8rem; }
             .hero h1 { font-size: 1.8rem; } 
+            .hero-sub { font-size: 0.88rem; color: #a8a59e; }
             .footer { flex-direction: column; gap: 6px; text-align: center; }
-            .section-header { flex-direction: column; gap: 4px; }
         }
 
         /* MODAL EXPLAINABLE AI (XAI) */
@@ -484,8 +539,8 @@
                 </div>
             </form>
 
-            <div id="search-history" style="margin-top: 1rem; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; display: none;">
-                <span data-i18n="history-label" style="font-size: 0.75rem; color: var(--text-4); text-transform: uppercase; letter-spacing: 1px;">Terakhir Dicari:</span>
+            <div id="search-history" class="scroll-horizontal" style="margin-top: 1rem; align-items: center; display: none;">
+                <span data-i18n="history-label" style="font-size: 0.75rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px; flex-shrink: 0;">Terakhir Dicari:</span>
             </div>
 
             {% if error %}
@@ -493,9 +548,9 @@
             {% if suggestions %}
             <div style="margin-top: 1.2rem;">
                 <p style="font-size: 0.85rem; color: var(--text-2); margin-bottom: 8px;" data-i18n="suggestion-title">Mungkin Anda mencari game populer ini?</p>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <div class="scroll-horizontal">
                     {% for sug in suggestions %}
-                    <a href="/?q={{ sug | urlencode }}" class="tag" style="background: var(--bg-surface); cursor: pointer; transition: 0.2s; border-color: var(--gold-dim); color: var(--gold);">{{ sug }}</a>
+                    <a href="/?q={{ sug | urlencode }}" class="tag" style="background: var(--bg-surface); cursor: pointer; transition: 0.2s; border-color: var(--gold-dim); color: var(--gold); flex-shrink: 0;">{{ sug }}</a>
                     {% endfor %}
                 </div>
             </div>
@@ -611,11 +666,11 @@
                     <span class="section-title" data-i18n="similar-rec">Rekomendasi Serupa</span>
                 </div>
                 
-                <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-                    <button id="share-btn" class="btn-detail" style="margin: 0; padding: 0.45rem 1rem; color: var(--gold); border-color: var(--gold);" title="Copy Link Hasil">
+                <div class="filter-bar-container">
+                    <button id="share-btn" class="btn-detail" style="margin: 0; padding: 0.55rem 1rem; color: var(--gold); border-color: var(--gold); min-height: 44px; display: inline-flex; align-items: center; justify-content: center; gap: 6px;" title="Copy Link Hasil">
                         <i class="fas fa-link"></i> <span data-i18n="share-btn">Share</span>
                     </button>
-                    <select id="filter-genre" style="background: var(--bg-elevated); color: var(--text-1); border: 1px solid var(--border-md); padding: 0.45rem 0.8rem; border-radius: var(--r-sm); font-family: var(--font-body); font-size: 0.82rem; outline: none; cursor: pointer;">
+                    <select id="filter-genre" style="background: var(--bg-elevated); color: var(--text-1); border: 1px solid var(--border-md); padding: 0.55rem 0.8rem; border-radius: var(--r-sm); font-family: var(--font-body); font-size: 0.85rem; outline: none; cursor: pointer; min-height: 44px;">
                         <option value="all" data-i18n="genre-all">🎮 Semua Genre</option>
                         <option value="action">Action</option>
                         <option value="adventure">Adventure</option>
@@ -626,14 +681,14 @@
                         <option value="simulation">Simulation</option>
                         <option value="sports">Sports</option>
                     </select>
-                    <select id="filter-price" style="background: var(--bg-elevated); color: var(--text-1); border: 1px solid var(--border-md); padding: 0.45rem 0.8rem; border-radius: var(--r-sm); font-family: var(--font-body); font-size: 0.82rem; outline: none; cursor: pointer;">
+                    <select id="filter-price" style="background: var(--bg-elevated); color: var(--text-1); border: 1px solid var(--border-md); padding: 0.55rem 0.8rem; border-radius: var(--r-sm); font-family: var(--font-body); font-size: 0.85rem; outline: none; cursor: pointer; min-height: 44px;">
                         <option value="all" data-i18n="price-all">🏷️ Semua Harga</option>
                         <option value="free" data-i18n="price-free">Gratis (Free to Play)</option>
                         <option value="under10" data-i18n="price-under10">Di bawah $10</option>
                         <option value="under30" data-i18n="price-under30">Di bawah $30</option>
                         <option value="above30" data-i18n="price-above30">Di atas $30</option>
                     </select>
-                    <select id="sort-grid" style="background: var(--bg-elevated); color: var(--text-1); border: 1px solid var(--border-md); padding: 0.45rem 0.8rem; border-radius: var(--r-sm); font-family: var(--font-body); font-size: 0.82rem; outline: none; cursor: pointer;">
+                    <select id="sort-grid" style="background: var(--bg-elevated); color: var(--text-1); border: 1px solid var(--border-md); padding: 0.55rem 0.8rem; border-radius: var(--r-sm); font-family: var(--font-body); font-size: 0.85rem; outline: none; cursor: pointer; min-height: 44px;">
                         <option value="match_desc" data-i18n="sort-match">Highest Match</option>
                         <option value="rating_desc" data-i18n="sort-rating">Best Rating</option>
                         <option value="price_asc" data-i18n="sort-price">Lowest Price</option>
