@@ -364,7 +364,7 @@ def api_search_titles():
     if not query or df is None:
         return jsonify([])
     
-    matches = df[df['name'].str.lower().str.contains(query, regex=False)]['name'].head(7).tolist()
+    matches = df[df['name'].fillna('').str.lower().str.contains(query, regex=False, na=False)]['name'].head(7).tolist()
     return jsonify(matches)
 
 
