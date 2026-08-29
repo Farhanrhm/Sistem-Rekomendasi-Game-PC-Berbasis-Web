@@ -685,7 +685,7 @@
                         <i class="fas fa-link"></i> <span data-i18n="share-btn">Share</span>
                     </button>
                     <select id="filter-genre" style="background: var(--bg-elevated); color: var(--text-1); border: 1px solid var(--border-md); padding: 0.55rem 0.8rem; border-radius: var(--r-sm); font-family: var(--font-body); font-size: 0.85rem; outline: none; cursor: pointer; min-height: 44px;">
-                        <option value="all" data-i18n="genre-all">🎮 Semua Genre</option>
+                        <option value="all" data-i18n="genre-all">Semua Genre</option>
                         <option value="action">Action</option>
                         <option value="adventure">Adventure</option>
                         <option value="rpg">RPG</option>
@@ -696,7 +696,7 @@
                         <option value="sports">Sports</option>
                     </select>
                     <select id="filter-price" style="background: var(--bg-elevated); color: var(--text-1); border: 1px solid var(--border-md); padding: 0.55rem 0.8rem; border-radius: var(--r-sm); font-family: var(--font-body); font-size: 0.85rem; outline: none; cursor: pointer; min-height: 44px;">
-                        <option value="all" data-i18n="price-all">🏷️ Semua Harga</option>
+                        <option value="all" data-i18n="price-all">Semua Harga</option>
                         <option value="free" data-i18n="price-free">Gratis (Free to Play)</option>
                         <option value="under10" data-i18n="price-under10">Di bawah $10</option>
                         <option value="under30" data-i18n="price-under30">Di bawah $30</option>
@@ -744,7 +744,7 @@
                             {% else %}
                                 {% set badge_color = "#9e9e9e" %}
                             {% endif %}
-                            <span class="match-badge" style="border-color: {{ badge_color }}; color: {{ badge_color }};">{{ "%.0f"|format(sim) }}% Tingkat Kemiripan</span>
+                            <span class="match-badge" style="border-color: {{ badge_color }}; color: {{ badge_color }};"><span class="match-val">{{ "%.0f"|format(sim) }}</span>% <span class="similarity-text" data-i18n="similarity_label">Tingkat Kemiripan</span></span>
                         </div>
                         <div class="rec-card-body">
                             <p class="rec-card-name" title="{{ row['name'] }}">{{ row['name'] }}</p>
@@ -770,7 +770,7 @@
                             <p class="rec-card-desc xai-text">
                                 {{ (row['xai_explanation']['dynamic_text'] if 'xai_explanation' in row and 'dynamic_text' in row['xai_explanation'] else row['explanation'] if 'explanation' in row else '') | safe }}
                             </p>
-                            <button class="btn-detail btn-open-game-modal" type="button"><span>🔍 Lihat Penjelasan XAI</span></button>
+                            <button class="btn-detail btn-open-game-modal" type="button"><span><span data-i18n="view_xai_btn">Lihat Penjelasan XAI</span></span></button>
                         </div>
                     </div>
                     {% endif %}
@@ -1095,8 +1095,8 @@
                     "open-steam": "Buka di Steam",
                     "similar-rec": "Rekomendasi Serupa",
                     "share-btn": "Share",
-                    "genre-all": "🎮 Semua Genre",
-                    "price-all": "🏷️ Semua Harga",
+                    "genre-all": "Semua Genre",
+                    "price-all": "Semua Harga",
                     "price-free": "Gratis (Free to Play)",
                     "price-under10": "Di bawah $10",
                     "price-under30": "Di bawah $30",
@@ -1121,6 +1121,8 @@
                     "gmodal-features": "Kategori & Fitur Irisan:",
                     "modal-desc-fallback": "Deskripsi cerita tidak tersedia. Game direkomendasikan berdasarkan kemiripan metadata genre dan tag.",
                     "load-more-btn": "Tampilkan Lebih Banyak",
+                    "similarity_label": "Tingkat Kemiripan",
+                    "view_xai_btn": "Lihat Penjelasan XAI",
                     "footer-text": "LevelFind &copy; 2026 &mdash; Sistem Rekomendasi Game PC"
                 },
                 en: {
@@ -1144,8 +1146,8 @@
                     "open-steam": "Open on Steam",
                     "similar-rec": "Similar Recommendations",
                     "share-btn": "Share",
-                    "genre-all": "🎮 All Genres",
-                    "price-all": "🏷️ All Prices",
+                    "genre-all": "All Genres",
+                    "price-all": "All Prices",
                     "price-free": "Free to Play",
                     "price-under10": "Under $10",
                     "price-under30": "Under $30",
@@ -1170,6 +1172,8 @@
                     "gmodal-features": "Matching Categories & Features:",
                     "modal-desc-fallback": "Detailed description unavailable. Game recommended based on matching genre and tag metadata.",
                     "load-more-btn": "Load More",
+                    "similarity_label": "Similarity",
+                    "view_xai_btn": "View XAI Explanation",
                     "footer-text": "LevelFind &copy; 2026 &mdash; PC Game Recommendation System"
                 }
             };
@@ -1420,10 +1424,14 @@
                         duration: 1000,
                         easing: 'swing',
                         step: function() {
-                            $this.text(Math.floor(this.countNum) + '% Tingkat Kemiripan');
+                            let currentLang = localStorage.getItem('lf-lang') || 'id';
+                            let simText = (i18nDict[currentLang] && i18nDict[currentLang]['similarity_label']) ? i18nDict[currentLang]['similarity_label'] : 'Tingkat Kemiripan';
+                            $this.html(`<span class="match-val">${Math.floor(this.countNum)}</span>% <span class="similarity-text" data-i18n="similarity_label">${simText}</span>`);
                         },
                         complete: function() {
-                            $this.text(targetVal + '% Tingkat Kemiripan');
+                            let currentLang = localStorage.getItem('lf-lang') || 'id';
+                            let simText = (i18nDict[currentLang] && i18nDict[currentLang]['similarity_label']) ? i18nDict[currentLang]['similarity_label'] : 'Tingkat Kemiripan';
+                            $this.html(`<span class="match-val">${targetVal}</span>% <span class="similarity-text" data-i18n="similarity_label">${simText}</span>`);
                         }
                     });
                 }
