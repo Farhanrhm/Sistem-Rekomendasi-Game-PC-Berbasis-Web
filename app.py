@@ -28,13 +28,13 @@ CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5000", "http://12
 
 def sanitize_input(user_input):
     """
-    Sanitasi kata kunci pencarian dari potensi injeksi karakter berbahaya/HTML tags.
+    Sanitasi kata kunci pencarian dari potensi injeksi HTML tags.
     """
     if not user_input or not isinstance(user_input, str):
         return ""
-    clean_str = re.sub(r'<[^>]*>', '', user_input)
-    clean_str = html.escape(clean_str.strip())
-    return clean_str[:100]
+    clean_str = html.unescape(user_input)
+    clean_str = re.sub(r'<[^>]*>', '', clean_str)
+    return clean_str.strip()[:100]
 
 # ==============================================================================
 # 2. BATASAN PEMODELAN & MEMORI & 3. LAZY LOADING
@@ -195,7 +195,7 @@ def _cached_get_recommendations(query_clean, top_n=12):
         matches = df[df['name'].str.lower().str.contains(query_clean, regex=False, na=False)]
         
     if matches.empty:
-        return None, f"Game '{query_clean}' tidak ditemukan dalam database."
+        return None, f"Game '{query_clean}' tidak ditemukan dalam sistem kami."
 
     target_idx = matches.index[0]
     target_row = df.iloc[target_idx]
