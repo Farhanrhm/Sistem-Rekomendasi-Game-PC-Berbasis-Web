@@ -158,12 +158,22 @@ def extract_tfidf_xai_explanation(target_idx, cand_idx, target_row, cand_row):
     tag_contributions.sort(key=lambda x: x[1], reverse=True)
     top_matching_tags = [t[0] for t in tag_contributions[:5]]
 
+    # Ambil top 2 fitur dengan kontribusi tertinggi untuk lokalisasi frontend
+    candidates = []
+    for g, score in genre_contributions:
+        candidates.append({'type': 'Genre', 'name': g, 'score': score})
+    for t, score in tag_contributions:
+        candidates.append({'type': 'Tag', 'name': t, 'score': score})
+    candidates.sort(key=lambda x: x['score'], reverse=True)
+    top_features = [{'type': item['type'], 'name': item['name']} for item in candidates[:2]]
+
     # Hasilkan narasi XAI akademis dinamis dari 2 fitur kontribusi TF-IDF tertinggi
     dynamic_text = generate_dynamic_xai_text(genre_contributions, tag_contributions)
 
     return {
         "top_matching_genres": top_matching_genres,
         "top_matching_tags": top_matching_tags,
+        "top_features": top_features,
         "dynamic_text": dynamic_text
     }
 

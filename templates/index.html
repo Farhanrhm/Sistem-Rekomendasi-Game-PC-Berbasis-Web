@@ -324,9 +324,23 @@
         .rec-card-price { font-family: var(--font-mono); font-size: 0.76rem; color: var(--gold); }
         .rec-mini-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
         .rec-mini-tag { font-family: var(--font-mono); font-size: 0.58rem; text-transform: uppercase; background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-2); padding: 2px 7px; border-radius: 3px; }
-        .rec-card-desc { font-size: 0.8rem; color: var(--text-2); line-height: 1.6; margin-bottom: 0.9rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        /* OVERRIDE XAI TRUNCATION: Tampilkan Kalimat Utuh Tanpa Ellipsis */
+        .rec-card-desc,
+        .xai-text {
+            font-size: 0.78rem;
+            line-height: 1.5;
+            color: var(--text-2);
+            margin-top: 6px;
+            margin-bottom: 0.9rem;
+            display: block !important;
+            -webkit-line-clamp: unset !important;
+            -webkit-box-orient: unset !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+            white-space: normal !important;
+            height: auto !important;
+        }
         .xai-highlight { color: var(--gold); font-weight: 600; }
-        .xai-text { font-size: 0.78rem; line-height: 1.45; color: var(--text-2); margin-top: 6px; margin-bottom: 0.9rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; }
         .btn-detail { display: block; text-align: center; padding: 0.5rem; background: transparent; border: 1px solid var(--border-md); color: var(--text-2); border-radius: var(--r-sm); font-size: 0.78rem; margin-top: auto; cursor: pointer; width: 100%; transition: all 0.2s ease; }
         .btn-detail:hover { border-color: var(--gold-dim); color: var(--gold); background: var(--gold-subtle); }
 
@@ -710,6 +724,7 @@
                          data-score="{{ row['similarity_score'] if 'similarity_score' in row else '0.0' }}"
                          data-top-genres='{{ (row["xai_explanation"]["top_matching_genres"] if "xai_explanation" in row and "top_matching_genres" in row["xai_explanation"] else []) | tojson }}'
                          data-top-tags='{{ (row["xai_explanation"]["top_matching_tags"] if "xai_explanation" in row and "top_matching_tags" in row["xai_explanation"] else []) | tojson }}'
+                         data-top-features='{{ (row["xai_explanation"]["top_features"] if "xai_explanation" in row and "top_features" in row["xai_explanation"] else row["top_features"] if "top_features" in row else []) | tojson }}'
                          data-dynamic-text="{{ row['xai_explanation']['dynamic_text'] if 'xai_explanation' in row and 'dynamic_text' in row['xai_explanation'] else row['explanation'] if 'explanation' in row else '' }}"
                          data-rating="{{ row['rating_score'] if 'rating_score' in row else 0 }}" 
                          data-price="{{ row['price'] if 'price' in row else 0 }}"
@@ -1198,6 +1213,38 @@
                 }
             }
 
+            window.generateXaiText = function(features, currentLang) {
+                let isEn = (currentLang === 'en');
+                
+                if (!features || !Array.isArray(features) || features.length === 0) {
+                    return isEn 
+                        ? "This game is recommended based on overall key feature similarity."
+                        : "Game ini direkomendasikan berdasarkan tingkat kemiripan fitur utama.";
+                }
+
+                if (features.length === 1) {
+                    let f1 = features[0];
+                    let t1 = f1.type || (isEn ? 'Feature' : 'Fitur');
+                    let n1 = f1.name || '';
+                    return isEn
+                        ? `This game is recommended because it shares similar ${t1} ${n1} with your selected game.`
+                        : `Game ini direkomendasikan karena memiliki ${t1} ${n1} yang serupa dengan game yang Anda pilih.`;
+                }
+
+                let f1 = features[0];
+                let f2 = features[1];
+                let t1 = f1.type || (isEn ? 'Feature' : 'Fitur');
+                let n1 = f1.name || '';
+                let t2 = f2.type || (isEn ? 'Feature' : 'Fitur');
+                let n2 = f2.name || '';
+
+                if (isEn) {
+                    return `This game is recommended because it shares similar ${t1} ${n1} and ${t2} ${n2} with your selected game.`;
+                } else {
+                    return `Game ini direkomendasikan karena memiliki ${t1} ${n1} dan ${t2} ${n2} yang serupa dengan game yang Anda pilih.`;
+                }
+            };
+
             function updateDOMText(lang) {
                 $('[data-i18n]').each(function() {
                     let key = $(this).data('i18n');
@@ -1214,12 +1261,26 @@
                 });
 
                 $('.rec-card').each(function() {
-                    let expId = $(this).attr('data-exp-id');
-                    let expEn = $(this).attr('data-exp-en');
-                    if (lang === 'en' && expEn) {
-                        $(this).find('.xai-text').html(expEn);
-                    } else if (lang === 'id' && expId) {
-                        $(this).find('.xai-text').html(expId);
+                    let card = $(this);
+                    let topFeatures = [];
+                    try {
+                        topFeatures = JSON.parse(card.attr('data-top-features') || '[]');
+                    } catch(err) {
+                        topFeatures = [];
+                    }
+
+                    if (topFeatures && topFeatures.length > 0) {
+                        let xaiText = generateXaiText(topFeatures, lang);
+                        card.find('.xai-text').text(xaiText);
+                        card.attr('data-dynamic-text', xaiText);
+                    } else {
+                        let expId = card.attr('data-exp-id');
+                        let expEn = card.attr('data-exp-en');
+                        if (lang === 'en' && expEn) {
+                            card.find('.xai-text').html(expEn);
+                        } else if (lang === 'id' && expId) {
+                            card.find('.xai-text').html(expId);
+                        }
                     }
                 });
 
