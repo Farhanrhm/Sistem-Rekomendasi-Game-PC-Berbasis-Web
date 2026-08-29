@@ -619,7 +619,7 @@
                             {% elif row['detailed_description'] is string and row['detailed_description'] and row['detailed_description'] != 'nan' %}
                                 {{ row['detailed_description'] | striptags | truncate(280) }}
                             {% else %}
-                                <span data-i18n="desc-fallback">Eksplorasi lebih lanjut untuk mengetahui detail mekanik dan cerita dari game ini.</span>
+                                <span data-i18n="fallback_desc">Informasi detail untuk game ini belum tersedia di sistem kami.</span>
                             {% endif %}
                         </p>
                         <div class="tags-row">
@@ -1089,8 +1089,9 @@
                     "game-profile": "Profil & Karakteristik Game",
                     "profile-sub": "Sistem mempelajari dan mencocokkan game ini dengan game lain berdasarkan informasi berikut:",
                     "synopsis-label": "Sinopsis / Deskripsi Game",
-                    "synopsis-fallback": "Deskripsi ringkas untuk game ini belum tersedia di basis data. Sistem mengelompokkan game ini berdasarkan kategori dan fitur: ",
-                    "desc-fallback": "Eksplorasi lebih lanjut untuk mengetahui detail mekanik dan cerita dari game ini.",
+                    "fallback_desc": "Informasi detail untuk game ini belum tersedia di sistem kami.",
+                    "synopsis-fallback": "Informasi detail untuk game ini belum tersedia di sistem kami.",
+                    "desc-fallback": "Informasi detail untuk game ini belum tersedia di sistem kami.",
                     "categories-label": "Kategori & Fitur (Tags & Genres)",
                     "open-steam": "Buka di Steam",
                     "similar-rec": "Rekomendasi Serupa",
@@ -1114,12 +1115,12 @@
                     "modal-intro": "Sistem ini merekomendasikan game berdasarkan kemiripan konten melalui 3 langkah sederhana:",
                     "modal-step1": "<strong>Pembersihan Data:</strong> Sistem merapikan teks deskripsi, tag, dan genre game agar mudah dibaca oleh mesin.",
                     "modal-step2": "<strong>Pemberian Nilai Kata:</strong> Sistem mencari kata kunci unik dari sebuah game yang paling membedakannya dari game lain.",
-                    "modal-step3": "<strong>Pencocokan Kemiripan:</strong> Sistem menghitung seberapa mirip kata kunci game target dengan ribuan game lain di database kami untuk menemukan kecocokan terbaik.",
+                    "modal-step3": "<strong>Pencocokan Kemiripan:</strong> Sistem menghitung seberapa mirip kata kunci game target dengan ribuan game lain di sistem kami untuk menemukan kecocokan terbaik.",
                     "modal-note": "*Persentase Kecocokan menunjukkan seberapa identik elemen cerita, mekanik, dan atmosfer game dibandingkan dengan judul pencarian Anda.",
                     "rating-na": "<i class=\"fas fa-minus-circle\" style=\"color: var(--text-3);\"></i> N/A (Belum Ada Ulasan)",
                     "xai-title": "Penjelasan Rekomendasi (XAI)",
                     "gmodal-features": "Kategori & Fitur Irisan:",
-                    "modal-desc-fallback": "Deskripsi cerita tidak tersedia. Game direkomendasikan berdasarkan kemiripan metadata genre dan tag.",
+                    "modal-desc-fallback": "Informasi detail untuk game ini belum tersedia di sistem kami.",
                     "load-more-btn": "Tampilkan Lebih Banyak",
                     "similarity_label": "Tingkat Kemiripan",
                     "view_xai_btn": "Lihat Penjelasan XAI",
@@ -1140,8 +1141,9 @@
                     "game-profile": "Game Profile & Characteristics",
                     "profile-sub": "The system analyzes and matches this game with others based on the following information:",
                     "synopsis-label": "Synopsis / Game Description",
-                    "synopsis-fallback": "A concise summary for this game is not available in the database yet. The system categorizes it by features & genres: ",
-                    "desc-fallback": "Explore further to learn more about the mechanics and story of this game.",
+                    "fallback_desc": "Detailed information for this game is not yet available in our system.",
+                    "synopsis-fallback": "Detailed information for this game is not yet available in our system.",
+                    "desc-fallback": "Detailed information for this game is not yet available in our system.",
                     "categories-label": "Category & Features (Tags & Genres)",
                     "open-steam": "Open on Steam",
                     "similar-rec": "Similar Recommendations",
@@ -1165,12 +1167,12 @@
                     "modal-intro": "This system recommends games based on content similarity through 3 simple steps:",
                     "modal-step1": "<strong>Data Cleaning:</strong> Cleans and organizes game descriptions, tags, and genres to make them machine-readable.",
                     "modal-step2": "<strong>Keyword Weighting:</strong> Identifies unique keywords of a game that distinguish it most from other games.",
-                    "modal-step3": "<strong>Similarity Matching:</strong> Calculates how similar the target game keywords are to thousands of other games in our database to find the best match.",
+                    "modal-step3": "<strong>Similarity Matching:</strong> Calculates how similar the target game keywords are to thousands of other games in our system to find the best match.",
                     "modal-note": "*Match Percentage reflects how identical the story elements, mechanics, and atmosphere are compared to your search title.",
                     "rating-na": "<i class=\"fas fa-minus-circle\" style=\"color: var(--text-3);\"></i> N/A (No Reviews Yet)",
                     "xai-title": "Recommendation Explanation (XAI)",
                     "gmodal-features": "Matching Categories & Features:",
-                    "modal-desc-fallback": "Detailed description unavailable. Game recommended based on matching genre and tag metadata.",
+                    "modal-desc-fallback": "Detailed information for this game is not yet available in our system.",
                     "load-more-btn": "Load More",
                     "similarity_label": "Similarity",
                     "view_xai_btn": "View XAI Explanation",
@@ -1353,8 +1355,12 @@
                 $('#gmodal-score-val').text(rawScore);
                 $('#gmodal-xai').html(escapeHtml(dynamicText));
                 
-                let fallbackText = (i18nDict[currentLang] && i18nDict[currentLang]['modal-desc-fallback']) ? i18nDict[currentLang]['modal-desc-fallback'] : 'Deskripsi cerita tidak tersedia.';
-                $('#gmodal-desc').text(desc || fallbackText);
+                let fallbackText = (i18nDict[currentLang] && i18nDict[currentLang]['fallback_desc']) ? i18nDict[currentLang]['fallback_desc'] : 'Informasi detail untuk game ini belum tersedia di sistem kami.';
+                if (!desc || desc.trim() === '' || desc === 'nan') {
+                    $('#gmodal-desc').html(`<span data-i18n="fallback_desc">${fallbackText}</span>`);
+                } else {
+                    $('#gmodal-desc').text(desc);
+                }
                 $('#gmodal-steam').attr('href', 'https://store.steampowered.com/app/' + encodeURIComponent(appid));
 
                 // Render ONLY top_matching_genres and top_matching_tags returned by backend
