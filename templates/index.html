@@ -699,25 +699,29 @@
             <div class="rec-grid">
                 {% for index, row in recommendations.iterrows() %}
                     {% if not loop.first %}
-                    <div class="rec-card {% if loop.index >= 10 %}extra-card{% endif %} {% if (row['similarity_score']|float) >= 80 %}high-match{% endif %}" 
+                    {% set sim = (row['similarity_percentage']|default(row['similarity_score']|float * 100)|float) %}
+                    <div class="rec-card {% if loop.index >= 10 %}extra-card{% endif %} {% if sim >= 80 %}high-match{% endif %}" 
                          {% if loop.index >= 10 %}style="display: none;"{% endif %}
                          data-name="{{ row['name'] }}"
                          data-appid="{{ row['steam_appid'] }}"
                          data-image="{{ row['header_image'] }}"
-                         data-match-val="{{ "%.0f"|format(row['similarity_score']|float) }}"
+                         data-match-val="{{ "%.0f"|format(sim) }}"
                          data-match="{{ row['similarity_score'] }}" 
+                         data-score="{{ row['similarity_score'] if 'similarity_score' in row else '0.0' }}"
+                         data-top-genres='{{ (row["xai_explanation"]["top_matching_genres"] if "xai_explanation" in row and "top_matching_genres" in row["xai_explanation"] else []) | tojson }}'
+                         data-top-tags='{{ (row["xai_explanation"]["top_matching_tags"] if "xai_explanation" in row and "top_matching_tags" in row["xai_explanation"] else []) | tojson }}'
+                         data-dynamic-text="{{ row['xai_explanation']['dynamic_text'] if 'xai_explanation' in row and 'dynamic_text' in row['xai_explanation'] else row['explanation'] if 'explanation' in row else '' }}"
                          data-rating="{{ row['rating_score'] if 'rating_score' in row else 0 }}" 
                          data-price="{{ row['price'] if 'price' in row else 0 }}"
                          data-genres="{{ (row['genres'] ~ ' ' ~ row['tags']) | lower if 'genres' in row else '' }}"
                          data-genres-raw="{{ row['genres'] if 'genres' in row else '' }}"
                          data-tags-raw="{{ row['tags'] if 'tags' in row else '' }}"
                          data-desc="{{ (row['short_description'] | striptags) if ('short_description' in row and row['short_description'] and row['short_description'] != 'nan') else (row['detailed_description'] | striptags | truncate(250)) if ('detailed_description' in row and row['detailed_description'] and row['detailed_description'] != 'nan') else '' }}"
-                         data-exp-id="{{ row['explanation_id'] if 'explanation_id' in row else row['explanation'] if 'explanation' in row else '' }}"
-                         data-exp-en="{{ row['explanation_en'] if 'explanation_en' in row else '' }}">
+                         data-exp-id="{{ row['xai_explanation']['dynamic_text'] if 'xai_explanation' in row and 'dynamic_text' in row['xai_explanation'] else row['explanation_id'] if 'explanation_id' in row else row['explanation'] if 'explanation' in row else '' }}"
+                         data-exp-en="{{ row['xai_explanation']['dynamic_text'] if 'xai_explanation' in row and 'dynamic_text' in row['xai_explanation'] else row['explanation_en'] if 'explanation_en' in row else '' }}">
                         <div class="rec-card-img">
                             <img src="{{ row['header_image'] }}" alt="{{ row['name'] }}" loading="lazy"
                                  onerror="this.onerror=null;this.src='https://cdn.akamai.steamstatic.com/steam/apps/{{ row['steam_appid'] }}/capsule_616x353.jpg';">
-                            {% set sim = row['similarity_score']|float %}
                             {% if sim > 50 %}
                                 {% set badge_color = "#4caf50" %}
                             {% elif sim >= 40 %}
@@ -725,7 +729,7 @@
                             {% else %}
                                 {% set badge_color = "#9e9e9e" %}
                             {% endif %}
-                            <span class="match-badge" style="border-color: {{ badge_color }}; color: {{ badge_color }};">{{ "%.0f"|format(sim) }}% match</span>
+                            <span class="match-badge" style="border-color: {{ badge_color }}; color: {{ badge_color }};">{{ "%.0f"|format(sim) }}% Tingkat Kemiripan</span>
                         </div>
                         <div class="rec-card-body">
                             <p class="rec-card-name" title="{{ row['name'] }}">{{ row['name'] }}</p>
@@ -738,16 +742,20 @@
                                 </span>
                             </div>
                             <div class="rec-mini-tags">
-                                {% if row['genres'] is string and row['genres'] %}
+                                {% if row['xai_explanation'] is defined and row['xai_explanation'] and row['xai_explanation']['top_matching_genres'] %}
+                                    {% for genre in row['xai_explanation']['top_matching_genres'][:2] %}
+                                        <span class="rec-mini-tag">{{ genre }}</span>
+                                    {% endfor %}
+                                {% elif row['genres'] is string and row['genres'] %}
                                     {% for genre in row['genres'].split(';')[:2] %}
                                         <span class="rec-mini-tag">{{ genre }}</span>
                                     {% endfor %}
                                 {% endif %}
                             </div>
                             <p class="rec-card-desc xai-text">
-                                {{ (row['explanation_id'] if 'explanation_id' in row else row['explanation'] if 'explanation' in row else '') | safe }}
+                                {{ (row['xai_explanation']['dynamic_text'] if 'xai_explanation' in row and 'dynamic_text' in row['xai_explanation'] else row['explanation'] if 'explanation' in row else '') | safe }}
                             </p>
-                            <button class="btn-detail btn-open-game-modal" type="button"><span data-i18n="detail-btn">Lihat Detail &#8594;</span></button>
+                            <button class="btn-detail btn-open-game-modal" type="button"><span>🔍 Lihat Penjelasan XAI</span></button>
                         </div>
                     </div>
                     {% endif %}
@@ -813,15 +821,27 @@
             <div style="padding: 1.5rem;">
                 <h3 id="gmodal-title" style="font-family: var(--font-display); font-size: 1.35rem; color: var(--text-1); margin-bottom: 0.8rem; font-weight: 700;"></h3>
                 
+                <!-- Score & Method Meta Section -->
+                <div style="display: flex; gap: 10px; margin-bottom: 1rem; font-family: var(--font-mono); font-size: 0.75rem;">
+                    <div style="background: var(--bg-surface); border: 1px solid var(--border-md); padding: 8px 12px; border-radius: var(--r-sm); color: var(--gold); flex: 1;">
+                        <strong style="color: var(--text-2); display: block; font-size: 0.65rem;">SIMILARITY SCORE:</strong>
+                        <span id="gmodal-score-val" style="font-size: 1rem; font-weight: 700;">0.83</span>
+                    </div>
+                    <div style="background: var(--bg-surface); border: 1px solid var(--border-md); padding: 8px 12px; border-radius: var(--r-sm); color: var(--text-1); flex: 1.3;">
+                        <strong style="color: var(--text-2); display: block; font-size: 0.65rem;">METHOD:</strong>
+                        <span style="font-size: 0.82rem;">TF-IDF + Cosine Similarity</span>
+                    </div>
+                </div>
+
                 <!-- XAI Explanation -->
                 <div style="background: var(--bg-elevated); padding: 0.85rem 1rem; border-radius: var(--r-sm); border-left: 3px solid var(--gold); margin-bottom: 1.2rem;">
                     <p style="font-size: 0.7rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-weight: 600;" data-i18n="xai-title">Penjelasan Rekomendasi (XAI)</p>
                     <p id="gmodal-xai" style="font-size: 0.84rem; color: var(--text-1); line-height: 1.45; margin: 0;"></p>
                 </div>
 
-                <!-- Genres & Tags -->
+                <!-- Top Matching Genres & Tags -->
                 <div style="margin-bottom: 1.2rem;">
-                    <strong style="font-size: 0.72rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 6px;" data-i18n="gmodal-features">Kategori &amp; Fitur Irisan:</strong>
+                    <strong style="font-size: 0.72rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 6px;" data-i18n="gmodal-features">Top Matching Genres &amp; Tags:</strong>
                     <div id="gmodal-tags" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
                 </div>
 
@@ -1242,11 +1262,20 @@
                 let appid = card.attr('data-appid');
                 let image = card.attr('data-image');
                 let matchVal = card.attr('data-match-val');
-                let genresRaw = card.attr('data-genres-raw') || '';
-                let tagsRaw = card.attr('data-tags-raw') || '';
+                let rawScore = card.attr('data-score') || '0.83';
+                let dynamicText = card.attr('data-dynamic-text') || card.attr('data-exp-id') || '';
+                
+                let topGenres = [];
+                let topTags = [];
+                try {
+                    topGenres = JSON.parse(card.attr('data-top-genres') || '[]');
+                } catch(err) { topGenres = []; }
+                try {
+                    topTags = JSON.parse(card.attr('data-top-tags') || '[]');
+                } catch(err) { topTags = []; }
+
                 let desc = card.attr('data-desc') || '';
                 let currentLang = localStorage.getItem('lf-lang') || 'id';
-                let exp = (currentLang === 'en') ? card.attr('data-exp-en') : card.attr('data-exp-id');
 
                 let badgeColor = "#9e9e9e";
                 let simFloat = parseFloat(matchVal);
@@ -1254,21 +1283,32 @@
                 else if (simFloat >= 40) badgeColor = "#ff9800";
 
                 $('#gmodal-img').attr('src', image);
-                $('#gmodal-title').text(name); // .text() Mencegah Reflected XSS
-                $('#gmodal-match').text(matchVal + '% match').css({'border-color': badgeColor, 'color': badgeColor});
-                $('#gmodal-xai').html(exp); // XAI Narasi Server-side terstruktur
+                $('#gmodal-title').text(name);
+                $('#gmodal-match').text(matchVal + '% Tingkat Kemiripan').css({'border-color': badgeColor, 'color': badgeColor});
+                $('#gmodal-score-val').text(rawScore);
+                $('#gmodal-xai').html(escapeHtml(dynamicText));
+                
                 let fallbackText = (i18nDict[currentLang] && i18nDict[currentLang]['modal-desc-fallback']) ? i18nDict[currentLang]['modal-desc-fallback'] : 'Deskripsi cerita tidak tersedia.';
-                $('#gmodal-desc').text(desc || fallbackText); // .text() Mencegah Stored XSS dari Deskripsi Game
+                $('#gmodal-desc').text(desc || fallbackText);
                 $('#gmodal-steam').attr('href', 'https://store.steampowered.com/app/' + encodeURIComponent(appid));
 
-                // Build tags pills dengan sanitasi HTML
+                // Render ONLY top_matching_genres and top_matching_tags returned by backend
                 let tagsHtml = '';
-                let allItems = (genresRaw + ';' + tagsRaw).split(';').map(s => s.trim()).filter(s => s.length > 0);
-                let uniqueItems = [...new Set(allItems)].slice(0, 8);
-                uniqueItems.forEach(item => {
-                    let safeItem = escapeHtml(item);
-                    tagsHtml += `<span class="tag" style="background: var(--bg-surface); font-size: 0.72rem; padding: 3px 8px; border-color: var(--border-md);">${safeItem}</span>`;
-                });
+                if (topGenres && topGenres.length > 0) {
+                    topGenres.forEach(genre => {
+                        let safeGenre = escapeHtml(genre);
+                        tagsHtml += `<span class="tag" style="background: var(--gold-subtle); color: var(--gold); font-size: 0.72rem; padding: 3px 10px; border-color: var(--gold-dim); font-weight: 500;">Genre: ${safeGenre}</span>`;
+                    });
+                }
+                if (topTags && topTags.length > 0) {
+                    topTags.forEach(tag => {
+                        let safeTag = escapeHtml(tag);
+                        tagsHtml += `<span class="tag" style="background: var(--bg-surface); font-size: 0.72rem; padding: 3px 10px; border-color: var(--border-md);">Tag: ${safeTag}</span>`;
+                    });
+                }
+                if (!tagsHtml) {
+                    tagsHtml = '<span class="tag" style="background: var(--bg-surface); font-size: 0.72rem; padding: 3px 10px;">Fitur Gameplay Irisan</span>';
+                }
                 $('#gmodal-tags').html(tagsHtml);
 
                 gmodal.classList.add('show');
@@ -1319,10 +1359,10 @@
                         duration: 1000,
                         easing: 'swing',
                         step: function() {
-                            $this.text(Math.floor(this.countNum) + '% match');
+                            $this.text(Math.floor(this.countNum) + '% Tingkat Kemiripan');
                         },
                         complete: function() {
-                            $this.text(targetVal + '% match');
+                            $this.text(targetVal + '% Tingkat Kemiripan');
                         }
                     });
                 }

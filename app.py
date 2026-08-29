@@ -82,69 +82,90 @@ def calc_edit_distance_ratio(title1, title2):
     return dist / max_len
 
 
-def extract_dominant_genre(target_genres_str, rec_genres_str):
+def generate_dynamic_xai_text(genre_contributions, tag_contributions):
     """
-    Ekstrak genre dominan yang beririsan antara game target dan game rekomendasi.
+    Fungsi pembantu untuk menghasilkan narasi XAI akademis secara dinamis 
+    berdasarkan 2 fitur dengan kontribusi TF-IDF tertinggi.
     """
-    if not isinstance(target_genres_str, str) or not isinstance(rec_genres_str, str):
-        return "Genre"
-    target_genres = [g.strip() for g in target_genres_str.split(';') if g.strip()]
-    rec_genres = [g.strip() for g in rec_genres_str.split(';') if g.strip()]
+    candidates = []
+    for g, score in genre_contributions:
+        candidates.append({'type': 'Genre', 'name': g, 'score': score})
+    for t, score in tag_contributions:
+        candidates.append({'type': 'Tag', 'name': t, 'score': score})
+
+    # Urutkan berdasarkan kontribusi skor TF-IDF descending
+    candidates.sort(key=lambda x: x['score'], reverse=True)
+
+    if not candidates:
+        return "Game ini direkomendasikan berdasarkan tingkat kemiripan fitur utama dengan game yang Anda pilih."
+
+    if len(candidates) == 1:
+        f1 = candidates[0]
+        return f"Game ini direkomendasikan karena memiliki {f1['type']} {f1['name']} yang serupa dengan game yang Anda pilih."
+
+    f1, f2 = candidates[0], candidates[1]
+    return (
+        f"Game ini direkomendasikan karena memiliki {f1['type']} {f1['name']} "
+        f"dan {f2['type']} {f2['name']} yang serupa dengan game yang Anda pilih."
+    )
+
+
+def extract_tfidf_xai_explanation(target_idx, cand_idx, target_row, cand_row):
+    """
+    Ekstraksi XAI berdasarkan bobot kontribusi TF-IDF riil (tfidf_query[term] * tfidf_candidate[term]).
+    Mengidentifikasi genre dan tag yang beririsan, menghitung bobot kontribusinya,
+    mengurutkan secara descending, dan mengambil top 3-5 term untuk JSON XAI data.
+    """
+    if tfidf_matrix is None or tfidf_vectorizer is None:
+        return {
+            "top_matching_genres": [],
+            "top_matching_tags": [],
+            "dynamic_text": "Game ini direkomendasikan berdasarkan tingkat kemiripan fitur utama."
+        }
+
+    query_vec = tfidf_matrix[target_idx]
+    cand_vec = tfidf_matrix[cand_idx]
     
-    # Cari genre yang sama
-    common = [g for g in rec_genres if g in target_genres]
-    if common:
-        return common[0]
-    elif rec_genres:
-        return rec_genres[0]
-    return "Genre"
-
-
-def is_generic_or_meta_tag(tag_str):
-    """
-    Memeriksa apakah tag merupakan metadata teknis/platform Steam (bukan fitur gameplay utama).
-    """
-    t_low = str(tag_str).lower().strip()
-    meta_keywords = [
-        'single-player', 'singleplayer', 'multi-player', 'multiplayer', 'co-op', 'online co-op',
-        'soundtrack', 'achievements', 'controller', '2d', '3d', 'casual', 'indie',
-        'camera', 'volume', 'audio', 'sound', 'stereo', 'subtitle', 'captions', 'cloud', 'trading card',
-        'family sharing', 'hdr', 'remote play', 'level editor', 'leaderboard', 'vr support',
-        'stats', 'workshop', 'commentary', 'timed input', 'input', 'toggle', 'menu',
-        'accessibility', 'text size', 'color alternatives', 'support'
-    ]
-    return any(kw in t_low for kw in meta_keywords)
-
-
-def extract_xai_features(target_genres, target_tags, cand_genres, cand_tags):
-    """
-    Ekstraksi 2 fitur teratas yang beririsan (1 Genre + 1 Tag Gameplay Spesifik).
-    Memfilter tag generik agar narasi XAI lebih berbobot dan bermakna bagi gamer.
-    """
-    t_genres = [g.strip() for g in str(target_genres).split(';') if g.strip()]
-    c_genres = [g.strip() for g in str(cand_genres).split(';') if g.strip()]
-    intersect_genres = [g for g in c_genres if g in t_genres]
-    matched_genre = intersect_genres[0] if intersect_genres else (c_genres[0] if c_genres else 'Action')
-
-    t_tags = [t.strip() for t in str(target_tags).split(';') if t.strip()]
-    c_tags = [t.strip() for t in str(cand_tags).split(';') if t.strip()]
+    # Hitung kontribusi perkalian elemen TF-IDF (element-wise product)
+    prod = query_vec.multiply(cand_vec)
+    vocab = tfidf_vectorizer.vocabulary_
     
-    specific_matched = [t for t in c_tags if t in t_tags and not is_generic_or_meta_tag(t)]
-    all_matched = [t for t in c_tags if t in t_tags]
-    specific_cand = [t for t in c_tags if not is_generic_or_meta_tag(t)]
+    # Irisan Genres antara game target dan game kandidat
+    q_genres = [g.strip() for g in str(target_row.get('genres', '')).split(';') if g.strip()]
+    c_genres = [g.strip() for g in str(cand_row.get('genres', '')).split(';') if g.strip()]
+    common_genres = [g for g in c_genres if g in q_genres]
     
-    if specific_matched:
-        matched_tag = specific_matched[0]
-    elif specific_cand:
-        matched_tag = specific_cand[0]
-    elif all_matched:
-        matched_tag = all_matched[0]
-    elif c_tags:
-        matched_tag = c_tags[0]
-    else:
-        matched_tag = 'Gameplay'
-        
-    return matched_genre, matched_tag
+    # Irisan Tags antara game target dan game kandidat
+    q_tags = [t.strip() for t in str(target_row.get('tags', '')).split(';') if t.strip()]
+    c_tags = [t.strip() for t in str(cand_row.get('tags', '')).split(';') if t.strip()]
+    common_tags = [t for t in c_tags if t in q_tags]
+
+    # Hitung kontribusi bobot TF-IDF untuk genre yang beririsan
+    genre_contributions = []
+    for g in common_genres:
+        tokens = re.findall(r'\w+', g.lower())
+        score = sum(prod[0, vocab[t]] for t in tokens if t in vocab)
+        genre_contributions.append((g, score))
+    genre_contributions.sort(key=lambda x: x[1], reverse=True)
+    top_matching_genres = [g[0] for g in genre_contributions[:3]]
+
+    # Hitung kontribusi bobot TF-IDF untuk tag yang beririsan
+    tag_contributions = []
+    for t_item in common_tags:
+        tokens = re.findall(r'\w+', t_item.lower())
+        score = sum(prod[0, vocab[t]] for t in tokens if t in vocab)
+        tag_contributions.append((t_item, score))
+    tag_contributions.sort(key=lambda x: x[1], reverse=True)
+    top_matching_tags = [t[0] for t in tag_contributions[:5]]
+
+    # Hasilkan narasi XAI akademis dinamis dari 2 fitur kontribusi TF-IDF tertinggi
+    dynamic_text = generate_dynamic_xai_text(genre_contributions, tag_contributions)
+
+    return {
+        "top_matching_genres": top_matching_genres,
+        "top_matching_tags": top_matching_tags,
+        "dynamic_text": dynamic_text
+    }
 
 
 from functools import lru_cache
@@ -212,32 +233,12 @@ def _cached_get_recommendations(query_clean, top_n=12):
             accepted_titles.append(cand_name)
             
             sim_percentage = round(cand['sim_score'] * 100, 1)
-            dominant_genre = extract_dominant_genre(target_row['genres'], cand_row['genres'])
+            sim_score_val = round(float(cand['sim_score']), 2)
             
-            # 4. EXPLAINABLE AI (XAI) TEMPLATE-BASED GENERATION (NATURAL & BILINGUAL)
-            matched_genre, matched_tag = extract_xai_features(
-                target_row['genres'], target_row['tags'],
-                cand_row['genres'], cand_row['tags']
+            # 4. EXPLAINABLE AI (XAI) TF-IDF FEATURE IMPORTANCE EXTRACTION
+            xai_explanation = extract_tfidf_xai_explanation(
+                target_idx, cand['index'], target_row, cand_row
             )
-
-            if matched_genre and matched_tag:
-                xai_explanation_id = (
-                    f"💡 Suasana serupa: Gameplay <strong class=\"xai-highlight\">{matched_genre}</strong> "
-                    f"dengan elemen <strong class=\"xai-highlight\">{matched_tag}</strong>."
-                )
-                xai_explanation_en = (
-                    f"💡 Similar vibes: <strong class=\"xai-highlight\">{matched_genre}</strong> gameplay "
-                    f"with <strong class=\"xai-highlight\">{matched_tag}</strong> elements."
-                )
-            else:
-                f1 = matched_genre or 'Action'
-                f2 = matched_tag or 'Gameplay'
-                xai_explanation_id = (
-                    f"💡 Kesamaan fitur: <strong class=\"xai-highlight\">{f1}</strong> • <strong class=\"xai-highlight\">{f2}</strong>"
-                )
-                xai_explanation_en = (
-                    f"💡 Matched on: <strong class=\"xai-highlight\">{f1}</strong> • <strong class=\"xai-highlight\">{f2}</strong>"
-                )
 
             cand_pos = float(cand_row.get('positive_reviews', 0))
             cand_tot = float(cand_row.get('total_reviews', 0))
@@ -246,6 +247,7 @@ def _cached_get_recommendations(query_clean, top_n=12):
                 cand_rating_score = round((cand_pos / cand_tot) * 100, 1)
 
             rec_item = {
+                'game_title': str(cand_name),
                 'steam_appid': int(cand_row['steam_appid']),
                 'name': str(cand_name),
                 'price': float(cand_row['price']),
@@ -258,10 +260,10 @@ def _cached_get_recommendations(query_clean, top_n=12):
                 'rating': str(cand_row.get('rating', 'Very Positive')),
                 'positive_reviews': cand_pos,
                 'total_reviews': cand_tot,
-                'similarity_score': sim_percentage,
-                'explanation': xai_explanation_id,
-                'explanation_id': xai_explanation_id,
-                'explanation_en': xai_explanation_en
+                'similarity_score': sim_score_val,
+                'similarity_percentage': sim_percentage,
+                'xai_explanation': xai_explanation,
+                'explanation_en': xai_explanation['dynamic_text']
             }
             accepted_recommendations.append(rec_item)
 
