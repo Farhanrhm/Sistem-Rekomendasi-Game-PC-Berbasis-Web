@@ -7,7 +7,7 @@ import os
 os.makedirs('models', exist_ok=True)
 
 print("Membaca dataset...")
-data_path = 'dataset/processed/steam_new_and_fav.csv'
+data_path = 'dataset/processed/steam_new_and_fav_final_1.csv'
 if not os.path.exists(data_path):
     raise FileNotFoundError(f"File dataset {data_path} tidak ditemukan. Jalankan smart_scraper.py terlebih dahulu.")
 
