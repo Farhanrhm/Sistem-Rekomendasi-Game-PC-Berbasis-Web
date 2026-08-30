@@ -24,38 +24,57 @@ for col in ['positive_reviews', 'total_reviews', 'rating_score', 'price']:
         df[col] = 0
     df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
 
-# 1. NOISE REDUCTION: FILTER PLATFORM-SPECIFIC TAGS
-PLATFORM_TAGS = {
+# 1. NOISE REDUCTION: FILTER PLATFORM & ACCESSIBILITY NON-CONTENT TAGS
+PLATFORM_FEATURE_TAGS = {
+    # Platform & Licensing Tags
     "steam cloud", "steam achievements", "steam trading cards", 
     "surround sound", "stereo sound", "cross-platform multiplayer", 
     "steam workshop", "full controller support", "partial controller support", 
     "remote play on phone", "remote play on tablet", "remote play on tv", 
     "remote play together", "steam turn-notifications", "steam leaderboards", 
     "captions available", "commentary available", "includes level editor", 
-    "hdr available", "tracked controller support"
+    "hdr available", "tracked controller support", "family sharing",
+    # Technical & Accessibility Non-Content Tags
+    "custom volume controls", "playable without timed input", "save anytime", 
+    "mouse only option", "keyboard only option", "touch only option", 
+    "camera comfort", "adjustable difficulty", "adjustable text size", 
+    "subtitle options", "dualshock controller support", "dualsense controller support", 
+    "color alternatives", "stats", "shared/split screen", "vr only", 
+    "gamepad recommended", "in-app purchases", "shared/split screen pvp", 
+    "shared/split screen co-op", "#category_playable_at_your_own_pace"
 }
 
 def clean_platform_tags(tags_str):
     if not tags_str or not isinstance(tags_str, str):
         return ""
     tags = [t.strip() for t in tags_str.split(';') if t.strip()]
-    pure_tags = [t for t in tags if t.lower() not in PLATFORM_TAGS]
+    pure_tags = [t for t in tags if t.lower() not in PLATFORM_FEATURE_TAGS]
     return "; ".join(pure_tags)
 
 df['tags'] = df['tags'].apply(clean_platform_tags)
 
+import re
+
+def clean_html_and_urls(text):
+    if not isinstance(text, str): return ""
+    text = re.sub(r'https?://\S+|www\.\S+', ' ', text)
+    text = re.sub(r'<[^>]*>', ' ', text)
+    text = re.sub(r'[^a-zA-Z0-9\s]', ' ', text)
+    return text.lower().strip()
+
 # GABUNGKAN FITUR TEKS
 def combine_features(row):
-    desc = str(row['clean_desc']) if str(row['clean_desc']).strip() else str(row['detailed_description'])
-    genres = str(row['genres']).replace(';', ' ')
-    tags = str(row['tags']).replace(';', ' ')
+    raw_desc = str(row['short_description']) + " " + str(row['detailed_description'])
+    desc = clean_html_and_urls(raw_desc)
+    genres = str(row['genres']).replace(';', ' ') if str(row['genres']) != 'nan' else ""
+    tags = str(row['tags']).replace(';', ' ') if str(row['tags']) != 'nan' else ""
     return f"{desc} {genres} {tags}"
 
 df['combined_features'] = df.apply(combine_features, axis=1)
 
 print("Melakukan ekstraksi fitur teks gabungan dengan TfidfVectorizer (Scikit-Learn)...")
-# TfidfVectorizer dengan stop_words english
-tfidf_vectorizer = TfidfVectorizer(stop_words='english', min_df=2)
+# TfidfVectorizer dengan stop_words english & max_df=0.50 untuk mengeliminasi term universal super-high DF
+tfidf_vectorizer = TfidfVectorizer(stop_words='english', min_df=2, max_df=0.50)
 # Hasilkan matriks sparse (scipy.sparse.csr_matrix)
 tfidf_matrix = tfidf_vectorizer.fit_transform(df['combined_features'])
 

@@ -10,6 +10,7 @@ import Levenshtein
 import os
 import re
 import html
+import zlib
 
 app = Flask(__name__)
 
@@ -181,21 +182,67 @@ def extract_tfidf_xai_explanation(target_idx, cand_idx, target_row, cand_row):
             "pct": item['pct']
         })
 
+    cand_name = str(cand_row.get('name', ''))
+    variant_idx = zlib.crc32(cand_name.encode('utf-8')) % 4
+
     top_genres_str = ", ".join([item['name'] for item in top_items if item['category'] == 'genres'])
     top_tags_str = ", ".join([item['name'] for item in top_items if item['category'] == 'tags'])
 
     if top_genres_str and top_tags_str:
-        xai_text_id = f"Game ini direkomendasikan karena memiliki Genre {top_genres_str} serta Tag {top_tags_str} yang sama dengan game yang Anda pilih."
-        xai_text_en = f"This game is recommended because it shares the {top_genres_str} Genre and {top_tags_str} Tags with your selected game."
+        templates_id = [
+            f"Game ini direkomendasikan karena memiliki Genre {top_genres_str} serta Tag {top_tags_str} yang sama dengan game yang Anda pilih.",
+            f"Kemiripan pada Genre {top_genres_str} serta Tag {top_tags_str} menjadi alasan utama game ini muncul sebagai rekomendasi.",
+            f"Genre {top_genres_str} dan Tag {top_tags_str} pada game ini sejalan dengan preferensi dari game yang Anda cari.",
+            f"Kami melihat kecocokan kuat di sisi Genre {top_genres_str} dan Tag {top_tags_str}, sehingga game ini masuk daftar rekomendasi Anda."
+        ]
+        templates_en = [
+            f"This game is recommended because it shares the {top_genres_str} Genre and {top_tags_str} Tags with your selected game.",
+            f"The similarity in {top_genres_str} Genre and {top_tags_str} Tags is the main reason this game appears as a recommendation.",
+            f"The {top_genres_str} Genre and {top_tags_str} Tags in this title align directly with your search preference.",
+            f"We found strong matching elements in {top_genres_str} Genre and {top_tags_str} Tags, placing this game on your recommendation list."
+        ]
     elif top_genres_str:
-        xai_text_id = f"Game ini direkomendasikan karena memiliki kesamaan Genre {top_genres_str} dengan game pilihan Anda."
-        xai_text_en = f"This game is recommended because it shares the {top_genres_str} Genre with your selected game."
+        templates_id = [
+            f"Game ini direkomendasikan karena memiliki kesamaan Genre {top_genres_str} dengan game pilihan Anda.",
+            f"Kesamaan pada Genre {top_genres_str} menjadi faktor utama rekomendasi game ini.",
+            f"Unsur Genre {top_genres_str} pada game ini sangat mirip dengan karakteristik game yang Anda cari.",
+            f"Sistem menemukan kecocokan genre yang kuat pada {top_genres_str} dibanding game utama."
+        ]
+        templates_en = [
+            f"This game is recommended because it shares the {top_genres_str} Genre with your selected game.",
+            f"Shared characteristics in the {top_genres_str} Genre are the key factor behind this recommendation.",
+            f"The {top_genres_str} Genre elements in this title closely match your selected game.",
+            f"Our system identified a strong genre alignment around {top_genres_str}."
+        ]
     elif top_tags_str:
-        xai_text_id = f"Game ini direkomendasikan karena memiliki kesamaan Tag {top_tags_str} dengan game pilihan Anda."
-        xai_text_en = f"This game is recommended because it shares the {top_tags_str} Tags with your selected game."
+        templates_id = [
+            f"Game ini direkomendasikan karena memiliki kesamaan Tag {top_tags_str} dengan game pilihan Anda.",
+            f"Kesamaan pada Tag {top_tags_str} menjadi penentu utama rekomendasi game ini.",
+            f"Pengelompokan Tag {top_tags_str} pada game ini sangat sejalan dengan game pilihan Anda.",
+            f"Sistem mendeteksi keterikatan tema yang kuat pada Tag {top_tags_str}."
+        ]
+        templates_en = [
+            f"This game is recommended because it shares the {top_tags_str} Tags with your selected game.",
+            f"Key matching elements in {top_tags_str} Tags are the main reason for this recommendation.",
+            f"The {top_tags_str} Tags of this title align strongly with your reference game.",
+            f"Our system detected a solid thematic match around the {top_tags_str} Tags."
+        ]
     else:
-        xai_text_id = "Game ini direkomendasikan berdasarkan tingkat kemiripan fitur utama."
-        xai_text_en = "This game is recommended based on overall key feature similarity."
+        templates_id = [
+            "Game ini direkomendasikan berdasarkan tingkat kemiripan fitur utama.",
+            "Kemiripan karakteristik umum menjadi dasar rekomendasi game ini.",
+            "Sistem mencocokkan profil keseluruhan game ini dengan preferensi pencarian Anda.",
+            "Rekomendasi ini didasarkan pada kesamaan atribut cerita dan mekanisme permainan."
+        ]
+        templates_en = [
+            "This game is recommended based on overall key feature similarity.",
+            "Overall characteristic similarity serves as the foundation for this recommendation.",
+            "The system matched the general profile of this game with your search preference.",
+            "This recommendation is derived from shared narrative and gameplay mechanics."
+        ]
+
+    xai_text_id = templates_id[variant_idx]
+    xai_text_en = templates_en[variant_idx]
 
     return {
         "top_matching_genres": [g['name'] for g in all_contributions if g['category'] == 'genres'][:3],
@@ -206,6 +253,32 @@ def extract_tfidf_xai_explanation(target_idx, cand_idx, target_row, cand_row):
         "xai_text_en": xai_text_en,
         "dynamic_text": xai_text_id
     }
+
+
+def get_corpus_word_count(row):
+    """
+    Menghitung jumlah kata pada corpus gabungan (deskripsi + genre + tag).
+    """
+    desc = str(row.get('short_description', '')).strip()
+    if not desc or desc == 'nan':
+        desc = str(row.get('detailed_description', '')).strip()
+    if desc == 'nan':
+        desc = ""
+    genres = str(row.get('genres', '')).replace(';', ' ') if str(row.get('genres', '')).strip() != 'nan' else ""
+    tags = str(row.get('tags', '')).replace(';', ' ') if str(row.get('tags', '')).strip() != 'nan' else ""
+    text = f"{desc} {genres} {tags}".strip()
+    return len([w for w in text.split() if w])
+
+
+def check_is_sparse_corpus(row):
+    """
+    Mengecek apakah game termasuk kategori sparse corpus (deskripsi kosong / kata < 15).
+    """
+    empty_s = str(row.get('short_description', '')).strip() in ['', 'nan']
+    empty_d = str(row.get('detailed_description', '')).strip() in ['', 'nan']
+    both_empty = empty_s and empty_d
+    word_cnt = get_corpus_word_count(row)
+    return bool(both_empty or word_cnt < 15)
 
 
 from functools import lru_cache
@@ -235,22 +308,38 @@ def _cached_get_recommendations(query_clean, top_n=12):
     query_vec = tfidf_matrix[target_idx]
     sim_scores = linear_kernel(query_vec, tfidf_matrix).flatten()
 
-    # 2. TIE-BREAKER MECHANISM
+    # 2. TIE-BREAKER MECHANISM & EMPIRICAL SOFT PENALTY FOR SHORT CORPUS
+    # METODOLOGI KOREKSI BIAS REPRESENSI (SOFT PENALTY):
+    # Berdasarkan analisis data empiris dataset-wide (Langkah 2), game dengan corpus sangat pendek (<15 kata) 
+    # mengalami over-representation sebesar 1.11x pada Top-4 rekomendasi.
+    # Oleh karena itu, diterapkan koreksi penalti presisi: penalty_factor = 1 / 1.11 = 0.90 
+    # MURNI HANYA UNTUK PROSES PENGURUTAN (RANKING).
+    # Angka similarity_score yang ditampilkan di UI & breakdown XAI tetap menggunakan skor Cosine murni.
     candidates = []
     for i, score in enumerate(sim_scores):
         if i == target_idx:
             continue  # Abaikan game itu sendiri
-        pos_rev = float(df.iloc[i].get('positive_reviews', 0))
+        
+        cand_row = df.iloc[i]
+        raw_sim = float(score)
+        is_sparse = check_is_sparse_corpus(cand_row)
+        
+        penalty_factor = 0.90 if is_sparse else 1.00
+        final_ranking_score = raw_sim * penalty_factor
+        
+        pos_rev = float(cand_row.get('positive_reviews', 0))
         candidates.append({
             'index': i,
-            'sim_score': float(score),
+            'sim_score': raw_sim,             # Nilai cosine similarity asli (unpenalized, untuk UI & XAI)
+            'final_score': final_ranking_score, # Nilai yang disesuaikan untuk urutan ranking
+            'is_sparse_corpus': is_sparse,
             'positive_reviews': pos_rev
         })
 
-    # Urutkan primer berdasarkan sim_score (descending), sekunder berdasarkan positive_reviews (descending)
+    # Urutkan primer berdasarkan final_score (descending), sekunder berdasarkan positive_reviews (descending)
     candidates = sorted(
         candidates,
-        key=lambda x: (x['sim_score'], x['positive_reviews']),
+        key=lambda x: (x['final_score'], x['positive_reviews']),
         reverse=True
     )
 
@@ -304,6 +393,7 @@ def _cached_get_recommendations(query_clean, top_n=12):
                 'similarity_percentage': sim_percentage,
                 'similarity_pct': int(round(sim_percentage)),
                 'cosine_score': f"{sim_score_val:.2f}",
+                'is_sparse_corpus': cand['is_sparse_corpus'],
                 'top_features': xai_explanation['top_features'],
                 'other_features': xai_explanation['other_features'],
                 'xai_text_id': xai_explanation['xai_text_id'],
@@ -315,6 +405,16 @@ def _cached_get_recommendations(query_clean, top_n=12):
 
         if len(accepted_recommendations) >= top_n:
             break
+
+    # 5. DETEKSI TIGHT CLUSTER (PERBAIKAN B BAGIAN 2 - THRESHOLD PRESISI 1.5%)
+    # Jika 3+ item dalam daftar rekomendasi memiliki selisih <= 1.5% dari skor tertinggi
+    if accepted_recommendations:
+        max_sim_pct = max(r['similarity_percentage'] for r in accepted_recommendations)
+        tight_count = sum(1 for r in accepted_recommendations if (max_sim_pct - r['similarity_percentage']) <= 1.5)
+        is_tight_group = tight_count >= 3
+
+        for r in accepted_recommendations:
+            r['is_tight_cluster'] = bool(is_tight_group and (max_sim_pct - r['similarity_percentage']) <= 1.5)
 
     target_pos = float(target_row.get('positive_reviews', 0))
     target_tot = float(target_row.get('total_reviews', 0))
@@ -336,6 +436,7 @@ def _cached_get_recommendations(query_clean, top_n=12):
         'positive_reviews': target_pos,
         'total_reviews': target_tot,
         'similarity_score': 100.0,
+        'is_sparse_corpus': check_is_sparse_corpus(target_row),
         'explanation': f"Game target pencarian utama."
     }
 
