@@ -236,6 +236,22 @@
             background: rgba(243, 237, 227, 0.85) !important;
         }
 
+        /* SEARCH HISTORY TAG TRUNCATION & FLEX WRAP */
+        #search-history {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            align-items: center !important;
+            gap: 8px !important;
+        }
+        .hist-chip {
+            max-width: 220px !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            display: inline-block !important;
+            vertical-align: middle !important;
+        }
+
         /* PREMIUM NAVBAR TOGGLE BUTTONS */
         .nav-actions {
             display: flex;
@@ -408,7 +424,10 @@
         .spotlight-price { font-family: var(--font-mono); font-size: 0.95rem; color: var(--gold); }
         .spotlight-rating { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text-2); display: flex; align-items: center; gap: 5px; }
         .spotlight-rating i { color: var(--gold); }
-        .spotlight-desc { font-size: 0.88rem; color: var(--text-2); line-height: 1.75; margin-bottom: 1.2rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+        .spotlight-desc { font-size: 0.88rem; color: var(--text-2); line-height: 1.75; margin-bottom: 0.4rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; transition: all 0.3s ease-out; }
+        .spotlight-desc.expanded { display: block; -webkit-line-clamp: unset; overflow: visible; }
+        .btn-read-more { background: none; border: none; color: var(--gold); font-size: 0.78rem; font-weight: 600; cursor: pointer; padding: 0; margin-bottom: 1.2rem; display: inline-flex; align-items: center; gap: 5px; transition: opacity 0.2s ease; }
+        .btn-read-more:hover { text-decoration: underline; opacity: 0.9; }
         .tags-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.2rem; }
         .tag { font-family: var(--font-mono); font-size: 0.63rem; letter-spacing: 1px; text-transform: uppercase; color: var(--text-2); border: 1px solid var(--border-md); border-radius: 4px; padding: 3px 10px; }
         .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.6rem; }
@@ -888,7 +907,7 @@
                 </div>
             </form>
 
-            <div id="search-history" class="scroll-horizontal" style="margin-top: 1rem; align-items: center; display: none;">
+            <div id="search-history" class="d-flex flex-wrap" style="margin-top: 1rem; align-items: center; gap: 8px; display: none;">
                 <span data-i18n="history-label" style="font-size: 0.75rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px; flex-shrink: 0;">Terakhir Dicari:</span>
             </div>
 
@@ -904,9 +923,9 @@
                 {% if suggestions %}
                 <div style="margin-top: 1.4rem; width: 100%;">
                     <p style="font-size: 0.82rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;" data-i18n="suggestion-title">Mungkin Anda mencari game populer ini?</p>
-                    <div class="scroll-horizontal" style="justify-content: center;">
+                    <div class="d-flex flex-wrap" style="justify-content: center; gap: 8px;">
                         {% for sug in suggestions %}
-                        <a href="/?q={{ sug | urlencode }}" class="tag" style="background: var(--bg-surface); cursor: pointer; transition: all 0.25s ease; border-color: var(--gold-dim); color: var(--gold); flex-shrink: 0; padding: 5px 14px; font-weight: 500;">{{ sug }}</a>
+                        <a href="/?q={{ sug | urlencode }}" class="tag hist-chip" title="{{ sug }}" style="background: var(--bg-surface); cursor: pointer; transition: all 0.25s ease; border-color: var(--gold-dim); color: var(--gold); padding: 5px 14px; font-weight: 500;">{{ sug }}</a>
                         {% endfor %}
                     </div>
                 </div>
@@ -956,15 +975,25 @@
                                 {{ render_rating(row['rating_score'] if 'rating_score' in row else 0, row['total_reviews'] if 'total_reviews' in row else 0, row['positive_reviews'] if 'positive_reviews' in row else 0) }}
                             </span>
                         </div>
-                        <p class="spotlight-desc">
+                        {% set has_spotlight_main_desc = (row['short_description'] is string and row['short_description'] and row['short_description'] != 'nan') or (row['detailed_description'] is string and row['detailed_description'] and row['detailed_description'] != 'nan') %}
+                        {% if has_spotlight_main_desc %}
+                        <div class="synopsis-lang-notice spotlight-main-synopsis-notice" style="display: none; margin-bottom: 8px; padding: 4px 8px; background: rgba(96, 165, 250, 0.08); border: 1px solid rgba(96, 165, 250, 0.25); border-radius: 4px; color: #60a5fa; font-size: 0.7rem; line-height: 1.35; font-family: var(--font-body);">
+                            <i class="fas fa-language" style="font-size: 0.75rem; margin-right: 4px; color: #60a5fa;"></i>
+                            <span data-i18n="synopsis-lang-notice-text">Sinopsis ini ditampilkan dalam Bahasa Inggris karena developer game belum menyediakan terjemahan resmi Bahasa Indonesia di Steam.</span>
+                        </div>
+                        {% endif %}
+                        <p class="spotlight-desc" id="spotlight-desc-text">
                             {% if row['short_description'] is string and row['short_description'] and row['short_description'] != 'nan' %}
                                 {{ row['short_description'] | striptags }}
                             {% elif row['detailed_description'] is string and row['detailed_description'] and row['detailed_description'] != 'nan' %}
-                                {{ row['detailed_description'] | striptags | truncate(280) }}
+                                {{ row['detailed_description'] | striptags }}
                             {% else %}
-                                <span data-i18n="fallback_desc">Informasi detail untuk game ini belum tersedia di sistem kami.</span>
+                                <span data-i18n="synopsis-fallback">Sinopsis lengkap untuk game ini belum tersedia di sistem kami. Game ini dikategorikan berdasarkan fitur &amp; genre:</span> {{ row['genres']|string|replace(';', ', ') if row['genres'] else 'Steam Game' }}.
                             {% endif %}
                         </p>
+                        <button id="btn-toggle-spotlight-desc" class="btn-read-more" style="display: none;">
+                            <span data-i18n="read-more">Baca selengkapnya</span> <i class="fas fa-chevron-down" style="font-size: 0.7em;"></i>
+                        </button>
                         <div class="tags-row">
                             {% if row['genres'] is string and row['genres'] %}
                                 {% for genre in row['genres'].split(';')[:5] %}
@@ -973,7 +1002,7 @@
                             {% endif %}
                         </div>
                         <div class="badge-row">
-                            <span class="badge-pill"><i class="fas fa-trophy"></i> <span data-i18n="rank-1">Rank #1 Match</span></span>
+                            <span class="badge-pill"><i class="fas fa-bookmark"></i> <span data-i18n="rank-1">Game Referensi Anda</span></span>
                             <span class="badge-pill"><i class="fas fa-database"></i> <span data-i18n="indexed">Indexed</span></span>
                         </div>
 
@@ -993,12 +1022,21 @@
                                 
                                 <div style="margin-bottom: 12px; font-size: 0.75rem; color: var(--text-2); background: var(--bg-base); padding: 10px; border-radius: 4px; border: 1px solid var(--border); font-family: var(--font-mono); max-height: 120px; overflow-y: auto;">
                                     <strong style="color: var(--gold); font-family: var(--font-body); text-transform: uppercase; letter-spacing: 1px; font-size: 0.7rem; display: block; margin-bottom: 6px;" data-i18n="synopsis-label">Sinopsis / Deskripsi Game</strong>
+                                    
+                                    {% set has_spotlight_desc = (row['short_description'] is string and row['short_description'] and row['short_description'] != 'nan') or (row['detailed_description'] is string and row['detailed_description'] and row['detailed_description'] != 'nan') %}
+                                    {% if has_spotlight_desc %}
+                                    <div class="synopsis-lang-notice spotlight-synopsis-notice" style="display: none; margin-bottom: 8px; padding: 4px 8px; background: rgba(96, 165, 250, 0.08); border: 1px solid rgba(96, 165, 250, 0.25); border-radius: 4px; color: #60a5fa; font-size: 0.7rem; line-height: 1.35; font-family: var(--font-body);">
+                                        <i class="fas fa-language" style="font-size: 0.75rem; margin-right: 4px; color: #60a5fa;"></i>
+                                        <span data-i18n="synopsis-lang-notice-text">Sinopsis ini ditampilkan dalam Bahasa Inggris karena developer game belum menyediakan terjemahan resmi Bahasa Indonesia di Steam.</span>
+                                    </div>
+                                    {% endif %}
+
                                     {% if row['short_description'] is string and row['short_description'] and row['short_description'] != 'nan' %}
                                         {{ row['short_description'] | striptags }}
                                     {% elif row['detailed_description'] is string and row['detailed_description'] and row['detailed_description'] != 'nan' %}
                                         {{ row['detailed_description'] | striptags }}
                                     {% else %}
-                                        <span data-i18n="synopsis-fallback">Deskripsi ringkas untuk game ini belum tersedia di basis data. Sistem mengelompokkan game ini berdasarkan kategori dan fitur: </span>{{ row['genres']|string|replace(';', ', ') if row['genres'] else 'Steam Game' }}.
+                                        <span data-i18n="synopsis-fallback">Sinopsis lengkap untuk game ini belum tersedia di sistem kami. Game ini dikategorikan berdasarkan fitur &amp; genre:</span> {{ row['genres']|string|replace(';', ', ') if row['genres'] else 'Steam Game' }}.
                                     {% endif %}
                                 </div>
                                 <div style="font-size: 0.75rem; color: var(--text-2); background: var(--bg-base); padding: 10px; border-radius: 4px; border: 1px solid var(--border); font-family: var(--font-mono);">
@@ -1062,10 +1100,10 @@
                          data-name="{{ row['name'] }}"
                          data-appid="{{ row['steam_appid'] }}"
                          data-image="{{ row['header_image'] }}"
-                         data-match-val="{{ "%.0f"|format(sim) }}"
+                         data-match-val="{{ "%.1f"|format(sim) }}"
                          data-match="{{ row['similarity_score'] }}" 
                          data-score="{{ row['similarity_score'] if 'similarity_score' in row else '0.0' }}"
-                         data-similarity-pct="{{ row['similarity_pct'] if 'similarity_pct' in row else '%.0f'|format(sim) }}"
+                         data-similarity-pct="{{ "%.1f"|format(sim) }}"
                          data-cosine-score="{{ row['cosine_score'] if 'cosine_score' in row else '%.2f'|format(row['similarity_score']) if 'similarity_score' in row else '0.90' }}"
                          data-top-features='{{ (row["xai_explanation"]["top_features"] if "xai_explanation" in row and "top_features" in row["xai_explanation"] else row["top_features"] if "top_features" in row else {"genres":[],"tags":[]}) | tojson }}'
                          data-other-features='{{ (row["xai_explanation"]["other_features"] if "xai_explanation" in row and "other_features" in row["xai_explanation"] else row["other_features"] if "other_features" in row else {"genres":[],"tags":[]}) | tojson }}'
@@ -1077,6 +1115,7 @@
                          data-genres="{{ (row['genres'] ~ ' ' ~ row['tags']) | lower if 'genres' in row else '' }}"
                          data-genres-raw="{{ row['genres'] if 'genres' in row else '' }}"
                          data-tags-raw="{{ row['tags'] if 'tags' in row else '' }}"
+                         data-is-sparse="{{ 'true' if ('is_sparse_corpus' in row and row['is_sparse_corpus']) else 'false' }}"
                          data-desc="{{ (row['short_description'] | striptags) if ('short_description' in row and row['short_description'] and row['short_description'] != 'nan') else (row['detailed_description'] | striptags | truncate(250)) if ('detailed_description' in row and row['detailed_description'] and row['detailed_description'] != 'nan') else '' }}"
                          data-exp-id="{{ row['xai_explanation']['xai_text_id'] if 'xai_explanation' in row and 'xai_text_id' in row['xai_explanation'] else row['xai_text_id'] if 'xai_text_id' in row else '' }}"
                          data-exp-en="{{ row['xai_explanation']['xai_text_en'] if 'xai_explanation' in row and 'xai_text_en' in row['xai_explanation'] else row['xai_text_en'] if 'xai_text_en' in row else '' }}">
@@ -1093,7 +1132,20 @@
                                 {% set badge_class = "badge-match-low" %}
                                 {% set badge_color = "var(--text-3)" %}
                             {% endif %}
-                            <span class="match-badge {{ badge_class }}" style="border-color: {{ badge_color }}; color: {{ badge_color }};"><span class="match-val">{{ "%.0f"|format(sim) }}</span>% <span class="similarity-text" data-i18n="similarity_label">Tingkat Kemiripan</span></span>
+                            <span class="match-badge {{ badge_class }}" style="border-color: {{ badge_color }}; color: {{ badge_color }};"><span class="match-val">{{ "%.1f"|format(sim) }}</span>% <span class="similarity-text" data-i18n="similarity_label">Tingkat Kemiripan</span></span>
+                            
+                            {% if 'is_tight_cluster' in row and row['is_tight_cluster'] %}
+                            <div style="position: absolute; bottom: 8px; left: 8px; z-index: 2;">
+                                <span class="badge-tight-cluster" 
+                                      style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(4px); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.35); font-size: 0.68rem; padding: 3px 7px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; font-weight: 500;" 
+                                      title="Beberapa game memiliki tingkat kemiripan yang sangat berdekatan."
+                                      data-title-id="Beberapa game memiliki tingkat kemiripan yang sangat berdekatan."
+                                      data-title-en="Several games share a very close similarity level.">
+                                    <i class="fas fa-layer-group" style="font-size: 0.65rem; color: #cbd5e1;"></i>
+                                    <span data-i18n="tight_cluster_badge">Skor Serupa</span>
+                                </span>
+                            </div>
+                            {% endif %}
                         </div>
                         <div class="rec-card-body">
                             <p class="rec-card-name" title="{{ row['name'] }}">{{ row['name'] }}</p>
@@ -1203,8 +1255,16 @@
 
                 <!-- PENJELASAN REKOMENDASI (XAI) -->
                 <div style="background: var(--bg-elevated); padding: 0.75rem 0.9rem; border-radius: var(--r-sm); border-left: 3px solid var(--gold); margin-bottom: 0.75rem;">
-                    <p style="font-size: 0.68rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-weight: 600;" data-i18n="xai_title">Penjelasan Rekomendasi (XAI)</p>
+                    <p style="font-size: 0.68rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-weight: 600;" data-i18n="xai-title">Penjelasan Rekomendasi (XAI)</p>
                     <p id="gmodal-xai" style="font-size: 0.82rem; color: var(--text-1); line-height: 1.45; margin: 0;"></p>
+
+                    <!-- NOTICE TRANSPARANSI UNTUK DATA DESKRIPSI KOSONG / SPARSE CORPUS -->
+                    <div id="gmodal-sparse-notice" style="display: none; margin-top: 10px; padding: 8px 12px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: var(--r-sm); font-size: 0.76rem; color: var(--gold-bright); line-height: 1.45;">
+                        <div style="display: flex; gap: 8px; align-items: flex-start;">
+                            <i class="fas fa-exclamation-triangle" style="margin-top: 2px; flex-shrink: 0; font-size: 0.85rem;"></i>
+                            <span id="gmodal-sparse-notice-text"></span>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- FITUR KONTEN YANG PALING BERKONTRIBUSI -->
@@ -1228,6 +1288,10 @@
                 <!-- Description -->
                 <div style="margin-bottom: 0.85rem;">
                     <strong style="font-size: 0.68rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 4px;" data-i18n="synopsis-label">Sinopsis / Deskripsi Game:</strong>
+                    <div class="synopsis-lang-notice gmodal-synopsis-notice" style="display: none; margin-bottom: 6px; padding: 4px 8px; background: rgba(96, 165, 250, 0.08); border: 1px solid rgba(96, 165, 250, 0.25); border-radius: 4px; color: #60a5fa; font-size: 0.7rem; line-height: 1.35; font-family: var(--font-body);">
+                        <i class="fas fa-language" style="font-size: 0.75rem; margin-right: 4px; color: #60a5fa;"></i>
+                        <span data-i18n="synopsis-lang-notice-text">Sinopsis ini ditampilkan dalam Bahasa Inggris karena developer game belum menyediakan terjemahan resmi Bahasa Indonesia di Steam.</span>
+                    </div>
                     <p id="gmodal-desc" style="font-size: 0.8rem; color: var(--text-2); line-height: 1.45; margin: 0; max-height: 90px; overflow-y: auto;"></p>
                 </div>
             </div>
@@ -1321,7 +1385,8 @@
                 historyContainer.css("display", "flex");
                 
                 history.forEach(item => {
-                    let chip = $(`<a href="/?q=${encodeURIComponent(item)}" class="tag hist-chip" style="background: transparent; cursor: pointer; border-color: var(--gold-dim); color: var(--gold); flex-shrink: 0;">${item}</a>`);
+                    let safeTitle = escapeHtml(item);
+                    let chip = $(`<a href="/?q=${encodeURIComponent(item)}" class="tag hist-chip" title="${safeTitle}" style="background: transparent; cursor: pointer; border-color: var(--gold-dim); color: var(--gold); max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle;">${safeTitle}</a>`);
                     historyContainer.append(chip);
                 });
             }
@@ -1502,7 +1567,7 @@
                     "profile-sub": "Sistem mempelajari dan mencocokkan game ini dengan game lain berdasarkan informasi berikut:",
                     "synopsis-label": "Sinopsis / Deskripsi Game",
                     "fallback_desc": "Informasi detail untuk game ini belum tersedia di sistem kami.",
-                    "synopsis-fallback": "Informasi detail untuk game ini belum tersedia di sistem kami.",
+                    "synopsis-fallback": "Sinopsis lengkap untuk game ini belum tersedia di sistem kami. Game ini dikategorikan berdasarkan fitur &amp; genre:",
                     "desc-fallback": "Informasi detail untuk game ini belum tersedia di sistem kami.",
                     "categories-label": "Kategori & Fitur (Tags & Genres)",
                     "open-steam": "Buka di Steam",
@@ -1521,7 +1586,9 @@
                     "no-search-sub": "Mulai dengan satu game yang kamu suka — sisanya biar kami yang urus.",
                     "not-found-title": "Game Tidak Ditemukan",
                     "not-found-sub": "Coba periksa kembali ejaan Anda atau masukkan judul game populer lain.",
-                    "rank-1": "Rank #1 Match",
+                    "rank-1": "Game Referensi Anda",
+                    "read-more": "Baca selengkapnya",
+                    "show-less": "Sembunyikan",
                     "indexed": "Indexed",
                     "detail-btn": "Lihat Detail &#8594;",
                     "loading-text": "Mencari game yang cocok...",
@@ -1533,6 +1600,7 @@
                     "modal-note": "*Persentase Kecocokan menunjukkan seberapa identik elemen cerita, mekanik, dan atmosfer game dibandingkan dengan judul pencarian Anda.",
                     "rating-na": "<i class=\"fas fa-minus-circle\" style=\"color: var(--text-3);\"></i> N/A (Belum ada ulasan yang cukup)",
                     "xai-title": "Penjelasan Rekomendasi (XAI)",
+                    "xai_title": "Penjelasan Rekomendasi (XAI)",
                     "gmodal-features": "Kategori & Fitur Irisan:",
                     "modal-desc-fallback": "Informasi detail untuk game ini belum tersedia di sistem kami.",
                     "load-more-btn": "Tampilkan Lebih Banyak",
@@ -1543,6 +1611,8 @@
                     "calc_method_title": "Sistem Cerdas",
                     "calc_method_desc": "TF-IDF + Cosine Similarity",
                     "view_xai_btn": "Lihat Penjelasan XAI",
+                    "tight_cluster_badge": "Skor Serupa",
+                    "synopsis-lang-notice-text": "Sinopsis ini ditampilkan dalam Bahasa Inggris karena developer game belum menyediakan terjemahan resmi Bahasa Indonesia di Steam.",
                     "footer-text": "LevelFind &copy; 2026 &mdash; Sistem Rekomendasi Game PC"
                 },
                 en: {
@@ -1561,7 +1631,7 @@
                     "profile-sub": "The system analyzes and matches this game with others based on the following information:",
                     "synopsis-label": "Synopsis / Game Description",
                     "fallback_desc": "Detailed information for this game is not yet available in our system.",
-                    "synopsis-fallback": "Detailed information for this game is not yet available in our system.",
+                    "synopsis-fallback": "A detailed synopsis for this game is not yet available in our system. The game is categorized by its features &amp; genres:",
                     "desc-fallback": "Detailed information for this game is not yet available in our system.",
                     "categories-label": "Category & Features (Tags & Genres)",
                     "open-steam": "Open on Steam",
@@ -1580,7 +1650,9 @@
                     "no-search-sub": "Start with one game you love — we will handle the rest.",
                     "not-found-title": "Game Not Found",
                     "not-found-sub": "Please check your spelling or try searching for another popular game.",
-                    "rank-1": "Rank #1 Match",
+                    "rank-1": "Your Reference Game",
+                    "read-more": "Read more",
+                    "show-less": "Show less",
                     "indexed": "Indexed",
                     "detail-btn": "View Details &#8594;",
                     "loading-text": "Finding matches...",
@@ -1592,6 +1664,7 @@
                     "modal-note": "*Match Percentage reflects how identical the story elements, mechanics, and atmosphere are compared to your search title.",
                     "rating-na": "<i class=\"fas fa-minus-circle\" style=\"color: var(--text-3);\"></i> N/A (Not enough reviews yet)",
                     "xai-title": "Recommendation Explanation (XAI)",
+                    "xai_title": "Recommendation Explanation (XAI)",
                     "gmodal-features": "Matching Categories & Features:",
                     "modal-desc-fallback": "Detailed information for this game is not yet available in our system.",
                     "load-more-btn": "Load More",
@@ -1602,6 +1675,8 @@
                     "calc_method_title": "Smart System",
                     "calc_method_desc": "TF-IDF + Cosine Similarity",
                     "view_xai_btn": "View XAI Explanation",
+                    "tight_cluster_badge": "Similar Scores",
+                    "synopsis-lang-notice-text": "This synopsis is displayed in English because the game developer has not provided an official Indonesian translation on Steam.",
                     "footer-text": "LevelFind &copy; 2026 &mdash; PC Game Recommendation System"
                 }
             };
@@ -1679,7 +1754,7 @@
 
             function updateDOMText(lang) {
                 $('[data-i18n]').each(function() {
-                    let key = $(this).data('i18n');
+                    let key = $(this).attr('data-i18n');
                     if (i18nDict[lang] && i18nDict[lang][key]) {
                         $(this).html(i18nDict[lang][key]);
                     }
@@ -1721,6 +1796,39 @@
                 if (remainingCards > 0) {
                     let btnText = (lang === 'en') ? `Load More (${remainingCards} Games)` : `Tampilkan Lebih Banyak (${remainingCards} Game)`;
                     $('[data-i18n="load-more-btn"]').text(btnText);
+                }
+
+                // Update title attribute untuk badge tight cluster
+                $('.badge-tight-cluster').each(function() {
+                    let titleText = (lang === 'en') ? $(this).data('title-en') : $(this).data('title-id');
+                    $(this).attr('title', titleText);
+                });
+
+                // Update Tampilan Label Bahasa Sinopsis Game
+                if (lang === 'id') {
+                    $('.spotlight-synopsis-notice, .spotlight-main-synopsis-notice').show();
+                    let modalDesc = $('#gmodal-desc').text().trim();
+                    let isFallback = $('#gmodal-desc').find('[data-i18n="fallback_desc"]').length > 0;
+                    if (modalDesc && modalDesc !== 'nan' && !isFallback) {
+                        $('.gmodal-synopsis-notice').show();
+                    } else {
+                        $('.gmodal-synopsis-notice').hide();
+                    }
+                } else {
+                    $('.synopsis-lang-notice').hide();
+                }
+
+                // Update text tombol collapse Modal XAI jika modal sedang terbuka
+                let activeToggleBtn = $('.btn-toggle-other-features');
+                if (activeToggleBtn.length > 0) {
+                    let extraContainer = activeToggleBtn.siblings('.xai-badge-group-extra');
+                    let textSpan = activeToggleBtn.find('.toggle-text');
+                    let hiddenCount = extraContainer.attr('data-hidden-count');
+                    if (extraContainer.is(':visible')) {
+                        textSpan.text(lang === 'en' ? 'Show Less' : 'Sembunyikan');
+                    } else {
+                        textSpan.text(lang === 'en' ? `Show All (${hiddenCount} more)` : `Tampilkan Semua (${hiddenCount} lainnya)`);
+                    }
                 }
             }
 
@@ -1773,17 +1881,77 @@
 
                 items.sort((a, b) => (b.pct || b.score || 0) - (a.pct || a.score || 0));
 
-                let html = '<div class="xai-badge-group">';
-                items.forEach(item => {
-                    let label = item.type === 'Genre' ? `Genre: ${escapeHtml(item.name)}` : escapeHtml(item.name);
-                    let pctText = (item.pct !== null && item.pct !== undefined && item.pct > 0) 
-                        ? ` <span class="badge-pct" style="opacity: 0.85; font-size: 0.85em; font-weight: normal; margin-left: 3px;">· ${item.pct}%</span>` 
-                        : '';
-                    html += `<span class="${badgeClass}">${label}${pctText}</span>`;
-                });
-                html += '</div>';
-                return html;
+                let currentLang = localStorage.getItem('lf-lang') || 'id';
+
+                if (isTop || items.length <= 4) {
+                    let html = '<div class="xai-badge-group">';
+                    items.forEach(item => {
+                        let label = item.type === 'Genre' ? `Genre: ${escapeHtml(item.name)}` : escapeHtml(item.name);
+                        let pctText = (item.pct !== null && item.pct !== undefined && item.pct > 0) 
+                            ? ` <span class="badge-pct" style="opacity: 0.85; font-size: 0.85em; font-weight: normal; margin-left: 3px;">· ${item.pct}%</span>` 
+                            : '';
+                        html += `<span class="${badgeClass}">${label}${pctText}</span>`;
+                    });
+                    html += '</div>';
+                    return html;
+                } else {
+                    let initialItems = items.slice(0, 4);
+                    let hiddenItems = items.slice(4);
+                    let hiddenCount = hiddenItems.length;
+
+                    let html = '<div class="xai-badge-group">';
+                    initialItems.forEach(item => {
+                        let label = item.type === 'Genre' ? `Genre: ${escapeHtml(item.name)}` : escapeHtml(item.name);
+                        let pctText = (item.pct !== null && item.pct !== undefined && item.pct > 0) 
+                            ? ` <span class="badge-pct" style="opacity: 0.85; font-size: 0.85em; font-weight: normal; margin-left: 3px;">· ${item.pct}%</span>` 
+                            : '';
+                        html += `<span class="${badgeClass}">${label}${pctText}</span>`;
+                    });
+                    html += '</div>';
+
+                    html += `<div class="xai-badge-group-extra" style="display: none; margin-top: 6px;" data-hidden-count="${hiddenCount}">`;
+                    html += '<div class="xai-badge-group">';
+                    hiddenItems.forEach(item => {
+                        let label = item.type === 'Genre' ? `Genre: ${escapeHtml(item.name)}` : escapeHtml(item.name);
+                        let pctText = (item.pct !== null && item.pct !== undefined && item.pct > 0) 
+                            ? ` <span class="badge-pct" style="opacity: 0.85; font-size: 0.85em; font-weight: normal; margin-left: 3px;">· ${item.pct}%</span>` 
+                            : '';
+                        html += `<span class="${badgeClass}">${label}${pctText}</span>`;
+                    });
+                    html += '</div>';
+                    html += '</div>';
+
+                    let btnText = (currentLang === 'en') ? `Show All (${hiddenCount} more)` : `Tampilkan Semua (${hiddenCount} lainnya)`;
+                    html += `<button type="button" class="btn-toggle-other-features" style="background: none; border: none; color: var(--gold); font-size: 0.75rem; padding: 4px 0 0 0; margin-top: 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; font-weight: 500; transition: color 0.2s ease;">
+                        <span class="toggle-text">${btnText}</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.65rem; transition: transform 0.25s ease-out;"></i>
+                    </button>`;
+
+                    return html;
+                }
             }
+
+            $(document).on('click', '.btn-toggle-other-features', function(e) {
+                e.preventDefault();
+                let btn = $(this);
+                let extraContainer = btn.siblings('.xai-badge-group-extra');
+                let chevron = btn.find('i');
+                let textSpan = btn.find('.toggle-text');
+                let hiddenCount = extraContainer.attr('data-hidden-count');
+                let currentLang = localStorage.getItem('lf-lang') || 'id';
+
+                if (extraContainer.is(':visible')) {
+                    extraContainer.slideUp(220);
+                    chevron.css('transform', 'rotate(0deg)');
+                    let showText = (currentLang === 'en') ? `Show All (${hiddenCount} more)` : `Tampilkan Semua (${hiddenCount} lainnya)`;
+                    textSpan.text(showText);
+                } else {
+                    extraContainer.slideDown(220);
+                    chevron.css('transform', 'rotate(180deg)');
+                    let hideText = (currentLang === 'en') ? `Show Less` : `Sembunyikan`;
+                    textSpan.text(hideText);
+                }
+            });
 
             $(document).on('click', '.btn-open-game-modal', function(e) {
                 e.preventDefault();
@@ -1812,6 +1980,8 @@
                 let desc = card.attr('data-desc') || '';
                 let currentLang = localStorage.getItem('lf-lang') || 'id';
 
+                updateDOMText(currentLang);
+
                 let matchInfo = getMatchTier(simPct);
 
                 $('#gmodal-img').attr('src', image);
@@ -1824,14 +1994,31 @@
                 let activeXaiText = (currentLang === 'en') ? (xaiEn || xaiId) : (xaiId || xaiEn);
                 $('#gmodal-xai').html(escapeHtml(activeXaiText));
 
+                let isSparse = card.attr('data-is-sparse') === 'true';
+                if (isSparse) {
+                    let sparseMsg = (currentLang === 'en')
+                        ? 'This similarity score is based only on genre & tag data, as a full description for this game is not yet available in our database, so accuracy may be more limited compared to games with full descriptions.'
+                        : 'Skor kemiripan ini dihitung hanya dari genre & tag karena deskripsi lengkap game ini belum tersedia di database kami, sehingga tingkat akurasinya mungkin lebih terbatas dibanding game dengan deskripsi lengkap.';
+                    $('#gmodal-sparse-notice-text').text(sparseMsg);
+                    $('#gmodal-sparse-notice').show();
+                } else {
+                    $('#gmodal-sparse-notice').hide();
+                }
+
                 $('#gmodal-top-features').html(renderFeatureList(topFeatures, true));
                 $('#gmodal-other-features').html(renderFeatureList(otherFeatures, false));
 
                 let fallbackText = (i18nDict[currentLang] && i18nDict[currentLang]['fallback_desc']) ? i18nDict[currentLang]['fallback_desc'] : 'Informasi detail untuk game ini belum tersedia di sistem kami.';
                 if (!desc || desc.trim() === '' || desc === 'nan') {
                     $('#gmodal-desc').html(`<span data-i18n="fallback_desc">${fallbackText}</span>`);
+                    $('.gmodal-synopsis-notice').hide();
                 } else {
                     $('#gmodal-desc').text(desc);
+                    if (currentLang === 'id') {
+                        $('.gmodal-synopsis-notice').show();
+                    } else {
+                        $('.gmodal-synopsis-notice').hide();
+                    }
                 }
                 $('#gmodal-steam').attr('href', 'https://store.steampowered.com/app/' + encodeURIComponent(appid));
 
@@ -1907,6 +2094,46 @@
                             $this.html(`<span class="match-val">${targetVal}</span>% <span class="similarity-text" data-i18n="similarity_label">${simText}</span>`);
                         }
                     });
+                }
+            });
+
+            // 14. SPOTLIGHT SYNOPSIS READ MORE TOGGLE
+            function checkSpotlightTruncation() {
+                const $desc = $('#spotlight-desc-text');
+                const $btn = $('#btn-toggle-spotlight-desc');
+                if ($desc.length === 0) return;
+                
+                let el = $desc[0];
+                if ($desc.hasClass('expanded')) return;
+
+                if (el.scrollHeight > el.clientHeight + 4) {
+                    $btn.css('display', 'inline-flex');
+                } else {
+                    $btn.hide();
+                }
+            }
+
+            checkSpotlightTruncation();
+            $(window).on('load resize', checkSpotlightTruncation);
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(checkSpotlightTruncation);
+            }
+
+            $('#btn-toggle-spotlight-desc').on('click', function() {
+                const $desc = $('#spotlight-desc-text');
+                const $btn = $(this);
+                const currentLang = localStorage.getItem('lf-lang') || 'id';
+                
+                $desc.toggleClass('expanded');
+                const isExpanded = $desc.hasClass('expanded');
+                
+                let readMoreText = (i18nDict[currentLang] && i18nDict[currentLang]['read-more']) ? i18nDict[currentLang]['read-more'] : 'Baca selengkapnya';
+                let showLessText = (i18nDict[currentLang] && i18nDict[currentLang]['show-less']) ? i18nDict[currentLang]['show-less'] : 'Sembunyikan';
+                
+                if (isExpanded) {
+                    $btn.html(`<span data-i18n="show-less">${showLessText}</span> <i class="fas fa-chevron-up" style="font-size: 0.7em;"></i>`);
+                } else {
+                    $btn.html(`<span data-i18n="read-more">${readMoreText}</span> <i class="fas fa-chevron-down" style="font-size: 0.7em;"></i>`);
                 }
             });
         });
