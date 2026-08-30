@@ -716,15 +716,22 @@
                 flex: 1 1 calc(50% - 4px) !important;
                 min-width: 0 !important;
                 box-sizing: border-box !important;
+                min-height: 44px !important;
             }
             .filter-bar-container select#sort-grid {
                 flex: 1 1 100% !important;
+                min-width: 0 !important;
+                box-sizing: border-box !important;
+                min-height: 44px !important;
             }
             .filter-bar-container button#share-btn {
                 flex: 1 1 100% !important;
-                margin: 0 !important;
+                margin-top: 2px !important;
+                margin-bottom: 0 !important;
                 text-align: center !important;
                 justify-content: center !important;
+                min-height: 44px !important;
+                width: 100% !important;
             }
             .footer {
                 flex-direction: column !important;
@@ -1076,15 +1083,15 @@
                         <div class="rec-card-img">
                             <img src="{{ row['header_image'] }}" alt="{{ row['name'] }}" loading="lazy"
                                  onerror="this.onerror=null;this.src='https://cdn.akamai.steamstatic.com/steam/apps/{{ row['steam_appid'] }}/capsule_616x353.jpg';">
-                            {% if sim >= 85 %}
-                                {% set badge_class = "badge-match-high bg-success" %}
-                                {% set badge_color = "#10b981" %}
-                            {% elif sim >= 70 %}
-                                {% set badge_class = "badge-match-med bg-warning text-dark" %}
-                                {% set badge_color = "#f59e0b" %}
+                            {% if sim >= 80 %}
+                                {% set badge_class = "badge-match-high" %}
+                                {% set badge_color = "var(--gold-bright)" %}
+                            {% elif sim >= 60 %}
+                                {% set badge_class = "badge-match-med" %}
+                                {% set badge_color = "var(--gold)" %}
                             {% else %}
-                                {% set badge_class = "badge-match-low bg-secondary" %}
-                                {% set badge_color = "#9ca3af" %}
+                                {% set badge_class = "badge-match-low" %}
+                                {% set badge_color = "var(--text-3)" %}
                             {% endif %}
                             <span class="match-badge {{ badge_class }}" style="border-color: {{ badge_color }}; color: {{ badge_color }};"><span class="match-val">{{ "%.0f"|format(sim) }}</span>% <span class="similarity-text" data-i18n="similarity_label">Tingkat Kemiripan</span></span>
                         </div>
@@ -1241,6 +1248,19 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
     <script>
+        const MATCH_THRESHOLDS = { HIGH: 80, MEDIUM: 60 };
+
+        function getMatchTier(simPct) {
+            let score = parseFloat(simPct) || 0;
+            if (score >= MATCH_THRESHOLDS.HIGH) {
+                return { tier: 'high', color: 'var(--gold-bright)', badgeClass: 'badge-match-high' };
+            } else if (score >= MATCH_THRESHOLDS.MEDIUM) {
+                return { tier: 'med', color: 'var(--gold)', badgeClass: 'badge-match-med' };
+            } else {
+                return { tier: 'low', color: 'var(--text-3)', badgeClass: 'badge-match-low' };
+            }
+        }
+
         $(document).ready(function() {
             const gameInput = $("#game_input");
             const html = document.documentElement;
@@ -1727,22 +1747,42 @@
                     .replace(/"/g, '&quot;')
                     .replace(/'/g, '&#039;');
             }
-             function renderFeatureList(featuresObj, isTop = true) {
+            function renderFeatureList(featuresObj, isTop = true) {
                 if (!featuresObj) return '<div style="color: var(--text-3); font-style: italic; font-size: 0.78rem;">-</div>';
                 let badgeClass = isTop ? 'xai-badge-top' : 'xai-badge-other';
-                let html = '<div class="xai-badge-group">';
-                if (featuresObj.genres && featuresObj.genres.length > 0) {
+                let items = [];
+
+                if (featuresObj.genres && Array.isArray(featuresObj.genres)) {
                     featuresObj.genres.forEach(g => {
-                        html += `<span class="${badgeClass}">Genre: ${escapeHtml(g)}</span>`;
+                        let name = (typeof g === 'object' && g !== null) ? g.name : g;
+                        let pct = (typeof g === 'object' && g !== null && g.pct !== undefined) ? g.pct : null;
+                        let score = (typeof g === 'object' && g !== null && g.score !== undefined) ? g.score : 0;
+                        items.push({ type: 'Genre', name: name, pct: pct, score: score });
                     });
                 }
-                if (featuresObj.tags && featuresObj.tags.length > 0) {
+                if (featuresObj.tags && Array.isArray(featuresObj.tags)) {
                     featuresObj.tags.forEach(t => {
-                        html += `<span class="${badgeClass}">${escapeHtml(t)}</span>`;
+                        let name = (typeof t === 'object' && t !== null) ? t.name : t;
+                        let pct = (typeof t === 'object' && t !== null && t.pct !== undefined) ? t.pct : null;
+                        let score = (typeof t === 'object' && t !== null && t.score !== undefined) ? t.score : 0;
+                        items.push({ type: 'Tag', name: name, pct: pct, score: score });
                     });
                 }
+
+                if (items.length === 0) return '<div style="color: var(--text-3); font-style: italic; font-size: 0.78rem;">-</div>';
+
+                items.sort((a, b) => (b.pct || b.score || 0) - (a.pct || a.score || 0));
+
+                let html = '<div class="xai-badge-group">';
+                items.forEach(item => {
+                    let label = item.type === 'Genre' ? `Genre: ${escapeHtml(item.name)}` : escapeHtml(item.name);
+                    let pctText = (item.pct !== null && item.pct !== undefined && item.pct > 0) 
+                        ? ` <span class="badge-pct" style="opacity: 0.85; font-size: 0.85em; font-weight: normal; margin-left: 3px;">· ${item.pct}%</span>` 
+                        : '';
+                    html += `<span class="${badgeClass}">${label}${pctText}</span>`;
+                });
                 html += '</div>';
-                return (html === '<div class="xai-badge-group"></div>') ? '<div style="color: var(--text-3); font-style: italic; font-size: 0.78rem;">-</div>' : html;
+                return html;
             }
 
             $(document).on('click', '.btn-open-game-modal', function(e) {
@@ -1772,14 +1812,11 @@
                 let desc = card.attr('data-desc') || '';
                 let currentLang = localStorage.getItem('lf-lang') || 'id';
 
-                let badgeColor = "#9e9e9e";
-                let simFloat = parseFloat(simPct);
-                if (simFloat > 50) badgeColor = "#4caf50";
-                else if (simFloat >= 40) badgeColor = "#ff9800";
+                let matchInfo = getMatchTier(simPct);
 
                 $('#gmodal-img').attr('src', image);
                 $('#gmodal-title').text(name);
-                $('#gmodal-match').text(simPct + '%').css({'border-color': badgeColor, 'color': badgeColor});
+                $('#gmodal-match').text(simPct + '%').attr('class', 'match-badge ' + matchInfo.badgeClass).css({'border-color': matchInfo.color, 'color': matchInfo.color});
                 
                 $('#gmodal-match-pct').text(simPct + '%');
                 $('#gmodal-cosine-score').text(`(Cosine: ${cosineScore})`);

@@ -153,19 +153,36 @@ def extract_tfidf_xai_explanation(target_idx, cand_idx, target_row, cand_row):
 
     all_contributions.sort(key=lambda x: x['score'], reverse=True)
 
+    # Division-by-zero guard for relative contribution percentage calculation
+    total_score = sum(item['score'] for item in all_contributions)
+    if total_score > 0:
+        for item in all_contributions:
+            item['pct'] = round((item['score'] / total_score) * 100)
+    else:
+        for item in all_contributions:
+            item['pct'] = 0
+
     top_items = all_contributions[:3]
     other_items = all_contributions[3:]
 
     top_features = {"genres": [], "tags": []}
     for item in top_items:
-        top_features[item['category']].append(item['name'])
+        top_features[item['category']].append({
+            "name": item['name'],
+            "score": round(float(item['score']), 4),
+            "pct": item['pct']
+        })
 
     other_features = {"genres": [], "tags": []}
     for item in other_items:
-        other_features[item['category']].append(item['name'])
+        other_features[item['category']].append({
+            "name": item['name'],
+            "score": round(float(item['score']), 4),
+            "pct": item['pct']
+        })
 
-    top_genres_str = ", ".join(top_features["genres"])
-    top_tags_str = ", ".join(top_features["tags"])
+    top_genres_str = ", ".join([item['name'] for item in top_items if item['category'] == 'genres'])
+    top_tags_str = ", ".join([item['name'] for item in top_items if item['category'] == 'tags'])
 
     if top_genres_str and top_tags_str:
         xai_text_id = f"Game ini direkomendasikan karena memiliki Genre {top_genres_str} serta Tag {top_tags_str} yang sama dengan game yang Anda pilih."
