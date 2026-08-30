@@ -1,0 +1,17 @@
+build_model.py
+merge_dataset.py
+smart_scraper.py
+update_reviews_db.py
+dataset/
+*.csv
+*.json
+*.ipynb
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+venv/
+env/
+.env
+.vscode/
+.git/
+models/*_old*
