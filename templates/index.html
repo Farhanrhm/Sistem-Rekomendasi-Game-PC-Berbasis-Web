@@ -167,10 +167,11 @@
         .theme-btn.rotating i {
             transform: rotate(360deg) scale(0.75);
         }
-        .theme-btn .i-sun { display: inline-block !important; } 
-        .theme-btn .i-moon { display: none !important; }
-        [data-theme="light"] .theme-btn .i-sun { display: none !important; } 
-        [data-theme="light"] .theme-btn .i-moon { display: inline-block !important; }
+        /* Dynamic Theme Icon: Dark Mode -> Moon Icon, Light Mode -> Sun Icon */
+        .theme-btn .i-moon { display: inline-block !important; } 
+        .theme-btn .i-sun { display: none !important; }
+        [data-theme="light"] .theme-btn .i-moon { display: none !important; } 
+        [data-theme="light"] .theme-btn .i-sun { display: inline-block !important; }
 
         /* Transisi Global Pergantian Tema (Eye-comfort 0.4s) */
         body, .navbar, .hero, .spotlight, .rec-card, .search-wrap, .search-wrap input, .footer, .modal-content, .btn-detail, .btn-steam {
