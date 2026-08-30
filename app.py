@@ -112,69 +112,82 @@ def generate_dynamic_xai_text(genre_contributions, tag_contributions):
 
 def extract_tfidf_xai_explanation(target_idx, cand_idx, target_row, cand_row):
     """
-    Ekstraksi XAI berdasarkan bobot kontribusi TF-IDF riil (tfidf_query[term] * tfidf_candidate[term]).
-    Mengidentifikasi genre dan tag yang beririsan, menghitung bobot kontribusinya,
-    mengurutkan secara descending, dan mengambil top 3-5 term untuk JSON XAI data.
+    Ekstraksi XAI berdasarkan bobot kontribusi TF-IDF riil.
+    Membagi fitur beririsan menjadi top_features (bobot tertinggi) & other_features.
     """
     if tfidf_matrix is None or tfidf_vectorizer is None:
         return {
             "top_matching_genres": [],
             "top_matching_tags": [],
+            "top_features": {"genres": [], "tags": []},
+            "other_features": {"genres": [], "tags": []},
+            "xai_text_id": "Game ini direkomendasikan berdasarkan tingkat kemiripan fitur utama.",
+            "xai_text_en": "This game is recommended based on overall key feature similarity.",
             "dynamic_text": "Game ini direkomendasikan berdasarkan tingkat kemiripan fitur utama."
         }
 
     query_vec = tfidf_matrix[target_idx]
     cand_vec = tfidf_matrix[cand_idx]
     
-    # Hitung kontribusi perkalian elemen TF-IDF (element-wise product)
     prod = query_vec.multiply(cand_vec)
     vocab = tfidf_vectorizer.vocabulary_
     
-    # Irisan Genres antara game target dan game kandidat
     q_genres = [g.strip() for g in str(target_row.get('genres', '')).split(';') if g.strip()]
     c_genres = [g.strip() for g in str(cand_row.get('genres', '')).split(';') if g.strip()]
     common_genres = [g for g in c_genres if g in q_genres]
-    
-    # Irisan Tags antara game target dan game kandidat
+
     q_tags = [t.strip() for t in str(target_row.get('tags', '')).split(';') if t.strip()]
     c_tags = [t.strip() for t in str(cand_row.get('tags', '')).split(';') if t.strip()]
     common_tags = [t for t in c_tags if t in q_tags]
 
-    # Hitung kontribusi bobot TF-IDF untuk genre yang beririsan
-    genre_contributions = []
+    all_contributions = []
     for g in common_genres:
         tokens = re.findall(r'\w+', g.lower())
         score = sum(prod[0, vocab[t]] for t in tokens if t in vocab)
-        genre_contributions.append((g, score))
-    genre_contributions.sort(key=lambda x: x[1], reverse=True)
-    top_matching_genres = [g[0] for g in genre_contributions[:3]]
+        all_contributions.append({'category': 'genres', 'name': g, 'score': score})
 
-    # Hitung kontribusi bobot TF-IDF untuk tag yang beririsan
-    tag_contributions = []
     for t_item in common_tags:
         tokens = re.findall(r'\w+', t_item.lower())
         score = sum(prod[0, vocab[t]] for t in tokens if t in vocab)
-        tag_contributions.append((t_item, score))
-    tag_contributions.sort(key=lambda x: x[1], reverse=True)
-    top_matching_tags = [t[0] for t in tag_contributions[:5]]
+        all_contributions.append({'category': 'tags', 'name': t_item, 'score': score})
 
-    # Ambil top 2 fitur dengan kontribusi tertinggi untuk lokalisasi frontend
-    candidates = []
-    for g, score in genre_contributions:
-        candidates.append({'type': 'Genre', 'name': g, 'score': score})
-    for t, score in tag_contributions:
-        candidates.append({'type': 'Tag', 'name': t, 'score': score})
-    candidates.sort(key=lambda x: x['score'], reverse=True)
-    top_features = [{'type': item['type'], 'name': item['name']} for item in candidates[:2]]
+    all_contributions.sort(key=lambda x: x['score'], reverse=True)
 
-    # Hasilkan narasi XAI akademis dinamis dari 2 fitur kontribusi TF-IDF tertinggi
-    dynamic_text = generate_dynamic_xai_text(genre_contributions, tag_contributions)
+    top_items = all_contributions[:3]
+    other_items = all_contributions[3:]
+
+    top_features = {"genres": [], "tags": []}
+    for item in top_items:
+        top_features[item['category']].append(item['name'])
+
+    other_features = {"genres": [], "tags": []}
+    for item in other_items:
+        other_features[item['category']].append(item['name'])
+
+    top_genres_str = ", ".join(top_features["genres"])
+    top_tags_str = ", ".join(top_features["tags"])
+
+    if top_genres_str and top_tags_str:
+        xai_text_id = f"Game ini direkomendasikan karena memiliki Genre {top_genres_str} serta Tag {top_tags_str} yang sama dengan game yang Anda pilih."
+        xai_text_en = f"This game is recommended because it shares the {top_genres_str} Genre and {top_tags_str} Tags with your selected game."
+    elif top_genres_str:
+        xai_text_id = f"Game ini direkomendasikan karena memiliki kesamaan Genre {top_genres_str} dengan game pilihan Anda."
+        xai_text_en = f"This game is recommended because it shares the {top_genres_str} Genre with your selected game."
+    elif top_tags_str:
+        xai_text_id = f"Game ini direkomendasikan karena memiliki kesamaan Tag {top_tags_str} dengan game pilihan Anda."
+        xai_text_en = f"This game is recommended because it shares the {top_tags_str} Tags with your selected game."
+    else:
+        xai_text_id = "Game ini direkomendasikan berdasarkan tingkat kemiripan fitur utama."
+        xai_text_en = "This game is recommended based on overall key feature similarity."
 
     return {
-        "top_matching_genres": top_matching_genres,
-        "top_matching_tags": top_matching_tags,
+        "top_matching_genres": [g['name'] for g in all_contributions if g['category'] == 'genres'][:3],
+        "top_matching_tags": [t['name'] for t in all_contributions if t['category'] == 'tags'][:5],
         "top_features": top_features,
-        "dynamic_text": dynamic_text
+        "other_features": other_features,
+        "xai_text_id": xai_text_id,
+        "xai_text_en": xai_text_en,
+        "dynamic_text": xai_text_id
     }
 
 
@@ -272,8 +285,14 @@ def _cached_get_recommendations(query_clean, top_n=12):
                 'total_reviews': cand_tot,
                 'similarity_score': sim_score_val,
                 'similarity_percentage': sim_percentage,
+                'similarity_pct': int(round(sim_percentage)),
+                'cosine_score': f"{sim_score_val:.2f}",
+                'top_features': xai_explanation['top_features'],
+                'other_features': xai_explanation['other_features'],
+                'xai_text_id': xai_explanation['xai_text_id'],
+                'xai_text_en': xai_explanation['xai_text_en'],
                 'xai_explanation': xai_explanation,
-                'explanation_en': xai_explanation['dynamic_text']
+                'explanation_en': xai_explanation['xai_text_en']
             }
             accepted_recommendations.append(rec_item)
 

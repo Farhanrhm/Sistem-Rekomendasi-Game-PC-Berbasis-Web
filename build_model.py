@@ -24,8 +24,27 @@ for col in ['positive_reviews', 'total_reviews', 'rating_score', 'price']:
         df[col] = 0
     df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
 
-# 1. GABUNGKAN FITUR TEKS
-# Menggabungkan clean_desc / detailed_description dengan genres dan tags untuk fitur komprehensif
+# 1. NOISE REDUCTION: FILTER PLATFORM-SPECIFIC TAGS
+PLATFORM_TAGS = {
+    "steam cloud", "steam achievements", "steam trading cards", 
+    "surround sound", "stereo sound", "cross-platform multiplayer", 
+    "steam workshop", "full controller support", "partial controller support", 
+    "remote play on phone", "remote play on tablet", "remote play on tv", 
+    "remote play together", "steam turn-notifications", "steam leaderboards", 
+    "captions available", "commentary available", "includes level editor", 
+    "hdr available", "tracked controller support"
+}
+
+def clean_platform_tags(tags_str):
+    if not tags_str or not isinstance(tags_str, str):
+        return ""
+    tags = [t.strip() for t in tags_str.split(';') if t.strip()]
+    pure_tags = [t for t in tags if t.lower() not in PLATFORM_TAGS]
+    return "; ".join(pure_tags)
+
+df['tags'] = df['tags'].apply(clean_platform_tags)
+
+# GABUNGKAN FITUR TEKS
 def combine_features(row):
     desc = str(row['clean_desc']) if str(row['clean_desc']).strip() else str(row['detailed_description'])
     genres = str(row['genres']).replace(';', ' ')

@@ -223,13 +223,66 @@
 
         /* GLASSMORPHISM BACKDROP BLUR */
         .navbar {
-            display: flex; align-items: center; justify-content: space-between; padding: 1rem 3rem; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;
+            display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 3rem; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;
             background: rgba(12, 12, 13, 0.82) !important;
             backdrop-filter: blur(12px) !important;
             -webkit-backdrop-filter: blur(12px) !important;
         }
         [data-theme="light"] .navbar {
             background: rgba(243, 237, 227, 0.85) !important;
+        }
+
+        /* PREMIUM NAVBAR TOGGLE BUTTONS */
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .nav-btn {
+            width: 40px !important;
+            height: 40px !important;
+            padding: 0 !important;
+            border-radius: 50% !important;
+            background: var(--bg-surface) !important;
+            border: 1px solid var(--border-md) !important;
+            color: var(--gold) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            cursor: pointer;
+            transition: all 0.25s ease !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .nav-btn:hover {
+            background: var(--gold-subtle) !important;
+            border-color: var(--gold) !important;
+            color: var(--gold-bright) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--gold-subtle) !important;
+        }
+        .lang-toggle-btn {
+            height: 40px !important;
+            padding: 0 16px !important;
+            border-radius: 100px !important;
+            background: var(--bg-surface) !important;
+            border: 1px solid var(--border-md) !important;
+            color: var(--gold) !important;
+            font-family: var(--font-body);
+            font-size: 0.85rem !important;
+            font-weight: 600 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            cursor: pointer;
+            transition: all 0.25s ease !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .lang-toggle-btn:hover {
+            background: var(--gold-subtle) !important;
+            border-color: var(--gold) !important;
+            color: var(--gold-bright) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--gold-subtle) !important;
         }
 
         /* HOVER LIFT & HIGH MATCH GOLDEN GLOW */
@@ -262,6 +315,40 @@
         .rec-mini-tag:hover {
             background: var(--gold);
             color: #0c0c0d;
+        }
+
+        /* HIERARKI VISUAL BADGES XAI MODAL */
+        .xai-badge-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 4px;
+        }
+        .xai-badge-top {
+            display: inline-flex;
+            align-items: center;
+            font-family: var(--font-body);
+            font-size: 0.72rem;
+            font-weight: 600;
+            background: rgba(245, 158, 11, 0.16);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.45);
+            padding: 3px 10px;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(245, 158, 11, 0.1);
+        }
+        .xai-badge-other {
+            display: inline-flex;
+            align-items: center;
+            font-family: var(--font-body);
+            font-size: 0.7rem;
+            font-weight: 400;
+            background: var(--bg-surface);
+            color: var(--text-2);
+            border: 1px solid var(--border-md);
+            padding: 3px 9px;
+            border-radius: 6px;
+            opacity: 0.85;
         }
 
         /* AUTOCOMPLETE */
@@ -300,19 +387,17 @@
         .btn-steam { display: inline-flex; align-items: center; gap: 8px; padding: 0.6rem 1.4rem; background: transparent; border: 1px solid var(--gold); color: var(--gold); border-radius: var(--r-sm); font-family: var(--font-body); font-size: 0.85rem; font-weight: 500; cursor: pointer; align-self: flex-start; }
         .btn-steam:hover { background: var(--gold); color: #0c0c0d; }
 
-        /* REC GRID (2 Rows x 4 Columns = 8 Cards on Desktop) */
-        .rec-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.1rem; }
-        @media(max-width: 1024px) {
-            .rec-grid { grid-template-columns: repeat(2, 1fr); }
+        /* REC GRID RESPONSIVE LAYOUT */
+        .rec-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.1rem;
         }
-        @media(max-width: 600px) {
-            .rec-grid { grid-template-columns: repeat(1, 1fr); gap: 0.8rem; }
-        }
-        .rec-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-md); overflow: hidden; display: flex; flex-direction: column; }
+        .rec-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-md); overflow: hidden; display: flex; flex-direction: column; height: 100%; }
         .rec-card:hover { transform: translateY(-4px); border-color: var(--gold-dim); }
         [data-theme="light"] .rec-card { box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06); }
         [data-theme="light"] .rec-card:hover { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1); }
-        .rec-card-img { position: relative; height: 125px; overflow: hidden; }
+        .rec-card-img { position: relative; height: 125px; overflow: hidden; flex-shrink: 0; }
         .rec-card-img img { width: 100%; height: 100%; object-fit: cover; }
         .rec-card:hover .rec-card-img img { transform: scale(1.05); transition: transform 0.3s ease; }
         .match-badge { position: absolute; top: 8px; right: 8px; font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; background: rgba(12, 12, 13, 0.82); border: 1px solid var(--border-md); padding: 3px 9px; border-radius: var(--r-sm); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 4px 12px rgba(0,0,0,0.6); z-index: 2; }
@@ -354,7 +439,7 @@
         .footer { border-top: 1px solid var(--border); padding: 1.1rem 3rem; display: flex; align-items: center; justify-content: space-between; background: var(--bg-base); }
         .footer-note { font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 1px; color: var(--text-3); }
 
-        /* LOADING ANIMATION (NEW) */
+        /* LOADING ANIMATION */
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* MOBILE UTILITY & HORIZONTAL SCROLL */
@@ -366,11 +451,11 @@
             -webkit-overflow-scrolling: touch;
             padding-bottom: 6px;
             gap: 8px;
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE/Edge */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
         .scroll-horizontal::-webkit-scrollbar {
-            display: none; /* Chrome/Safari */
+            display: none;
         }
         .scroll-horizontal > * {
             flex-shrink: 0;
@@ -383,35 +468,224 @@
             flex-wrap: wrap;
         }
 
-        /* RESPONSIVE MEDIA QUERIES */
-        @media(max-width: 900px) {
-            .hero { grid-template-columns: 1fr; } 
-            .hero-deco { display: none; }
-            .hero-left { padding: 2.5rem 1.5rem; }
-            .spotlight { grid-template-columns: 1fr; } 
-            .spotlight-img-wrap { height: 240px; }
-            .spotlight-img-wrap::after { background: linear-gradient(180deg, transparent 65%, var(--bg-card)); }
-            .spotlight-info { padding: 1.5rem; }
-            .container { padding: 2rem 1.5rem 4rem; }
-            .navbar, .footer { padding-left: 1.5rem; padding-right: 1.5rem; }
+        /* RESPONSIVE BREAKPOINTS (DESKTOP 1920, LAPTOP 1366, TABLET, MOBILE) */
+        @media (max-width: 1199px) {
+            .rec-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1rem;
+            }
         }
-        @media(max-width: 768px) {
+        @media (max-width: 991px) {
+            .hero {
+                grid-template-columns: 1fr;
+                min-height: auto;
+            }
+            .hero-left {
+                padding: 2.5rem 1.5rem;
+            }
+            .hero-deco {
+                border-left: none;
+                border-top: 1px solid var(--border);
+                min-height: 220px;
+                padding: 2.5rem 0 3.5rem;
+            }
+            .hero-deco-ring-outer {
+                width: 200px;
+                height: 200px;
+                margin-top: -100px;
+                margin-left: -100px;
+            }
+            .hero-deco-ring-inner {
+                width: 120px;
+                height: 120px;
+                margin-top: -60px;
+                margin-left: -60px;
+            }
+            .spotlight {
+                grid-template-columns: 1fr;
+            }
+            .spotlight-img-wrap {
+                height: 240px;
+            }
+            .spotlight-img-wrap::after {
+                background: linear-gradient(180deg, transparent 65%, var(--bg-card));
+            }
+            .spotlight-info {
+                padding: 1.5rem;
+            }
+            .container {
+                padding: 2rem 1.5rem 4rem;
+            }
+            .navbar, .footer {
+                padding-left: 1.5rem;
+                padding-right: 1.5rem;
+            }
+            .rec-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+        }
+
+        /* INFO BADGE BUTTON STYLING */
+        .info-badge-btn {
+            width: 28px !important;
+            height: 28px !important;
+            min-width: 28px !important;
+            border-radius: 50% !important;
+            background: var(--gold-subtle) !important;
+            border: 1.5px solid var(--gold) !important;
+            color: var(--gold) !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 0.75rem !important;
+            cursor: pointer;
+            transition: all 0.2s ease !important;
+            margin-left: 6px;
+        }
+        .info-badge-btn:hover {
+            background: var(--gold) !important;
+            color: #0c0c0d !important;
+            transform: scale(1.1);
+            box-shadow: 0 0 10px var(--gold-subtle);
+        }
+
+        /* MOBILE BREAKPOINT (<768px) */
+        @media (max-width: 767px) {
+            html, body {
+                overflow-x: hidden !important;
+                width: 100% !important;
+                max-width: 100vw !important;
+            }
+            .hero-deco {
+                display: none !important; /* HIDE RADAR WIDGET ON MOBILE TO REMOVE EMPTY GAP */
+            }
+            .navbar {
+                padding: 0.8rem 1rem !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            .hero-left {
+                padding: 1.5rem 1rem !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            .hero h1 {
+                font-size: 1.65rem !important;
+                line-height: 1.2 !important;
+                margin-bottom: 0.75rem !important;
+            }
+            .hero-sub {
+                font-size: 0.85rem !important;
+                max-width: 100% !important;
+                margin-bottom: 1.2rem !important;
+                line-height: 1.55 !important;
+            }
+            /* SEARCH BAR COMPACT GRID LAYOUT ON MOBILE */
+            .search-wrap {
+                display: grid !important;
+                grid-template-columns: 105px 1fr !important;
+                grid-template-areas: 
+                    "input input"
+                    "select button" !important;
+                gap: 0.5rem !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                border: none !important;
+                background: transparent !important;
+                box-shadow: none !important;
+                box-sizing: border-box !important;
+            }
+            .search-wrap input#game_input {
+                grid-area: input !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+                border: 1px solid var(--border-md) !important;
+                border-radius: var(--r-md) !important;
+                height: 44px !important;
+                min-height: 44px !important;
+                background: var(--bg-surface) !important;
+                color: var(--text-1) !important;
+                padding: 0 0.9rem !important;
+                font-size: 0.88rem !important;
+            }
+            .search-wrap select#top_n_select {
+                grid-area: select !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+                border: 1px solid var(--border-md) !important;
+                border-radius: var(--r-md) !important;
+                height: 44px !important;
+                min-height: 44px !important;
+                background: var(--bg-surface) !important;
+                color: var(--gold) !important;
+                padding: 0 0.4rem !important;
+                font-size: 0.84rem !important;
+                font-weight: 600 !important;
+                text-align: center !important;
+            }
+            .search-btn {
+                grid-area: button !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+                border-radius: var(--r-md) !important;
+                height: 44px !important;
+                min-height: 44px !important;
+                font-size: 0.88rem !important;
+                font-weight: 700 !important;
+                justify-content: center !important;
+                background: var(--gold) !important;
+                color: #ffffff !important;
+                box-shadow: 0 3px 10px var(--gold-subtle) !important;
+            }
+            .search-btn i, .search-btn span {
+                color: #ffffff !important;
+                font-weight: 700 !important;
+            }
+            #search-history {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                align-items: center !important;
+                gap: 6px !important;
+                margin-top: 0.8rem !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box !important;
+                overflow-x: visible !important;
+                padding: 0 !important;
+            }
+            #search-history > span {
+                margin-right: 2px !important;
+            }
+            .container {
+                padding: 1.5rem 1rem 3rem !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            .rec-grid {
+                grid-template-columns: 1fr !important;
+                gap: 0.85rem !important;
+            }
             .section-header {
-                flex-direction: column !alignment;
+                flex-direction: column !important;
                 align-items: flex-start !important;
-                gap: 12px !important;
+                gap: 10px !important;
             }
             .filter-bar-container {
-                width: 100%;
-                display: flex;
-                flex-wrap: wrap;
-                gap: 8px;
+                width: 100% !important;
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 8px !important;
             }
             .filter-bar-container select#filter-genre,
             .filter-bar-container select#filter-price {
                 flex: 1 1 calc(50% - 4px) !important;
                 min-width: 0 !important;
-                box-sizing: border-box;
+                box-sizing: border-box !important;
             }
             .filter-bar-container select#sort-grid {
                 flex: 1 1 100% !important;
@@ -419,15 +693,15 @@
             .filter-bar-container button#share-btn {
                 flex: 1 1 100% !important;
                 margin: 0 !important;
-                text-align: center;
-                justify-content: center;
+                text-align: center !important;
+                justify-content: center !important;
             }
-        }
-        @media(max-width: 600px) {
-            .rec-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.8rem; }
-            .hero h1 { font-size: 1.8rem; } 
-            .hero-sub { font-size: 0.88rem; color: #a8a59e; }
-            .footer { flex-direction: column; gap: 6px; text-align: center; }
+            .footer {
+                flex-direction: column !important;
+                gap: 6px !important;
+                text-align: center !important;
+                padding: 1.2rem 1rem !important;
+            }
         }
 
         /* MODAL EXPLAINABLE AI (XAI) */
@@ -510,7 +784,7 @@
         {% elif s > 0 %}
             <i class="fas fa-star-half-alt" style="color: var(--red);"></i> Mostly Negative ({{ "%.0f"|format(s) }}%)
         {% else %}
-            <span data-i18n="rating-na"><i class="fas fa-minus-circle" style="color: var(--text-3);"></i> N/A (Belum Ada Ulasan)</span>
+            <span data-i18n="rating-na"><i class="fas fa-minus-circle" style="color: var(--text-3);"></i> N/A (Belum ada ulasan yang cukup)</span>
         {% endif %}
         
         {% if tot|int > 0 %}
@@ -518,15 +792,16 @@
         {% endif %}
     {% endmacro %}
 
-    <nav class="navbar">
-        <div class="logo">Level<span>Find</span></div>
-        <div class="nav-right">
-            <button class="lang-btn" id="lang-btn" title="Ubah Bahasa / Switch Language" aria-label="Toggle language">
-                <i class="fas fa-globe"></i> <span id="lang-label" class="lang-badge">ID</span>
+    <nav class="navbar d-flex align-items-center justify-content-between">
+        <div class="logo">
+            <i class="fas fa-gamepad" style="color: var(--gold);"></i> Level<span>Find</span>
+        </div>
+        <div class="nav-actions d-flex align-items-center gap-2">
+            <button id="theme-btn" class="nav-btn btn btn-outline-warning rounded-circle d-flex align-items-center justify-content-center" title="Ganti Tema Mode" aria-label="Ganti Tema">
+                <i class="fas fa-moon"></i>
             </button>
-            <button class="theme-btn" id="theme-btn" title="Ganti tema" aria-label="Toggle tema">
-                <i class="fas fa-moon i-moon"></i>
-                <i class="fas fa-sun i-sun"></i>
+            <button id="lang-btn" class="lang-toggle-btn btn btn-outline-warning rounded-pill px-3 d-flex align-items-center justify-content-center" title="Ganti Bahasa / Switch Language">
+                <i class="fas fa-globe me-1" style="font-size: 0.85rem;"></i> <span id="lang-label" class="lang-text">ID</span>
             </button>
         </div>
     </nav>
@@ -534,7 +809,7 @@
     <section class="hero">
         <div class="hero-left">
             <h1 data-i18n="hero-title">Mulai dengan satu game<br>yang kamu <em>suka</em></h1>
-            <p class="hero-sub" data-i18n="hero-sub">Sisanya biar kami yang urus. Sistem kami mencarikan rekomendasi paling relevan dari ribuan judul menggunakan metode TF-IDF dan Cosine Similarity.</p>
+            <p class="hero-sub" data-i18n="hero-sub">Sistem AI kami menganalisis ribuan game untuk menemukan rekomendasi paling akurat berdasarkan game favorit Anda.</p>
             
             <form action="/" method="POST" autocomplete="off">
                 <div class="search-wrap">
@@ -542,10 +817,10 @@
                            placeholder="Contoh: Elden Ring, Palworld..." data-i18n-placeholder="search-placeholder"
                            value="{{ search_query if search_query else '' }}" required>
                     <select name="top_n" id="top_n_select" title="Jumlah Rekomendasi" style="background: var(--bg-surface); color: var(--gold); border: none; border-left: 1px solid var(--border-md); padding: 0 0.8rem; font-family: var(--font-body); font-size: 0.82rem; font-weight: 500; outline: none; cursor: pointer;">
-                        <option value="5" {% if top_n == 5 %}selected{% endif %}>Top 5</option>
-                        <option value="10" {% if top_n == 10 %}selected{% endif %}>Top 10</option>
+                        <option value="6" {% if top_n == 6 %}selected{% endif %}>Top 6</option>
                         <option value="12" {% if not top_n or top_n == 12 %}selected{% endif %}>Top 12</option>
-                        <option value="15" {% if top_n == 15 %}selected{% endif %}>Top 15</option>
+                        <option value="18" {% if top_n == 18 %}selected{% endif %}>Top 18</option>
+                        <option value="24" {% if top_n == 24 %}selected{% endif %}>Top 24</option>
                     </select>
                     <button class="search-btn" type="submit">
                         <i class="fas fa-search"></i> <span data-i18n="search-btn">Temukan</span>
@@ -589,10 +864,10 @@
             {% for index, row in recommendations.iterrows() %}
                 {% if loop.first %}
                 <div class="section-header">
-                    <div style="display: flex; align-items: center; gap: 10px;">
+                    <div class="d-flex align-items-center gap-2">
                         <span class="section-title" data-i18n="analysis-result">Hasil Analisis</span>
-                        <button id="info-btn" title="Cara Kerja Sistem" style="background: transparent; border: none; color: var(--gold); cursor: pointer; font-size: 1.1rem; transition: transform 0.2s;">
-                            <i class="fas fa-info-circle"></i>
+                        <button id="info-btn" class="info-badge-btn" title="Cara Kerja Sistem" aria-label="Cara Kerja Sistem">
+                            <i class="fas fa-info"></i>
                         </button>
                     </div>
                     <span class="section-meta">Matched: {{ actual_title }}</span>
@@ -722,18 +997,21 @@
                          data-match-val="{{ "%.0f"|format(sim) }}"
                          data-match="{{ row['similarity_score'] }}" 
                          data-score="{{ row['similarity_score'] if 'similarity_score' in row else '0.0' }}"
-                         data-top-genres='{{ (row["xai_explanation"]["top_matching_genres"] if "xai_explanation" in row and "top_matching_genres" in row["xai_explanation"] else []) | tojson }}'
-                         data-top-tags='{{ (row["xai_explanation"]["top_matching_tags"] if "xai_explanation" in row and "top_matching_tags" in row["xai_explanation"] else []) | tojson }}'
-                         data-top-features='{{ (row["xai_explanation"]["top_features"] if "xai_explanation" in row and "top_features" in row["xai_explanation"] else row["top_features"] if "top_features" in row else []) | tojson }}'
-                         data-dynamic-text="{{ row['xai_explanation']['dynamic_text'] if 'xai_explanation' in row and 'dynamic_text' in row['xai_explanation'] else row['explanation'] if 'explanation' in row else '' }}"
+                         data-similarity-pct="{{ row['similarity_pct'] if 'similarity_pct' in row else '%.0f'|format(sim) }}"
+                         data-cosine-score="{{ row['cosine_score'] if 'cosine_score' in row else '%.2f'|format(row['similarity_score']) if 'similarity_score' in row else '0.90' }}"
+                         data-top-features='{{ (row["xai_explanation"]["top_features"] if "xai_explanation" in row and "top_features" in row["xai_explanation"] else row["top_features"] if "top_features" in row else {"genres":[],"tags":[]}) | tojson }}'
+                         data-other-features='{{ (row["xai_explanation"]["other_features"] if "xai_explanation" in row and "other_features" in row["xai_explanation"] else row["other_features"] if "other_features" in row else {"genres":[],"tags":[]}) | tojson }}'
+                         data-xai-id="{{ row['xai_explanation']['xai_text_id'] if 'xai_explanation' in row and 'xai_text_id' in row['xai_explanation'] else row['xai_text_id'] if 'xai_text_id' in row else '' }}"
+                         data-xai-en="{{ row['xai_explanation']['xai_text_en'] if 'xai_explanation' in row and 'xai_text_en' in row['xai_explanation'] else row['xai_text_en'] if 'xai_text_en' in row else '' }}"
+                         data-dynamic-text="{{ row['xai_explanation']['xai_text_id'] if 'xai_explanation' in row and 'xai_text_id' in row['xai_explanation'] else row['dynamic_text'] if 'dynamic_text' in row else row['explanation'] if 'explanation' in row else '' }}"
                          data-rating="{{ row['rating_score'] if 'rating_score' in row else 0 }}" 
                          data-price="{{ row['price'] if 'price' in row else 0 }}"
                          data-genres="{{ (row['genres'] ~ ' ' ~ row['tags']) | lower if 'genres' in row else '' }}"
                          data-genres-raw="{{ row['genres'] if 'genres' in row else '' }}"
                          data-tags-raw="{{ row['tags'] if 'tags' in row else '' }}"
                          data-desc="{{ (row['short_description'] | striptags) if ('short_description' in row and row['short_description'] and row['short_description'] != 'nan') else (row['detailed_description'] | striptags | truncate(250)) if ('detailed_description' in row and row['detailed_description'] and row['detailed_description'] != 'nan') else '' }}"
-                         data-exp-id="{{ row['xai_explanation']['dynamic_text'] if 'xai_explanation' in row and 'dynamic_text' in row['xai_explanation'] else row['explanation_id'] if 'explanation_id' in row else row['explanation'] if 'explanation' in row else '' }}"
-                         data-exp-en="{{ row['xai_explanation']['dynamic_text'] if 'xai_explanation' in row and 'dynamic_text' in row['xai_explanation'] else row['explanation_en'] if 'explanation_en' in row else '' }}">
+                         data-exp-id="{{ row['xai_explanation']['xai_text_id'] if 'xai_explanation' in row and 'xai_text_id' in row['xai_explanation'] else row['xai_text_id'] if 'xai_text_id' in row else '' }}"
+                         data-exp-en="{{ row['xai_explanation']['xai_text_en'] if 'xai_explanation' in row and 'xai_text_en' in row['xai_explanation'] else row['xai_text_en'] if 'xai_text_en' in row else '' }}">
                         <div class="rec-card-img">
                             <img src="{{ row['header_image'] }}" alt="{{ row['name'] }}" loading="lazy"
                                  onerror="this.onerror=null;this.src='https://cdn.akamai.steamstatic.com/steam/apps/{{ row['steam_appid'] }}/capsule_616x353.jpg';">
@@ -826,53 +1104,72 @@
 
     <!-- MODAL GAME DETAIL & XAI -->
     <div id="game-detail-modal" class="modal-overlay" aria-hidden="true">
-        <div class="modal-content" style="max-width: 520px; padding: 0; overflow: hidden;">
-            <div style="position: relative; width: 100%; height: 210px; overflow: hidden; background: #000;">
+        <div class="modal-content" style="max-width: 540px; max-height: 88vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: var(--r-md); border: 1px solid var(--border-md);">
+            
+            <!-- HEADER IMAGE -->
+            <div style="position: relative; width: 100%; height: 160px; flex-shrink: 0; overflow: hidden; background: #000;">
                 <img id="gmodal-img" src="" alt="" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.85;">
                 <div style="position: absolute; inset: 0; background: linear-gradient(to top, var(--bg-card) 5%, transparent 80%);"></div>
                 <button id="close-gmodal" class="modal-close" aria-label="Tutup" style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.6); color: #fff; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); z-index: 5;"><i class="fas fa-times"></i></button>
                 <span id="gmodal-match" class="match-badge" style="top: 12px; left: 12px; font-size: 0.82rem; padding: 4px 10px;"></span>
             </div>
-            <div style="padding: 1.5rem;">
-                <h3 id="gmodal-title" style="font-family: var(--font-display); font-size: 1.35rem; color: var(--text-1); margin-bottom: 0.8rem; font-weight: 700;"></h3>
+
+            <!-- SCROLLABLE BODY CONTENT -->
+            <div style="padding: 1.25rem 1.25rem 0.5rem 1.25rem; overflow-y: auto; flex: 1;">
+                <h3 id="gmodal-title" style="font-family: var(--font-display); font-size: 1.25rem; color: var(--text-1); margin-bottom: 0.75rem; font-weight: 700;"></h3>
                 
-                <!-- Score & Method Meta Section -->
-                <div style="display: flex; gap: 10px; margin-bottom: 1rem; font-family: var(--font-mono); font-size: 0.75rem;">
-                    <div style="background: var(--bg-surface); border: 1px solid var(--border-md); padding: 8px 12px; border-radius: var(--r-sm); color: var(--gold); flex: 1;">
-                        <strong style="color: var(--text-2); display: block; font-size: 0.65rem;">SIMILARITY SCORE:</strong>
-                        <span id="gmodal-score-val" style="font-size: 1rem; font-weight: 700;">0.83</span>
+                <!-- TINGKAT KEMIRIPAN & COSINE SCORE (User-Friendly Score Header) -->
+                <div style="background: var(--bg-surface); border: 1px solid var(--border-md); padding: 8px 12px; border-radius: var(--r-sm); margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span id="gmodal-match-pct" style="font-size: 1.2rem; font-weight: 700; color: var(--gold);">90%</span>
+                        <strong style="color: var(--text-1); font-size: 0.85rem; font-weight: 600;" data-i18n="similarity_label">Tingkat Kemiripan</strong>
+                        <i class="fas fa-info-circle" title="Diukur menggunakan TF-IDF &amp; Cosine Similarity" style="color: var(--text-3); font-size: 0.78rem; cursor: pointer;"></i>
                     </div>
-                    <div style="background: var(--bg-surface); border: 1px solid var(--border-md); padding: 8px 12px; border-radius: var(--r-sm); color: var(--text-1); flex: 1.3;">
-                        <strong style="color: var(--text-2); display: block; font-size: 0.65rem;">METHOD:</strong>
-                        <span style="font-size: 0.82rem;">TF-IDF + Cosine Similarity</span>
+                    <div style="text-align: right;">
+                        <span id="gmodal-cosine-score" style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-3); opacity: 0.75;">(Cosine: 0.90)</span>
                     </div>
                 </div>
 
-                <!-- XAI Explanation -->
-                <div style="background: var(--bg-elevated); padding: 0.85rem 1rem; border-radius: var(--r-sm); border-left: 3px solid var(--gold); margin-bottom: 1.2rem;">
-                    <p style="font-size: 0.7rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-weight: 600;" data-i18n="xai-title">Penjelasan Rekomendasi (XAI)</p>
-                    <p id="gmodal-xai" style="font-size: 0.84rem; color: var(--text-1); line-height: 1.45; margin: 0;"></p>
+                <!-- PENJELASAN REKOMENDASI (XAI) -->
+                <div style="background: var(--bg-elevated); padding: 0.75rem 0.9rem; border-radius: var(--r-sm); border-left: 3px solid var(--gold); margin-bottom: 0.75rem;">
+                    <p style="font-size: 0.68rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-weight: 600;" data-i18n="xai_title">Penjelasan Rekomendasi (XAI)</p>
+                    <p id="gmodal-xai" style="font-size: 0.82rem; color: var(--text-1); line-height: 1.45; margin: 0;"></p>
                 </div>
 
-                <!-- Top Matching Genres & Tags -->
-                <div style="margin-bottom: 1.2rem;">
-                    <strong style="font-size: 0.72rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 6px;" data-i18n="gmodal-features">Top Matching Genres &amp; Tags:</strong>
-                    <div id="gmodal-tags" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+                <!-- FITUR KONTEN YANG PALING BERKONTRIBUSI -->
+                <div style="margin-bottom: 0.75rem; background: var(--bg-surface); padding: 8px 12px; border-radius: var(--r-sm); border: 1px solid var(--border-md);">
+                    <strong style="font-size: 0.68rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 4px;" data-i18n="top_contrib_title">Fitur Konten Yang Paling Berkontribusi</strong>
+                    <div id="gmodal-top-features" style="font-size: 0.8rem; color: var(--text-1); line-height: 1.45;"></div>
+                </div>
+
+                <!-- FITUR LAIN YANG BERIRISAN -->
+                <div style="margin-bottom: 0.75rem; background: var(--bg-surface); padding: 8px 12px; border-radius: var(--r-sm); border: 1px solid var(--border-md);">
+                    <strong style="font-size: 0.68rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 4px;" data-i18n="other_shared_title">Fitur Lain Yang Beririsan</strong>
+                    <div id="gmodal-other-features" style="font-size: 0.8rem; color: var(--text-2); line-height: 1.45;"></div>
+                </div>
+
+                <!-- METODE PERHITUNGAN -->
+                <div style="margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface); padding: 6px 12px; border-radius: var(--r-sm); border: 1px solid var(--border-md);">
+                    <strong style="font-size: 0.68rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px;" data-i18n="calc_method_title">Metode Perhitungan</strong>
+                    <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--gold);" data-i18n="calc_method_desc">TF-IDF + Cosine Similarity</span>
                 </div>
 
                 <!-- Description -->
-                <div style="margin-bottom: 1.5rem;">
-                    <strong style="font-size: 0.72rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 6px;" data-i18n="synopsis-label">Sinopsis / Deskripsi Game:</strong>
-                    <p id="gmodal-desc" style="font-size: 0.82rem; color: var(--text-2); line-height: 1.5; margin: 0; max-height: 110px; overflow-y: auto;"></p>
+                <div style="margin-bottom: 0.85rem;">
+                    <strong style="font-size: 0.68rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 4px;" data-i18n="synopsis-label">Sinopsis / Deskripsi Game:</strong>
+                    <p id="gmodal-desc" style="font-size: 0.8rem; color: var(--text-2); line-height: 1.45; margin: 0; max-height: 90px; overflow-y: auto;"></p>
                 </div>
+            </div>
 
-                <!-- Steam Link Button -->
-                <a id="gmodal-steam" href="#" target="_blank" class="btn-steam" style="width: 100%; text-align: center; justify-content: center; padding: 0.65rem; display: flex; align-items: center; gap: 8px;">
+            <!-- STICKY FOOTER ACTION BUTTON -->
+            <div style="padding: 0.85rem 1.25rem; background: var(--bg-card); border-top: 1px solid var(--border-md); flex-shrink: 0; z-index: 10;">
+                <a id="gmodal-steam" href="#" target="_blank" class="btn-steam" style="width: 100%; text-align: center; justify-content: center; padding: 0.6rem; display: flex; align-items: center; gap: 8px;">
                     <i class="fab fa-steam"></i> <span data-i18n="open-steam">Buka di Steam</span>
                 </a>
             </div>
+
         </div>
-    <!-- FLOATING SCROLL TO TOP BUTTON -->
+    </div>   <!-- FLOATING SCROLL TO TOP BUTTON -->
     <button id="scroll-top-btn" title="Scroll to Top" aria-label="Scroll to top">
         <i class="fas fa-arrow-up"></i>
     </button>
@@ -1076,7 +1373,7 @@
             const i18nDict = {
                 id: {
                     "hero-title": "Mulai dengan satu game<br>yang kamu <em>suka</em>",
-                    "hero-sub": "Sisanya biar kami yang urus. Sistem kami mencarikan rekomendasi paling relevan dari ribuan judul menggunakan metode TF-IDF dan Cosine Similarity.",
+                    "hero-sub": "Sistem AI kami menganalisis ribuan game untuk menemukan rekomendasi paling akurat berdasarkan game favorit Anda.",
                     "search-placeholder": "Contoh: Elden Ring, Palworld...",
                     "search-btn": "Temukan",
                     "history-label": "Terakhir Dicari:",
@@ -1110,25 +1407,30 @@
                     "rank-1": "Rank #1 Match",
                     "indexed": "Indexed",
                     "detail-btn": "Lihat Detail &#8594;",
-                    "loading-text": "Loading...",
+                    "loading-text": "Mencari game yang cocok...",
                     "modal-title": "Cara Kerja Sistem LevelFind",
                     "modal-intro": "Sistem ini merekomendasikan game berdasarkan kemiripan konten melalui 3 langkah sederhana:",
                     "modal-step1": "<strong>Pembersihan Data:</strong> Sistem merapikan teks deskripsi, tag, dan genre game agar mudah dibaca oleh mesin.",
                     "modal-step2": "<strong>Pemberian Nilai Kata:</strong> Sistem mencari kata kunci unik dari sebuah game yang paling membedakannya dari game lain.",
                     "modal-step3": "<strong>Pencocokan Kemiripan:</strong> Sistem menghitung seberapa mirip kata kunci game target dengan ribuan game lain di sistem kami untuk menemukan kecocokan terbaik.",
                     "modal-note": "*Persentase Kecocokan menunjukkan seberapa identik elemen cerita, mekanik, dan atmosfer game dibandingkan dengan judul pencarian Anda.",
-                    "rating-na": "<i class=\"fas fa-minus-circle\" style=\"color: var(--text-3);\"></i> N/A (Belum Ada Ulasan)",
+                    "rating-na": "<i class=\"fas fa-minus-circle\" style=\"color: var(--text-3);\"></i> N/A (Belum ada ulasan yang cukup)",
                     "xai-title": "Penjelasan Rekomendasi (XAI)",
                     "gmodal-features": "Kategori & Fitur Irisan:",
                     "modal-desc-fallback": "Informasi detail untuk game ini belum tersedia di sistem kami.",
                     "load-more-btn": "Tampilkan Lebih Banyak",
                     "similarity_label": "Tingkat Kemiripan",
+                    "similarity_level": "Tingkat Kemiripan",
+                    "top_contrib_title": "Kecocokan Utama",
+                    "other_shared_title": "Kesamaan Lainnya",
+                    "calc_method_title": "Sistem Cerdas",
+                    "calc_method_desc": "TF-IDF + Cosine Similarity",
                     "view_xai_btn": "Lihat Penjelasan XAI",
                     "footer-text": "LevelFind &copy; 2026 &mdash; Sistem Rekomendasi Game PC"
                 },
                 en: {
                     "hero-title": "Start with a game<br>you <em>love</em>",
-                    "hero-sub": "We will handle the rest. Our system discovers the most relevant recommendations from thousands of titles using TF-IDF and Cosine Similarity.",
+                    "hero-sub": "Our AI analyzes thousands of titles to find the most accurate recommendations based on your favorite games.",
                     "search-placeholder": "e.g., Elden Ring, Palworld...",
                     "search-btn": "Discover",
                     "history-label": "Recently Searched:",
@@ -1162,19 +1464,24 @@
                     "rank-1": "Rank #1 Match",
                     "indexed": "Indexed",
                     "detail-btn": "View Details &#8594;",
-                    "loading-text": "Loading...",
+                    "loading-text": "Finding matches...",
                     "modal-title": "How LevelFind Works",
                     "modal-intro": "This system recommends games based on content similarity through 3 simple steps:",
                     "modal-step1": "<strong>Data Cleaning:</strong> Cleans and organizes game descriptions, tags, and genres to make them machine-readable.",
                     "modal-step2": "<strong>Keyword Weighting:</strong> Identifies unique keywords of a game that distinguish it most from other games.",
                     "modal-step3": "<strong>Similarity Matching:</strong> Calculates how similar the target game keywords are to thousands of other games in our system to find the best match.",
                     "modal-note": "*Match Percentage reflects how identical the story elements, mechanics, and atmosphere are compared to your search title.",
-                    "rating-na": "<i class=\"fas fa-minus-circle\" style=\"color: var(--text-3);\"></i> N/A (No Reviews Yet)",
+                    "rating-na": "<i class=\"fas fa-minus-circle\" style=\"color: var(--text-3);\"></i> N/A (Not enough reviews yet)",
                     "xai-title": "Recommendation Explanation (XAI)",
                     "gmodal-features": "Matching Categories & Features:",
                     "modal-desc-fallback": "Detailed information for this game is not yet available in our system.",
                     "load-more-btn": "Load More",
-                    "similarity_label": "Similarity",
+                    "similarity_label": "Similarity Level",
+                    "similarity_level": "Similarity Level",
+                    "top_contrib_title": "Top Matches",
+                    "other_shared_title": "Other Similarities",
+                    "calc_method_title": "Smart System",
+                    "calc_method_desc": "TF-IDF + Cosine Similarity",
                     "view_xai_btn": "View XAI Explanation",
                     "footer-text": "LevelFind &copy; 2026 &mdash; PC Game Recommendation System"
                 }
@@ -1321,40 +1628,69 @@
                     .replace(/"/g, '&quot;')
                     .replace(/'/g, '&#039;');
             }
+             function renderFeatureList(featuresObj, isTop = true) {
+                if (!featuresObj) return '<div style="color: var(--text-3); font-style: italic; font-size: 0.78rem;">-</div>';
+                let badgeClass = isTop ? 'xai-badge-top' : 'xai-badge-other';
+                let html = '<div class="xai-badge-group">';
+                if (featuresObj.genres && featuresObj.genres.length > 0) {
+                    featuresObj.genres.forEach(g => {
+                        html += `<span class="${badgeClass}">Genre: ${escapeHtml(g)}</span>`;
+                    });
+                }
+                if (featuresObj.tags && featuresObj.tags.length > 0) {
+                    featuresObj.tags.forEach(t => {
+                        html += `<span class="${badgeClass}">${escapeHtml(t)}</span>`;
+                    });
+                }
+                html += '</div>';
+                return (html === '<div class="xai-badge-group"></div>') ? '<div style="color: var(--text-3); font-style: italic; font-size: 0.78rem;">-</div>' : html;
+            }
 
             $(document).on('click', '.btn-open-game-modal', function(e) {
                 e.preventDefault();
+                $('.rec-card').removeClass('active-modal-card');
                 let card = $(this).closest('.rec-card');
+                card.addClass('active-modal-card');
+
                 let name = card.attr('data-name');
                 let appid = card.attr('data-appid');
                 let image = card.attr('data-image');
-                let matchVal = card.attr('data-match-val');
-                let rawScore = card.attr('data-score') || '0.83';
-                let dynamicText = card.attr('data-dynamic-text') || card.attr('data-exp-id') || '';
+                let simPct = card.attr('data-similarity-pct') || card.attr('data-match-val') || '90';
+                let cosineScore = card.attr('data-cosine-score') || card.attr('data-score') || '0.90';
                 
-                let topGenres = [];
-                let topTags = [];
+                let xaiId = card.attr('data-xai-id') || card.attr('data-exp-id') || '';
+                let xaiEn = card.attr('data-xai-en') || card.attr('data-exp-en') || '';
+
+                let topFeatures = {};
+                let otherFeatures = {};
                 try {
-                    topGenres = JSON.parse(card.attr('data-top-genres') || '[]');
-                } catch(err) { topGenres = []; }
+                    topFeatures = JSON.parse(card.attr('data-top-features') || '{}');
+                } catch(err) { topFeatures = {}; }
                 try {
-                    topTags = JSON.parse(card.attr('data-top-tags') || '[]');
-                } catch(err) { topTags = []; }
+                    otherFeatures = JSON.parse(card.attr('data-other-features') || '{}');
+                } catch(err) { otherFeatures = {}; }
 
                 let desc = card.attr('data-desc') || '';
                 let currentLang = localStorage.getItem('lf-lang') || 'id';
 
                 let badgeColor = "#9e9e9e";
-                let simFloat = parseFloat(matchVal);
+                let simFloat = parseFloat(simPct);
                 if (simFloat > 50) badgeColor = "#4caf50";
                 else if (simFloat >= 40) badgeColor = "#ff9800";
 
                 $('#gmodal-img').attr('src', image);
                 $('#gmodal-title').text(name);
-                $('#gmodal-match').text(matchVal + '% Tingkat Kemiripan').css({'border-color': badgeColor, 'color': badgeColor});
-                $('#gmodal-score-val').text(rawScore);
-                $('#gmodal-xai').html(escapeHtml(dynamicText));
+                $('#gmodal-match').text(simPct + '%').css({'border-color': badgeColor, 'color': badgeColor});
                 
+                $('#gmodal-match-pct').text(simPct + '%');
+                $('#gmodal-cosine-score').text(`(Cosine: ${cosineScore})`);
+                
+                let activeXaiText = (currentLang === 'en') ? (xaiEn || xaiId) : (xaiId || xaiEn);
+                $('#gmodal-xai').html(escapeHtml(activeXaiText));
+
+                $('#gmodal-top-features').html(renderFeatureList(topFeatures, true));
+                $('#gmodal-other-features').html(renderFeatureList(otherFeatures, false));
+
                 let fallbackText = (i18nDict[currentLang] && i18nDict[currentLang]['fallback_desc']) ? i18nDict[currentLang]['fallback_desc'] : 'Informasi detail untuk game ini belum tersedia di sistem kami.';
                 if (!desc || desc.trim() === '' || desc === 'nan') {
                     $('#gmodal-desc').html(`<span data-i18n="fallback_desc">${fallbackText}</span>`);
@@ -1363,40 +1699,35 @@
                 }
                 $('#gmodal-steam').attr('href', 'https://store.steampowered.com/app/' + encodeURIComponent(appid));
 
-                // Render ONLY top_matching_genres and top_matching_tags returned by backend
-                let tagsHtml = '';
-                if (topGenres && topGenres.length > 0) {
-                    topGenres.forEach(genre => {
-                        let safeGenre = escapeHtml(genre);
-                        tagsHtml += `<span class="tag" style="background: var(--gold-subtle); color: var(--gold); font-size: 0.72rem; padding: 3px 10px; border-color: var(--gold-dim); font-weight: 500;">Genre: ${safeGenre}</span>`;
-                    });
+                if (gmodal) {
+                    gmodal.classList.add('show');
+                    gmodal.setAttribute('aria-hidden', 'false');
+                    document.body.style.overflow = 'hidden';
                 }
-                if (topTags && topTags.length > 0) {
-                    topTags.forEach(tag => {
-                        let safeTag = escapeHtml(tag);
-                        tagsHtml += `<span class="tag" style="background: var(--bg-surface); font-size: 0.72rem; padding: 3px 10px; border-color: var(--border-md);">Tag: ${safeTag}</span>`;
-                    });
-                }
-                if (!tagsHtml) {
-                    tagsHtml = '<span class="tag" style="background: var(--bg-surface); font-size: 0.72rem; padding: 3px 10px;">Fitur Gameplay Irisan</span>';
-                }
-                $('#gmodal-tags').html(tagsHtml);
-
-                gmodal.classList.add('show');
-                gmodal.setAttribute('aria-hidden', 'false');
             });
 
-            if (closeGModal) {
-                closeGModal.addEventListener('click', function() {
+            function closeGameModal() {
+                if (gmodal) {
                     gmodal.classList.remove('show');
                     gmodal.setAttribute('aria-hidden', 'true');
-                });
+                }
+                document.body.style.overflow = '';
+                $('.rec-card').removeClass('active-modal-card');
+            }
+
+            if (closeGModal) {
+                closeGModal.addEventListener('click', closeGameModal);
             }
 
             window.addEventListener('click', function(e) {
                 if (e.target === gmodal) {
-                    gmodal.classList.remove('show');
-                    gmodal.setAttribute('aria-hidden', 'true');
+                    closeGameModal();
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && gmodal && gmodal.classList.contains('show')) {
+                    closeGameModal();
                 }
             });
 
