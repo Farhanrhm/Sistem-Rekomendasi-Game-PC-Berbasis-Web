@@ -102,11 +102,15 @@
             border-color: var(--gold);
             box-shadow: 0 0 12px var(--gold-subtle);
         }
-        .lang-btn .fa-globe {
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        .lang-btn .fa-globe, .nav-btn i {
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+            display: inline-block;
         }
-        .lang-btn:hover .fa-globe, .lang-btn.rotating .fa-globe {
-            transform: rotate(180deg);
+        .lang-btn:hover .fa-globe, 
+        .lang-btn.rotating .fa-globe,
+        .nav-btn:hover i,
+        .nav-btn.rotating i {
+            transform: rotate(180deg) !important;
         }
         .lang-badge {
             display: inline-block;
@@ -163,10 +167,10 @@
         .theme-btn.rotating i {
             transform: rotate(360deg) scale(0.75);
         }
-        .theme-btn .i-moon { display: block; } 
-        .theme-btn .i-sun { display: none; }
-        [data-theme="light"] .theme-btn .i-moon { display: none; } 
-        [data-theme="light"] .theme-btn .i-sun { display: block; }
+        .theme-btn .i-sun { display: inline-block !important; } 
+        .theme-btn .i-moon { display: none !important; }
+        [data-theme="light"] .theme-btn .i-sun { display: none !important; } 
+        [data-theme="light"] .theme-btn .i-moon { display: inline-block !important; }
 
         /* Transisi Global Pergantian Tema (Eye-comfort 0.4s) */
         body, .navbar, .hero, .spotlight, .rec-card, .search-wrap, .search-wrap input, .footer, .modal-content, .btn-detail, .btn-steam {
@@ -354,6 +358,13 @@
             padding: 3px 10px;
             border-radius: 6px;
             box-shadow: 0 2px 6px rgba(245, 158, 11, 0.1);
+            transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.25s ease, background 0.25s ease !important;
+            cursor: default;
+        }
+        .xai-badge-top:hover {
+            transform: scale(1.05) translateY(-1px) !important;
+            background: rgba(245, 158, 11, 0.28) !important;
+            box-shadow: 0 0 12px rgba(255, 193, 7, 0.5), 0 2px 8px rgba(245, 158, 11, 0.3) !important;
         }
         .xai-badge-other {
             display: inline-flex;
@@ -722,11 +733,11 @@
             }
         }
 
-        /* MODAL EXPLAINABLE AI (XAI) */
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(12, 12, 13, 0.85); backdrop-filter: blur(5px); z-index: 10000; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; }
+        /* MODAL EXPLAINABLE AI (XAI) - SLIDE-UP FADE TRANSITION */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(12, 12, 13, 0.85); backdrop-filter: blur(5px); z-index: 10000; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
         .modal-overlay.show { display: flex; opacity: 1; }
-        .modal-content { background: var(--bg-card); border: 1px solid var(--gold-dim); border-radius: var(--r-lg); width: 90%; max-width: 550px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6); transform: translateY(20px); transition: transform 0.3s ease; overflow: hidden; position: relative; }
-        .modal-overlay.show .modal-content { transform: translateY(0); }
+        .modal-content { background: var(--bg-card); border: 1px solid var(--gold-dim); border-radius: var(--r-lg); width: 90%; max-width: 550px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6); transform: translateY(20px); opacity: 0; transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); overflow: hidden; position: relative; }
+        .modal-overlay.show .modal-content { transform: translateY(0); opacity: 1; }
         .modal-header { padding: 1.2rem 1.8rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); }
         .modal-header h3 { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; color: var(--text-1); margin: 0; display: flex; align-items: center; gap: 8px; }
         .modal-close { background: transparent; border: none; color: var(--text-2); font-size: 1.2rem; cursor: pointer; transition: color 0.2s; padding: 4px; display: flex; align-items: center; }
@@ -736,6 +747,28 @@
         .modal-body ol { margin-top: 1rem; padding-left: 1.2rem; }
         .modal-body li { margin-bottom: 0.8rem; }
         .modal-footer-note { margin-top: 1.2rem; font-size: 0.85rem; color: var(--text-3); font-style: italic; border-top: 1px solid var(--border); padding-top: 1rem; }
+
+        /* TACTILE CLICK EFFECT ON MAIN BUTTONS */
+        .search-btn:active,
+        .btn-steam:active,
+        .btn-detail:active,
+        .btn-open-game-modal:active,
+        #load-more-btn:active,
+        .nav-btn:active,
+        .lang-toggle-btn:active {
+            transform: scale(0.96) !important;
+            transition: transform 0.1s ease !important;
+        }
+
+        /* ROTATION ANIMATION ON NAVBAR TOGGLE ICONS */
+        .nav-btn i,
+        .lang-toggle-btn i {
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+            display: inline-block;
+        }
+        .icon-rotate-180 {
+            transform: rotate(180deg) !important;
+        }
 
         #info-btn:hover { transform: scale(1.15) rotate(5deg); color: var(--gold-bright); }
         /* ANIMASI PANAH BOBOT AI */
@@ -815,8 +848,9 @@
             <i class="fas fa-gamepad" style="color: var(--gold);"></i> Level<span>Find</span>
         </div>
         <div class="nav-actions d-flex align-items-center gap-2">
-            <button id="theme-btn" class="nav-btn btn btn-outline-warning rounded-circle d-flex align-items-center justify-content-center" title="Ganti Tema Mode" aria-label="Ganti Tema">
-                <i class="fas fa-moon"></i>
+            <button id="theme-btn" class="theme-btn nav-btn btn btn-outline-warning rounded-circle d-flex align-items-center justify-content-center" title="Ganti Tema Mode" aria-label="Ganti Tema">
+                <i class="fas fa-sun i-sun"></i>
+                <i class="fas fa-moon i-moon"></i>
             </button>
             <button id="lang-btn" class="lang-toggle-btn btn btn-outline-warning rounded-pill px-3 d-flex align-items-center justify-content-center" title="Ganti Bahasa / Switch Language">
                 <i class="fas fa-globe me-1" style="font-size: 0.85rem;"></i> <span id="lang-label" class="lang-text">ID</span>
