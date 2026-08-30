@@ -192,28 +192,27 @@
         .error-msg { display: inline-flex; align-items: center; gap: 8px; margin-top: 1rem; font-size: 0.82rem; color: var(--red); background: rgba(217, 79, 79, 0.07); border: 1px solid rgba(217, 79, 79, 0.18); border-radius: var(--r-sm); padding: 8px 14px; }
 
         /* HERO DECO & ANIMASI RADAR AI */
-        .hero-deco { background: var(--deco-bg); border-left: 1px solid var(--border); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; z-index: 1; }
-        .hero-deco-ring-outer {
-            position: absolute; width: 260px; height: 260px; border-radius: 50%;
-            border: 1px dashed var(--gold); top: 50%; left: 50%;
-            margin-top: -130px; margin-left: -130px;
-            animation: slowRotate 28s linear infinite;
+        .hero-deco { background: var(--deco-bg); border-left: 1px solid var(--border); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; z-index: 1; }        .hero-deco-ring-outer {
+            position: absolute; width: 220px; height: 220px; border-radius: 50%;
+            border: 1px dashed var(--gold-dim); top: 50%; left: 50%;
+            margin-top: -110px; margin-left: -110px;
+            animation: slowRotate 28s linear infinite, radarPulse 3.8s infinite ease-in-out;
             opacity: 0.35;
         }
         .hero-deco-ring-inner {
             position: absolute; width: 155px; height: 155px; border-radius: 50%;
             border: 1px solid var(--gold); top: 50%; left: 50%;
             margin-top: -77.5px; margin-left: -77.5px;
-            animation: radarPulse 3s ease-out infinite;
+            animation: radarPulse 2.8s infinite ease-in-out;
         }
         @keyframes slowRotate {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
         @keyframes radarPulse {
-            0% { transform: scale(0.92); opacity: 0.2; box-shadow: 0 0 0 0 rgba(201, 153, 63, 0.4); }
-            50% { opacity: 0.65; box-shadow: 0 0 24px 8px rgba(201, 153, 63, 0.2); }
-            100% { transform: scale(1.08); opacity: 0.2; box-shadow: 0 0 0 0 rgba(201, 153, 63, 0); }
+            0% { transform: scale(0.94); opacity: 0.25; box-shadow: 0 0 0 0 rgba(201, 153, 63, 0.3); }
+            50% { transform: scale(1.05); opacity: 0.75; box-shadow: 0 0 22px 6px rgba(201, 153, 63, 0.25); }
+            100% { transform: scale(0.94); opacity: 0.25; box-shadow: 0 0 0 0 rgba(201, 153, 63, 0); }
         }
         .hero-deco-icon { font-size: 2.8rem; color: var(--gold); opacity: 0.75; position: relative; z-index: 2; filter: drop-shadow(0 0 10px var(--gold-subtle)); }
         .hero-stats { position: absolute; bottom: 1.4rem; left: 0; right: 0; display: flex; justify-content: center; gap: 2rem; z-index: 2; }
@@ -285,18 +284,37 @@
             box-shadow: 0 4px 12px var(--gold-subtle) !important;
         }
 
-        /* HOVER LIFT & HIGH MATCH GOLDEN GLOW */
+        /* 1. CARD HOVER MICRO-INTERACTIONS & STAGGER ANIMATIONS */
         .rec-card {
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease, border-color 0.3s ease !important;
+            will-change: transform, box-shadow;
         }
         .rec-card:hover {
-            transform: translateY(-6px) !important;
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35) !important;
+            transform: translateY(-5px) !important;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35), 0 0 16px var(--gold-subtle) !important;
+            border-color: var(--gold-dim) !important;
         }
         .rec-card.high-match:hover {
             border-color: var(--gold) !important;
-            box-shadow: 0 12px 32px var(--gold-subtle), 0 0 18px rgba(201, 153, 63, 0.22) !important;
+            box-shadow: 0 12px 32px var(--gold-subtle), 0 0 20px rgba(201, 153, 63, 0.3) !important;
         }
+        .rec-card-img img {
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            will-change: transform;
+        }
+        .rec-card:hover .rec-card-img img {
+            transform: scale(1.05) !important;
+        }
+        /* STAGGERED FADE-IN ANIMATION CLASSES */
+        .rec-card.stagger-anim {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        .rec-card.stagger-anim.show {
+            opacity: 1;
+            transform: translateY(0);
+        } }
 
         /* XAI PILL BADGES */
         .rec-mini-tag {
@@ -1214,6 +1232,19 @@
                 $(ul).width(gameInput.outerWidth());
             };
 
+            // 2. STAGGERED FADE-IN ANIMATION FOR RECOMMENDATION CARDS
+            function triggerStaggeredFadeIn() {
+                const $cards = $(".rec-grid .rec-card:visible");
+                $cards.removeClass("show").addClass("stagger-anim");
+                $cards.each(function(index) {
+                    const $card = $(this);
+                    setTimeout(function() {
+                        $card.addClass("show");
+                    }, index * 75);
+                });
+            }
+            triggerStaggeredFadeIn();
+
             // 3. SEARCH HISTORY (LocalStorage)
             function renderHistory() {
                 let history = JSON.parse(localStorage.getItem('lf-history')) || [];
@@ -1230,7 +1261,7 @@
             }
             renderHistory();
 
-            // 4. SKELETON LOADING & SAVE HISTORY
+            // 4. SMOOTH LOADING STATE & SKELETON TRANSITION
             $('form').on('submit', function() {
                 let query = gameInput.val().trim();
                 if (query !== "") {
@@ -1241,16 +1272,19 @@
                     if(history.length > 5) history.pop(); 
                     localStorage.setItem('lf-history', JSON.stringify(history));
 
-                    // Show Skeleton
-                    let skeletonHtml = `
-                        <div class="skeleton skeleton-spotlight"></div>
-                        <div class="section-header"><span class="skeleton" style="width: 150px; height: 24px;"></span></div>
-                        <div class="rec-grid">
-                            ${Array(8).fill('<div class="skeleton skeleton-card"></div>').join('')}
-                        </div>
-                    `;
-                    $(".container").html(skeletonHtml);
-                    $("#loading-overlay").css("display", "flex").hide().fadeIn(200);
+                    // Smooth fade out container content before displaying skeleton
+                    $(".container").fadeOut(180, function() {
+                        let skeletonHtml = `
+                            <div class="skeleton skeleton-spotlight" style="margin-bottom: 2rem;"></div>
+                            <div class="section-header" style="margin-bottom: 1.5rem;"><span class="skeleton" style="width: 150px; height: 24px;"></span></div>
+                            <div class="rec-grid">
+                                ${Array(8).fill('<div class="skeleton skeleton-card" style="height: 320px; border-radius: var(--r-md);"></div>').join('')}
+                            </div>
+                        `;
+                        $(this).html(skeletonHtml).fadeIn(250);
+                    });
+                    
+                    $("#loading-overlay").css("display", "flex").hide().fadeIn(250);
                 }
             });
 
@@ -1274,6 +1308,7 @@
                     }
                 });
                 $.each(cards, function(index, card) { grid.append(card); }); 
+                triggerStaggeredFadeIn();
             });
 
             // 5.1 CLIENT-SIDE FILTERING (GENRE & PRICE)
@@ -1308,6 +1343,8 @@
                         $(this).hide();
                     }
                 });
+
+                triggerStaggeredFadeIn();
 
                 if (visibleCount === 0) {
                     if ($("#empty-filter-msg").length === 0) {
