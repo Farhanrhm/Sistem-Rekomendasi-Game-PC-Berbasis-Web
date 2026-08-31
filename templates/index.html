@@ -969,20 +969,21 @@
                 </div>
                 <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.4rem; color: var(--text-1);" data-i18n="not-found-title">Game Tidak Ditemukan</h3>
                 <p style="font-size: 0.88rem; color: var(--text-2); max-width: 440px; margin: 0 auto 0.8rem; line-height: 1.6;" data-i18n="not-found-sub">Coba periksa kembali ejaan Anda atau masukkan judul game populer lain.</p>
-                <div class="error-msg" style="margin-top: 0.2rem;"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
+                <div class="error-msg" style="margin-top: 0.2rem; margin-bottom: 1.2rem;"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
                 
                 {% if suggestions %}
-                <div style="margin-top: 1.4rem; width: 100%;">
-                    <p style="font-size: 0.82rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;" data-i18n="suggestion-title">Mungkin Anda mencari game populer ini?</p>
+                <div style="margin-top: 1.2rem; width: 100%; border-top: 1px dashed var(--border-md); padding-top: 1.2rem;">
+                    <p style="font-size: 0.82rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; font-weight: 600;" data-i18n="suggestion-title">Coba salah satu game populer berikut:</p>
                     <div class="d-flex flex-wrap" style="justify-content: center; gap: 8px;">
                         {% for sug in suggestions %}
-                        <a href="/?q={{ sug | urlencode }}" class="tag hist-chip" title="{{ sug }}" style="background: var(--bg-surface); cursor: pointer; transition: all 0.25s ease; border-color: var(--gold-dim); color: var(--gold); padding: 5px 14px; font-weight: 500;">{{ sug }}</a>
+                        <a href="/?q={{ sug | urlencode }}" class="tag hist-chip" title="{{ sug }}" style="background: var(--bg-surface); cursor: pointer; transition: all 0.25s ease; border-color: var(--gold-dim); color: var(--gold); padding: 6px 14px; font-weight: 500; text-decoration: none; border-radius: var(--r-sm);">{{ sug }}</a>
                         {% endfor %}
                     </div>
                 </div>
                 {% endif %}
             </div>
             {% endif %}
+
         </div>
 
         <div class="hero-deco">
@@ -1188,7 +1189,7 @@
                             {% if 'is_tight_cluster' in row and row['is_tight_cluster'] %}
                             <div style="position: absolute; bottom: 8px; left: 8px; z-index: 2;">
                                 <span class="badge-tight-cluster" 
-                                      style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(4px); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.35); font-size: 0.68rem; padding: 3px 7px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; font-weight: 500;" 
+                                      style="background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.35); font-size: 0.68rem; padding: 3px 7px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px; font-weight: 500;" 
                                       title="Beberapa game memiliki tingkat kemiripan yang sangat berdekatan."
                                       data-title-id="Beberapa game memiliki tingkat kemiripan yang sangat berdekatan."
                                       data-title-en="Several games share a very close similarity level.">
@@ -1197,6 +1198,7 @@
                                 </span>
                             </div>
                             {% endif %}
+
                         </div>
                         <div class="rec-card-body">
                             <p class="rec-card-name" title="{{ row['name'] }}">{{ row['name'] }}</p>
@@ -1616,8 +1618,9 @@
                     "search-placeholder": "Contoh: Elden Ring, Palworld...",
                     "search-btn": "Temukan",
                     "history-label": "Terakhir Dicari:",
-                    "suggestion-title": "Mungkin Anda mencari game populer ini?",
+                    "suggestion-title": "Coba salah satu game populer berikut:",
                     "stat-games": "Game",
+
                     "stat-algo": "Algoritma",
                     "stat-sim": "Similarity",
                     "analysis-result": "Hasil Analisis",
@@ -1683,8 +1686,9 @@
                     "search-placeholder": "e.g., Elden Ring, Palworld...",
                     "search-btn": "Discover",
                     "history-label": "Recently Searched:",
-                    "suggestion-title": "Did you mean one of these popular games?",
+                    "suggestion-title": "Try one of these popular games instead:",
                     "stat-games": "Games",
+
                     "stat-algo": "Algorithm",
                     "stat-sim": "Similarity",
                     "analysis-result": "Analysis Results",

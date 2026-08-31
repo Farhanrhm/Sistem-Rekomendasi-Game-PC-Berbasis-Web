@@ -286,13 +286,12 @@ from functools import lru_cache
 # ==============================================================================
 # ALGORITMA REKOMENDASI UTAMA DENGAN IN-MEMORY LRU CACHE
 # ==============================================================================
+import time
+
 @lru_cache(maxsize=256)
 def _cached_get_recommendations(query_clean, top_n=12):
-    """
-    IN-MEMORY LRU CACHE (OPTIMASI LATENSI ENGINERING):
-    Menyimpan hasil kalkulasi Cosine Similarity & Diversification untuk pencarian
-    yang pernah dilakukan. Memangkas latensi ulang dari ~50ms menjadi 0ms (instan).
-    """
+    t0 = time.time()
+    
     matches = df[df['name'].str.lower() == query_clean]
     if matches.empty:
         matches = df[df['name'].str.lower().str.contains(query_clean, regex=False, na=False)]
@@ -303,60 +302,63 @@ def _cached_get_recommendations(query_clean, top_n=12):
     target_idx = matches.index[0]
     target_row = df.iloc[target_idx]
     game_target_name = target_row['name']
+    t_match = time.time()
 
     # 1. REAL-TIME COSINE SIMILARITY
     query_vec = tfidf_matrix[target_idx]
     sim_scores = linear_kernel(query_vec, tfidf_matrix).flatten()
+    t_cosine = time.time()
 
-    # 2. TIE-BREAKER MECHANISM & EMPIRICAL SOFT PENALTY FOR SHORT CORPUS
-    # METODOLOGI KOREKSI BIAS REPRESENSI (SOFT PENALTY):
-    # Berdasarkan analisis data empiris dataset-wide (Langkah 2), game dengan corpus sangat pendek (<15 kata) 
-    # mengalami over-representation sebesar 1.11x pada Top-4 rekomendasi.
-    # Oleh karena itu, diterapkan koreksi penalti presisi: penalty_factor = 1 / 1.11 = 0.90 
-    # MURNI HANYA UNTUK PROSES PENGURUTAN (RANKING).
-    # Angka similarity_score yang ditampilkan di UI & breakdown XAI tetap menggunakan skor Cosine murni.
+    # 2. TIE-BREAKER & SOFT PENALTY (PRECOMPUTED NUMPY ARRAYS FOR HIGH-SPEED VECTORIZED ACCESS)
+    is_sparse_arr = df['is_sparse_corpus'].values if 'is_sparse_corpus' in df.columns else np.zeros(len(df), dtype=bool)
+    pos_rev_arr = df['positive_reviews'].values if 'positive_reviews' in df.columns else np.zeros(len(df), dtype=float)
+    
+    t_sparse_start = time.time()
+    penalty_factors = np.where(is_sparse_arr, 0.90, 1.00)
+    final_ranking_scores = sim_scores * penalty_factors
+    t_sparse_sum = time.time() - t_sparse_start
+
+    # Exclude target_idx by setting score to -1
+    final_ranking_scores[target_idx] = -1.0
+
+    # Fast multi-key sorting using numpy lexsort: secondary (pos_rev_arr), primary (final_ranking_scores)
+    t_sort_start = time.time()
+    sorted_indices = np.lexsort((pos_rev_arr, final_ranking_scores))[::-1]
+    t_sort = time.time()
+
     candidates = []
-    for i, score in enumerate(sim_scores):
-        if i == target_idx:
-            continue  # Abaikan game itu sendiri
-        
-        cand_row = df.iloc[i]
-        raw_sim = float(score)
-        is_sparse = check_is_sparse_corpus(cand_row)
-        
-        penalty_factor = 0.90 if is_sparse else 1.00
-        final_ranking_score = raw_sim * penalty_factor
-        
-        pos_rev = float(cand_row.get('positive_reviews', 0))
+    # Take top 100 candidate indices for diversification loop to avoid iterating 24k items
+    for idx in sorted_indices[:100]:
+        if final_ranking_scores[idx] < 0:
+            break
         candidates.append({
-            'index': i,
-            'sim_score': raw_sim,             # Nilai cosine similarity asli (unpenalized, untuk UI & XAI)
-            'final_score': final_ranking_score, # Nilai yang disesuaikan untuk urutan ranking
-            'is_sparse_corpus': is_sparse,
-            'positive_reviews': pos_rev
+            'index': int(idx),
+            'sim_score': float(sim_scores[idx]),
+            'final_score': float(final_ranking_scores[idx]),
+            'is_sparse_corpus': bool(is_sparse_arr[idx]),
+            'positive_reviews': float(pos_rev_arr[idx])
         })
 
-    # Urutkan primer berdasarkan final_score (descending), sekunder berdasarkan positive_reviews (descending)
-    candidates = sorted(
-        candidates,
-        key=lambda x: (x['final_score'], x['positive_reviews']),
-        reverse=True
-    )
 
-    # 3. DIVERSIFICATION FILTERING (LEVENSHTEIN DISTANCE)
+    # 3. DIVERSIFICATION FILTERING & XAI EXTRACTION
     accepted_recommendations = []
     accepted_titles = [game_target_name]
+
+    t_xai_sum = 0
+    t_lev_sum = 0
 
     for cand in candidates:
         cand_row = df.iloc[cand['index']]
         cand_name = cand_row['name']
         
+        t_lev_start = time.time()
         is_duplicate_sequel = False
         for acc_title in accepted_titles:
             edit_ratio = calc_edit_distance_ratio(cand_name, acc_title)
             if edit_ratio < 0.3:
                 is_duplicate_sequel = True
                 break
+        t_lev_sum += (time.time() - t_lev_start)
 
         if not is_duplicate_sequel:
             accepted_titles.append(cand_name)
@@ -364,10 +366,11 @@ def _cached_get_recommendations(query_clean, top_n=12):
             sim_percentage = round(cand['sim_score'] * 100, 1)
             sim_score_val = round(float(cand['sim_score']), 2)
             
-            # 4. EXPLAINABLE AI (XAI) TF-IDF FEATURE IMPORTANCE EXTRACTION
+            t_xai_start = time.time()
             xai_explanation = extract_tfidf_xai_explanation(
                 target_idx, cand['index'], target_row, cand_row
             )
+            t_xai_sum += (time.time() - t_xai_start)
 
             cand_pos = float(cand_row.get('positive_reviews', 0))
             cand_tot = float(cand_row.get('total_reviews', 0))
@@ -406,8 +409,8 @@ def _cached_get_recommendations(query_clean, top_n=12):
         if len(accepted_recommendations) >= top_n:
             break
 
-    # 5. DETEKSI TIGHT CLUSTER (PERBAIKAN B BAGIAN 2 - THRESHOLD PRESISI 1.5%)
-    # Jika 3+ item dalam daftar rekomendasi memiliki selisih <= 1.5% dari skor tertinggi
+    t_loop = time.time()
+
     if accepted_recommendations:
         max_sim_pct = max(r['similarity_percentage'] for r in accepted_recommendations)
         tight_count = sum(1 for r in accepted_recommendations if (max_sim_pct - r['similarity_percentage']) <= 1.5)
@@ -439,11 +442,23 @@ def _cached_get_recommendations(query_clean, top_n=12):
         'is_sparse_corpus': check_is_sparse_corpus(target_row),
         'explanation': f"Game target pencarian utama."
     }
+    t_end = time.time()
+
+    print(f"\n=== PROFILING RESULTS FOR '{query_clean}' (top_n={top_n}) ===")
+    print(f"1. Target Search Match : {(t_match - t0)*1000:.2f} ms")
+    print(f"2. Cosine Similarity   : {(t_cosine - t_match)*1000:.2f} ms")
+    print(f"3. Soft Penalty Vector : {t_sparse_sum*1000:.2f} ms")
+    print(f"4. Sorting Candidates  : {(t_sort - t_sort_start)*1000:.2f} ms")
+    print(f"5. Levenshtein Loop    : {t_lev_sum*1000:.2f} ms")
+    print(f"6. XAI Extraction      : {t_xai_sum*1000:.2f} ms")
+    print(f"TOTAL EXCLUSIVELY      : {(t_end - t0)*1000:.2f} ms\n")
+
 
     return {
         'target_game': target_data,
         'recommendations': accepted_recommendations
     }, None
+
 
 
 def get_recommendations_data(title, top_n=12):
@@ -478,10 +493,14 @@ def home():
     else:
         search_query = sanitize_input(request.args.get('q', '') or request.args.get('game_title', ''))
 
+    popular_suggestions = ["Elden Ring", "Cyberpunk 2077", "The Witcher 3", "Palworld", "Baldur's Gate 3", "Grand Theft Auto V"]
+    suggestions = None
+
     if search_query:
         result, error_msg = get_recommendations_data(search_query, top_n=top_n)
         if error_msg:
             error = error_msg
+            suggestions = popular_suggestions
         else:
             target_game = result['target_game']
             rec_list = result['recommendations']
@@ -496,8 +515,10 @@ def home():
         top_n=top_n,
         actual_title=target_game['name'] if target_game else search_query,
         recommendations=recommendations if target_game else None,
+        suggestions=suggestions,
         error=error
     )
+
 
 
 @app.route('/api/search-suggestions', methods=['GET'])

@@ -90,12 +90,28 @@ with open('models/tfidf_matrix.pkl', 'wb') as f:
 with open('models/tfidf_vectorizer.pkl', 'wb') as f:
     pickle.dump(tfidf_vectorizer, f)
 
+def check_is_sparse(row):
+    short_d = str(row.get('short_description', '')).strip()
+    detail_d = str(row.get('detailed_description', '')).strip()
+    both_empty = (short_d in ['', 'nan']) and (detail_d in ['', 'nan'])
+    
+    desc_text = short_d if (short_d and short_d != 'nan') else detail_d
+    if desc_text == 'nan': desc_text = ""
+    genres = str(row.get('genres', '')).replace(';', ' ') if str(row.get('genres', '')).strip() != 'nan' else ""
+    tags = str(row.get('tags', '')).replace(';', ' ') if str(row.get('tags', '')).strip() != 'nan' else ""
+    full_text = f"{desc_text} {genres} {tags}".strip()
+    word_cnt = len([w for w in full_text.split() if w])
+    return bool(both_empty or word_cnt < 15)
+
+df['is_sparse_corpus'] = df.apply(check_is_sparse, axis=1)
+
 # Simpan Dataframe yang sudah dibersihkan
 cols_to_keep = [
     'steam_appid', 'name', 'price', 'genres', 'header_image', 
     'short_description', 'detailed_description', 'rating', 
-    'positive_reviews', 'total_reviews', 'rating_score', 'tags'
+    'positive_reviews', 'total_reviews', 'rating_score', 'tags', 'is_sparse_corpus'
 ]
+
 
 # Pastikan semua kolom yang diperlukan UI & algoritma ada di DataFrame
 for col in cols_to_keep:
