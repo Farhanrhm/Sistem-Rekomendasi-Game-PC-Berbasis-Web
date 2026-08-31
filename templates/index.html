@@ -599,6 +599,57 @@
             box-shadow: 0 0 10px var(--gold-subtle);
         }
 
+        /* CUSTOM TOOLTIP SYSTEM */
+        .custom-tooltip-wrapper {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        .custom-tooltip-wrapper .tooltip-content {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%) translateY(4px);
+            background: var(--bg-card);
+            color: var(--text-1);
+            border: 1px solid var(--gold);
+            padding: 8px 12px;
+            border-radius: var(--r-sm);
+            font-size: 0.75rem;
+            line-height: 1.4;
+            font-family: var(--font-body);
+            font-weight: 400;
+            white-space: normal;
+            width: max-content;
+            max-width: 260px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+            z-index: 99999;
+            text-align: center;
+        }
+        .custom-tooltip-wrapper .tooltip-content::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--gold) transparent transparent transparent;
+        }
+        .custom-tooltip-wrapper:hover .tooltip-content,
+        .custom-tooltip-wrapper.tooltip-active .tooltip-content {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+            pointer-events: auto;
+        }
+
+
         /* MOBILE BREAKPOINT (<768px) */
         @media (max-width: 767px) {
             html, body {
@@ -1246,12 +1297,16 @@
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span id="gmodal-match-pct" style="font-size: 1.2rem; font-weight: 700; color: var(--gold);">90%</span>
                         <strong style="color: var(--text-1); font-size: 0.85rem; font-weight: 600;" data-i18n="similarity_label">Tingkat Kemiripan</strong>
-                        <i class="fas fa-info-circle" title="Diukur menggunakan TF-IDF &amp; Cosine Similarity" style="color: var(--text-3); font-size: 0.78rem; cursor: pointer;"></i>
+                        <span class="custom-tooltip-wrapper">
+                            <i class="fas fa-info-circle" style="color: var(--text-3); font-size: 0.78rem; cursor: pointer;"></i>
+                            <span class="tooltip-content" data-i18n="similarity-tooltip">Diukur menggunakan TF-IDF &amp; Cosine Similarity — metode yang membandingkan kesamaan genre, tag, dan deskripsi antar game.</span>
+                        </span>
                     </div>
                     <div style="text-align: right;">
                         <span id="gmodal-cosine-score" style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-3); opacity: 0.75;">(Cosine: 0.90)</span>
                     </div>
                 </div>
+
 
                 <!-- PENJELASAN REKOMENDASI (XAI) -->
                 <div style="background: var(--bg-elevated); padding: 0.75rem 0.9rem; border-radius: var(--r-sm); border-left: 3px solid var(--gold); margin-bottom: 0.75rem;">
@@ -1296,12 +1351,16 @@
                 </div>
             </div>
 
-            <!-- STICKY FOOTER ACTION BUTTON -->
-            <div style="padding: 0.85rem 1.25rem; background: var(--bg-card); border-top: 1px solid var(--border-md); flex-shrink: 0; z-index: 10;">
-                <a id="gmodal-steam" href="#" target="_blank" class="btn-steam" style="width: 100%; text-align: center; justify-content: center; padding: 0.6rem; display: flex; align-items: center; gap: 8px;">
+            <!-- STICKY FOOTER ACTION BUTTONS -->
+            <div style="padding: 0.85rem 1.25rem; background: var(--bg-card); border-top: 1px solid var(--border-md); flex-shrink: 0; z-index: 10; display: flex; gap: 10px; align-items: center;">
+                <a id="gmodal-steam" href="#" target="_blank" class="btn-steam" style="flex: 1; text-align: center; justify-content: center; padding: 0.6rem; display: flex; align-items: center; gap: 8px;">
                     <i class="fab fa-steam"></i> <span data-i18n="open-steam">Buka di Steam</span>
                 </a>
+                <button id="gmodal-copy-link" type="button" class="btn-detail" style="flex: 1; margin: 0; padding: 0.6rem; min-height: auto; text-align: center; justify-content: center; display: flex; align-items: center; gap: 6px; color: var(--gold); border-color: var(--gold); background: transparent;" title="Salin Link Game Ini">
+                    <i class="fas fa-link"></i> <span data-i18n="gmodal-copy-btn">Salin Link Game</span>
+                </button>
             </div>
+
 
         </div>
     </div>   <!-- FLOATING SCROLL TO TOP BUTTON -->
@@ -1613,6 +1672,9 @@
                     "view_xai_btn": "Lihat Penjelasan XAI",
                     "tight_cluster_badge": "Skor Serupa",
                     "synopsis-lang-notice-text": "Sinopsis ini ditampilkan dalam Bahasa Inggris karena developer game belum menyediakan terjemahan resmi Bahasa Indonesia di Steam.",
+                    "similarity-tooltip": "Diukur menggunakan TF-IDF & Cosine Similarity — metode yang membandingkan kesamaan genre, tag, dan deskripsi antar game.",
+                    "gmodal-copy-btn": "Salin Link Game",
+                    "copied-text": "Tersalin!",
                     "footer-text": "LevelFind &copy; 2026 &mdash; Sistem Rekomendasi Game PC"
                 },
                 en: {
@@ -1677,8 +1739,12 @@
                     "view_xai_btn": "View XAI Explanation",
                     "tight_cluster_badge": "Similar Scores",
                     "synopsis-lang-notice-text": "This synopsis is displayed in English because the game developer has not provided an official Indonesian translation on Steam.",
+                    "similarity-tooltip": "Measured using TF-IDF & Cosine Similarity — a method comparing genre, tag, and description similarities between games.",
+                    "gmodal-copy-btn": "Copy Game Link",
+                    "copied-text": "Copied!",
                     "footer-text": "LevelFind &copy; 2026 &mdash; PC Game Recommendation System"
                 }
+
             };
 
             function setLanguage(lang, animate = false) {
@@ -2022,12 +2088,48 @@
                 }
                 $('#gmodal-steam').attr('href', 'https://store.steampowered.com/app/' + encodeURIComponent(appid));
 
+                // Save game metadata on copy button for easy reference
+                $('#gmodal-copy-link').attr('data-game-title', name);
+
                 if (gmodal) {
                     gmodal.classList.add('show');
                     gmodal.setAttribute('aria-hidden', 'false');
                     document.body.style.overflow = 'hidden';
                 }
             });
+
+            // GMODAL COPY LINK SECONDARY CTA BUTTON LOGIC
+            $(document).on('click', '#gmodal-copy-link', function(e) {
+                e.preventDefault();
+                let gameTitle = $(this).attr('data-game-title') || $('#gmodal-title').text().trim();
+                let currentUrl = window.location.origin + "/?q=" + encodeURIComponent(gameTitle);
+                
+                let btn = $(this);
+                let currentLang = localStorage.getItem('lf-lang') || 'id';
+                let copiedText = (i18nDict[currentLang] && i18nDict[currentLang]['copied-text']) ? i18nDict[currentLang]['copied-text'] : 'Tersalin!';
+                let originalBtnText = (i18nDict[currentLang] && i18nDict[currentLang]['gmodal-copy-btn']) ? i18nDict[currentLang]['gmodal-copy-btn'] : 'Salin Link Game';
+
+                navigator.clipboard.writeText(currentUrl).then(() => {
+                    btn.html(`<i class="fas fa-check"></i> <span>${copiedText}</span>`);
+                    btn.css({"background": "var(--gold)", "color": "#000"});
+                    setTimeout(() => { 
+                        btn.html(`<i class="fas fa-link"></i> <span data-i18n="gmodal-copy-btn">${originalBtnText}</span>`); 
+                        btn.css({"background": "transparent", "color": "var(--gold)"});
+                    }, 2000);
+                });
+            });
+
+            // CUSTOM TOOLTIP MOBILE TOGGLE & OUTSIDE CLICK HANDLER
+            $(document).on('click', '.custom-tooltip-wrapper', function(e) {
+                e.stopPropagation();
+                $('.custom-tooltip-wrapper').not(this).removeClass('tooltip-active');
+                $(this).toggleClass('tooltip-active');
+            });
+
+            $(document).on('click', function() {
+                $('.custom-tooltip-wrapper').removeClass('tooltip-active');
+            });
+
 
             function closeGameModal() {
                 if (gmodal) {
