@@ -969,7 +969,7 @@
                 </div>
                 <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.4rem; color: var(--text-1);" data-i18n="not-found-title">Game Tidak Ditemukan</h3>
                 <p style="font-size: 0.88rem; color: var(--text-2); max-width: 440px; margin: 0 auto 0.8rem; line-height: 1.6;" data-i18n="not-found-sub">Coba periksa kembali ejaan Anda atau masukkan judul game populer lain.</p>
-                <div class="error-msg" style="margin-top: 0.2rem; margin-bottom: 1.2rem;"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
+                <div class="error-msg" data-search-query="{{ search_query }}" style="margin-top: 0.2rem; margin-bottom: 1.2rem;"><i class="fas fa-exclamation-circle"></i> <span class="error-text">{{ error }}</span></div>
                 
                 {% if suggestions %}
                 <div style="margin-top: 1.2rem; width: 100%; border-top: 1px dashed var(--border-md); padding-top: 1.2rem;">
@@ -1678,6 +1678,7 @@
                     "similarity-tooltip": "Diukur menggunakan TF-IDF & Cosine Similarity — metode yang membandingkan kesamaan genre, tag, dan deskripsi antar game.",
                     "gmodal-copy-btn": "Salin Link Game",
                     "copied-text": "Tersalin!",
+                    "error-not-found": "Game '{game_name}' tidak ditemukan dalam sistem kami.",
                     "footer-text": "LevelFind &copy; 2026 &mdash; Sistem Rekomendasi Game PC"
                 },
                 en: {
@@ -1746,6 +1747,7 @@
                     "similarity-tooltip": "Measured using TF-IDF & Cosine Similarity — a method comparing genre, tag, and description similarities between games.",
                     "gmodal-copy-btn": "Copy Game Link",
                     "copied-text": "Copied!",
+                    "error-not-found": "Game '{game_name}' was not found in our system.",
                     "footer-text": "LevelFind &copy; 2026 &mdash; PC Game Recommendation System"
                 }
 
@@ -1836,6 +1838,16 @@
                         $(this).attr('placeholder', i18nDict[lang][key]);
                     }
                 });
+
+                const $errorMsg = $('.error-msg');
+                if ($errorMsg.length > 0) {
+                    let gameName = $errorMsg.attr('data-search-query') || '';
+                    let templateStr = i18nDict[lang]['error-not-found'];
+                    if (templateStr && gameName) {
+                        let translatedError = templateStr.replace('{game_name}', gameName);
+                        $errorMsg.find('.error-text').text(translatedError);
+                    }
+                }
 
                 $('.rec-card').each(function() {
                     let card = $(this);
