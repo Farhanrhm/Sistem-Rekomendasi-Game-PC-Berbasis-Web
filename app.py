@@ -444,14 +444,18 @@ def _cached_get_recommendations(query_clean, top_n=12):
     }
     t_end = time.time()
 
-    print(f"\n=== PROFILING RESULTS FOR '{query_clean}' (top_n={top_n}) ===")
-    print(f"1. Target Search Match : {(t_match - t0)*1000:.2f} ms")
-    print(f"2. Cosine Similarity   : {(t_cosine - t_match)*1000:.2f} ms")
-    print(f"3. Soft Penalty Vector : {t_sparse_sum*1000:.2f} ms")
-    print(f"4. Sorting Candidates  : {(t_sort - t_sort_start)*1000:.2f} ms")
-    print(f"5. Levenshtein Loop    : {t_lev_sum*1000:.2f} ms")
-    print(f"6. XAI Extraction      : {t_xai_sum*1000:.2f} ms")
-    print(f"TOTAL EXCLUSIVELY      : {(t_end - t0)*1000:.2f} ms\n")
+    try:
+        print(f"\n=== PROFILING RESULTS FOR '{query_clean}' (top_n={top_n}) ===")
+        print(f"1. Target Search Match : {(t_match - t0)*1000:.2f} ms")
+        print(f"2. Cosine Similarity   : {(t_cosine - t_match)*1000:.2f} ms")
+        print(f"3. Soft Penalty Vector : {t_sparse_sum*1000:.2f} ms")
+        print(f"4. Sorting Candidates  : {(t_sort - t_sort_start)*1000:.2f} ms")
+        print(f"5. Levenshtein Loop    : {t_lev_sum*1000:.2f} ms")
+        print(f"6. XAI Extraction      : {t_xai_sum*1000:.2f} ms")
+        print(f"TOTAL EXCLUSIVELY      : {(t_end - t0)*1000:.2f} ms\n")
+    except Exception:
+        pass
+
 
 
     return {
