@@ -18,3 +18,7 @@ Thumbs.db
 # Flask temporary files
 instance/
 .webassets-cache
+
+# Scratch / Temporary Audit Scripts
+scratch/
+
