@@ -1905,15 +1905,18 @@
             // 6. SHARE LINK (COPY CLIPBOARD)
             $("#share-btn").on("click", function() {
                 let currentUrl = window.location.origin + "/?q=" + encodeURIComponent("{{ actual_title if actual_title else search_query }}");
+                let btn = $(this);
+                let currentLang = localStorage.getItem('lf-lang') || 'id';
+                let copiedText = (i18nDict[currentLang] && i18nDict[currentLang]['copied-text']) ? i18nDict[currentLang]['copied-text'] : (currentLang === 'en' ? 'Copied!' : 'Tersalin!');
+                let originalHtml = btn.html();
+
                 navigator.clipboard.writeText(currentUrl).then(() => {
-                    let btn = $(this);
-                    let originalHtml = btn.html();
-                    btn.html('<i class="fas fa-check"></i> Tersalin!');
+                    btn.html(`<i class="fas fa-check"></i> <span>${copiedText}</span>`);
                     btn.css({"background": "var(--gold)", "color": "#000"});
                     setTimeout(() => { 
                         btn.html(originalHtml); 
                         btn.css({"background": "transparent", "color": "var(--gold)"});
-                    }, 2000);
+                    }, 1500);
                 });
             });
 
