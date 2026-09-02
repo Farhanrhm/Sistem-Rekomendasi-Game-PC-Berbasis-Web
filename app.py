@@ -518,6 +518,7 @@ def home():
         search_query=search_query,
         top_n=top_n,
         actual_title=target_game['name'] if target_game else search_query,
+        target_game=target_game,
         recommendations=recommendations if target_game else None,
         suggestions=suggestions,
         error=error

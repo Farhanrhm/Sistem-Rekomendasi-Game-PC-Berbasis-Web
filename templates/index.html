@@ -3,7 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LevelFind — Sistem Rekomendasi Game</title>
+    <meta name="description" content="{% if target_game and target_game['short_description'] and target_game['short_description'] != 'nan' %}{{ target_game['short_description'] | striptags | truncate(160) }}{% else %}LevelFind — Temukan rekomendasi game paling akurat berdasarkan game favoritmu, didukung AI dengan analisis TF-IDF &amp; Cosine Similarity.{% endif %}">
+    
+    <!-- Open Graph & Social Meta Tags -->
+    <meta property="og:title" content="{% if actual_title %}{{ actual_title }} — Rekomendasi Serupa | LevelFind{% else %}LevelFind — Sistem Rekomendasi Game{% endif %}">
+    <meta property="og:description" content="{% if target_game and target_game['short_description'] and target_game['short_description'] != 'nan' %}{{ target_game['short_description'] | striptags | truncate(160) }}{% else %}Temukan rekomendasi game paling akurat berdasarkan game favoritmu.{% endif %}">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="{% if target_game and target_game['header_image'] %}{{ target_game['header_image'] }}{% else %}/static/og-default.jpg{% endif %}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% if actual_title %}{{ actual_title }} — Rekomendasi Serupa | LevelFind{% else %}LevelFind — Sistem Rekomendasi Game{% endif %}">
+    <meta name="twitter:description" content="{% if target_game and target_game['short_description'] and target_game['short_description'] != 'nan' %}{{ target_game['short_description'] | striptags | truncate(160) }}{% else %}Temukan rekomendasi game paling akurat berdasarkan game favoritmu.{% endif %}">
+    <meta name="twitter:image" content="{% if target_game and target_game['header_image'] %}{{ target_game['header_image'] }}{% else %}/static/og-default.jpg{% endif %}">
+    <link rel="icon" type="image/png" href="/static/favicon.png">
+
+    <title>{% if actual_title %}{{ actual_title }} — Rekomendasi Serupa | LevelFind{% else %}LevelFind — Sistem Rekomendasi Game{% endif %}</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,6 +30,10 @@
             var pl = window.matchMedia("(prefers-color-scheme: light)").matches;
             if (s === "light" || (!s && pl)) {
                 document.documentElement.setAttribute("data-theme", "light");
+            }
+            var l = localStorage.getItem("lf-lang");
+            if (l === "en" || l === "id") {
+                document.documentElement.setAttribute("lang", l);
             }
         })();
     </script>
@@ -36,7 +53,7 @@
             --red: #d94f4f;
             --text-1: #edeae2;
             --text-2: #a3a098;
-            --text-3: #585652;
+            --text-3: #75726c; /* Improved contrast ratio (> 4.5:1 against dark bg) */
             --border: #232328;
             --border-md: #2e2e35;
             --font-display: "Playfair Display", Georgia, serif;
@@ -63,11 +80,29 @@
             --red: #b83232;
             --text-1: #1c1a16;
             --text-2: #5c5750;
-            --text-3: #a09890;
+            --text-3: #6b645b; /* Improved contrast ratio (> 4.5:1 against light bg) */
             --border: #dfd8cb;
             --border-md: #cec6b6;
             --dot: rgba(0, 0, 0, 0.055);
             --deco-bg: rgba(154, 109, 26, 0.04);
+        }
+
+        /* GLOBAL ACCESSIBILITY FOCUS INDICATOR (:focus-visible) */
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible,
+        .rec-card:focus-visible,
+        .nav-btn:focus-visible,
+        .lang-toggle-btn:focus-visible,
+        .btn-steam:focus-visible,
+        .btn-detail:focus-visible,
+        .hist-chip:focus-visible,
+        .info-badge-btn:focus-visible,
+        .modal-close:focus-visible {
+            outline: 2px solid var(--gold) !important;
+            outline-offset: 2px !important;
+            border-radius: var(--r-sm) !important;
         }
 
         /* Reset & Dasar */
@@ -1834,6 +1869,7 @@
 
             function setLanguage(lang, animate = false) {
                 localStorage.setItem('lf-lang', lang);
+                document.documentElement.setAttribute('lang', lang === 'en' ? 'en' : 'id');
                 
                 const $langBtn = $('#lang-btn');
                 const $langLabel = $('#lang-label');
