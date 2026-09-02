@@ -1,24 +1,36 @@
-# Python Environment & Environment Secrets
+# Python Environment & Secrets
 venv/
 env/
 .env
 __pycache__/
 *.py[cod]
+
+# Dataset Files & Scraping Outputs
 *.csv
+dataset/
+dataset/*
+dataset/processed/*
+dataset/raw/*
+!dataset/processed/.gitkeep
 
-# Dataset & Models (File Berat)
-dataset/processed/*.csv
+# Model Large Files
 models/cosine_sim.pkl
+models/*.pkl
 
-# Web & OS
+# Web & OS & IDE
 .DS_Store
 Thumbs.db
 .vscode/
+.idea/
 
-# Flask temporary files
+# Temporary & Scraping Cache / Logs
+*.log
+*.tmp
+*.temp
 instance/
 .webassets-cache
 
 # Scratch / Temporary Audit Scripts
 scratch/
+
 
