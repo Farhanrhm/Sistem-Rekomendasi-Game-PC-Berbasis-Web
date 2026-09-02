@@ -821,6 +821,16 @@
             }
 
             /* PREVENT IOS SAFARI AUTO-ZOOM ON INPUT & SELECT FOCUS */
+            @media screen and (-webkit-min-device-pixel-ratio: 0) {
+                select, textarea, input,
+                .search-wrap input#game_input,
+                .search-wrap select#top_n_select,
+                .filter-bar-container select#filter-genre,
+                .filter-bar-container select#filter-price,
+                .filter-bar-container select#sort-grid {
+                    font-size: 16px !important;
+                }
+            }
             input, select, textarea,
             .search-wrap input#game_input,
             .search-wrap select#top_n_select,
@@ -853,9 +863,16 @@
             }
             .search-btn {
                 padding: 0 0.5rem !important;
+                min-height: 44px !important;
             }
             .hist-chip {
                 max-width: 140px !important;
+            }
+            .filter-bar-container select#filter-genre,
+            .filter-bar-container select#filter-price,
+            .filter-bar-container select#sort-grid,
+            .filter-bar-container button#share-btn {
+                min-height: 44px !important;
             }
         }
 
