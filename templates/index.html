@@ -575,7 +575,7 @@
             }
         }
 
-        /* INFO BADGE BUTTON STYLING */
+        /* INFO BADGE BUTTON STYLING & TOUCH TARGET OPTIMIZATION */
         .info-badge-btn {
             width: 28px !important;
             height: 28px !important;
@@ -591,6 +591,16 @@
             cursor: pointer;
             transition: all 0.2s ease !important;
             margin-left: 6px;
+            position: relative;
+        }
+        .info-badge-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            min-width: 44px;
+            min-height: 44px;
         }
         .info-badge-btn:hover {
             background: var(--gold) !important;
@@ -809,16 +819,68 @@
                 text-align: center !important;
                 padding: 1.2rem 1rem !important;
             }
+
+            /* PREVENT IOS SAFARI AUTO-ZOOM ON INPUT & SELECT FOCUS */
+            input, select, textarea,
+            .search-wrap input#game_input,
+            .search-wrap select#top_n_select,
+            .filter-bar-container select#filter-genre,
+            .filter-bar-container select#filter-price,
+            .filter-bar-container select#sort-grid {
+                font-size: 16px !important;
+            }
         }
 
-        /* MODAL EXPLAINABLE AI (XAI) - SLIDE-UP FADE TRANSITION */
+        @media (max-width: 360px) {
+            /* EXTRA SMALL MOBILE SCREEN (<= 360px) OPTIMIZATION */
+            .container {
+                padding: 1.25rem 0.75rem 2.5rem !important;
+            }
+            .navbar, .footer {
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
+            }
+            .hero-left {
+                padding: 1.8rem 0.75rem !important;
+            }
+            .search-wrap {
+                grid-template-columns: 95px 1fr !important;
+                gap: 0.4rem !important;
+            }
+            .search-wrap select#top_n_select {
+                padding: 0 0.2rem !important;
+                font-size: 16px !important;
+            }
+            .search-btn {
+                padding: 0 0.5rem !important;
+            }
+            .hist-chip {
+                max-width: 140px !important;
+            }
+        }
+
+        /* ASPECT RATIO FOR CLS PREVENTION */
+        .spotlight-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            aspect-ratio: 616 / 353;
+        }
+        .rec-card-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            aspect-ratio: 616 / 353;
+        }
+
+        /* MODAL EXPLAINABLE AI (XAI) - SLIDE-UP FADE TRANSITION & STANDARDIZED SCROLL */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(12, 12, 13, 0.85); backdrop-filter: blur(5px); z-index: 10000; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
         .modal-overlay.show { display: flex; opacity: 1; }
-        .modal-content { background: var(--bg-card); border: 1px solid var(--gold-dim); border-radius: var(--r-lg); width: 90%; max-width: 550px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6); transform: translateY(20px); opacity: 0; transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); overflow: hidden; position: relative; }
+        .modal-content { background: var(--bg-card); border: 1px solid var(--gold-dim); border-radius: var(--r-lg); width: 90%; max-width: 550px; max-height: 85vh; overflow-y: auto; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6); transform: translateY(20px); opacity: 0; transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); position: relative; }
         .modal-overlay.show .modal-content { transform: translateY(0); opacity: 1; }
-        .modal-header { padding: 1.2rem 1.8rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); }
+        .modal-header { padding: 1.2rem 1.8rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); position: sticky; top: 0; z-index: 5; }
         .modal-header h3 { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; color: var(--text-1); margin: 0; display: flex; align-items: center; gap: 8px; }
-        .modal-close { background: transparent; border: none; color: var(--text-2); font-size: 1.2rem; cursor: pointer; transition: color 0.2s; padding: 4px; display: flex; align-items: center; }
+        .modal-close { background: transparent; border: none; color: var(--text-2); font-size: 1.2rem; cursor: pointer; transition: color 0.2s; padding: 8px; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; position: relative; }
         .modal-close:hover { color: var(--red); }
         .modal-body { padding: 1.8rem; color: var(--text-2); font-size: 0.95rem; line-height: 1.7; }
         .modal-body strong { color: var(--text-1); }
@@ -1014,7 +1076,7 @@
                 <div class="spotlight">
                     <div class="spotlight-img-wrap" style="--bg-img: url('{{ row['header_image'] }}');">
                         <span class="spotlight-label" data-i18n="main-game">Main Game</span>
-                        <img src="{{ row['header_image'] }}" alt="{{ row['name'] }}"
+                        <img src="{{ row['header_image'] }}" alt="{{ row['name'] }}" loading="lazy" width="616" height="353"
                              onerror="this.onerror=null; let fb='https://cdn.akamai.steamstatic.com/steam/apps/{{ row['steam_appid'] }}/capsule_616x353.jpg'; this.src=fb; this.parentElement.style.setProperty('--bg-img', 'url('+fb+')');">
                     </div>
                     <div class="spotlight-info">
@@ -1172,7 +1234,7 @@
                          data-exp-id="{{ row['xai_explanation']['xai_text_id'] if 'xai_explanation' in row and 'xai_text_id' in row['xai_explanation'] else row['xai_text_id'] if 'xai_text_id' in row else '' }}"
                          data-exp-en="{{ row['xai_explanation']['xai_text_en'] if 'xai_explanation' in row and 'xai_text_en' in row['xai_explanation'] else row['xai_text_en'] if 'xai_text_en' in row else '' }}">
                         <div class="rec-card-img">
-                            <img src="{{ row['header_image'] }}" alt="{{ row['name'] }}" loading="lazy"
+                            <img src="{{ row['header_image'] }}" alt="{{ row['name'] }}" loading="lazy" width="616" height="353"
                                  onerror="this.onerror=null;this.src='https://cdn.akamai.steamstatic.com/steam/apps/{{ row['steam_appid'] }}/capsule_616x353.jpg';">
                             {% if sim >= 80 %}
                                 {% set badge_class = "badge-match-high" %}

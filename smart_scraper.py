@@ -6,16 +6,16 @@ import re
 import sys
 
 # --- KONFIGURASI UTAMA & BATASAN PROPOSAL ---
-MAX_PURPOSIVE_SAMPLES = 15000  # Purposive Sampling: Maksimal 15.000 judul game
-LIMIT_TERBARU = 7500
-LIMIT_TERPOPULER = 7500
+MAX_PURPOSIVE_SAMPLES = 50000  # Purposive Sampling: Maksimal 15.000 judul game
+LIMIT_TERBARU = 25000
+LIMIT_TERPOPULER = 25000
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     "Accept-Language": "en-US,en;q=0.9"
 }
 OUTPUT_DIR = 'dataset/processed'
-OUTPUT_FILE = os.path.join(OUTPUT_DIR, 'steam_new_and_fav.csv')
+OUTPUT_FILE = os.path.join(OUTPUT_DIR, 'steam_dataset_50000')
 
 # Pastikan direktori simpan ada
 os.makedirs(OUTPUT_DIR, exist_ok=True)
