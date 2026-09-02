@@ -149,10 +149,10 @@
         }
         .lang-badge {
             display: inline-block;
-            transition: transform 0.2s ease, opacity 0.2s ease;
+            transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
         }
         .lang-badge.flip {
-            transform: translateY(-8px) scale(0.75);
+            transform: translateY(-8px) scale(0.7);
             opacity: 0;
         }
         .i18n-transition {
@@ -176,7 +176,8 @@
         .logo span { color: var(--gold); }
         .nav-right { display: flex; align-items: center; gap: 12px; }
         .nav-tag { font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 2px; text-transform: uppercase; color: var(--text-2); border: 1px solid var(--border-md); padding: 4px 12px; border-radius: 100px; }
-        /* ANIMASI TEMA LIGHT/DARK MODE */
+        
+        /* ANIMASI TEMA LIGHT/DARK MODE & ICON MORPH */
         .theme-btn {
             width: 36px;
             height: 36px;
@@ -189,7 +190,9 @@
             align-items: center;
             justify-content: center;
             font-size: 0.88rem;
-            transition: transform 0.3s ease, border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.25s ease, border-color 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
         }
         .theme-btn:hover {
             border-color: var(--gold);
@@ -197,10 +200,11 @@
             transform: scale(1.08);
         }
         .theme-btn i {
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
         }
-        .theme-btn.rotating i {
-            transform: rotate(360deg) scale(0.75);
+        .theme-btn.morphing i {
+            transform: rotate(90deg) scale(0.4);
+            opacity: 0;
         }
         /* Dynamic Theme Icon: Dark Mode -> Moon Icon, Light Mode -> Sun Icon */
         .theme-btn .i-moon { display: inline-block !important; } 
@@ -482,8 +486,8 @@
         [data-theme="light"] .rec-card { box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06); }
         [data-theme="light"] .rec-card:hover { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1); }
         .rec-card-img { position: relative; height: 125px; overflow: hidden; flex-shrink: 0; }
-        .rec-card-img img { width: 100%; height: 100%; object-fit: cover; }
-        .rec-card:hover .rec-card-img img { transform: scale(1.05); transition: transform 0.3s ease; }
+        .rec-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1) !important; }
+        .rec-card:hover .rec-card-img img { transform: scale(1.08) !important; }
         .match-badge { position: absolute; top: 8px; right: 8px; font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; background: rgba(12, 12, 13, 0.82); border: 1px solid var(--border-md); padding: 3px 9px; border-radius: var(--r-sm); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 4px 12px rgba(0,0,0,0.6); z-index: 2; }
         .rec-card-body { padding: 0.9rem; display: flex; flex-direction: column; flex: 1; }
         .rec-card-name { font-family: var(--font-display); font-size: 0.92rem; font-weight: 700; color: var(--text-1); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -925,9 +929,30 @@
             aspect-ratio: 616 / 353;
         }
 
-        /* MODAL EXPLAINABLE AI (XAI) - SLIDE-UP FADE TRANSITION & STANDARDIZED SCROLL */
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(12, 12, 13, 0.85); backdrop-filter: blur(5px); z-index: 10000; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
-        .modal-overlay.show { display: flex; opacity: 1; }
+        /* MODAL EXPLAINABLE AI (XAI) - ENTRANCE OVERSHOOT POP-IN & SEPARATE BACKDROP BLUR FADE */
+        @keyframes modalPopIn {
+            0% { opacity: 0; transform: scale(0.94) translateY(8px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-overlay { 
+            display: none; 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(12, 12, 13, 0.85); 
+            backdrop-filter: blur(0px); 
+            -webkit-backdrop-filter: blur(0px);
+            z-index: 10000; 
+            align-items: center; 
+            justify-content: center; 
+            opacity: 0; 
+            transition: opacity 0.2s ease, backdrop-filter 0.2s ease, -webkit-backdrop-filter 0.2s ease; 
+        }
+        .modal-overlay.show { 
+            display: flex; 
+            opacity: 1; 
+            backdrop-filter: blur(6px); 
+            -webkit-backdrop-filter: blur(6px);
+        }
         .modal-content { 
             background: var(--bg-card); 
             border: 1px solid var(--gold-dim); 
@@ -937,13 +962,16 @@
             max-height: 85vh; 
             overflow-y: auto; 
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6); 
-            transform: translateY(20px); 
             opacity: 0; 
-            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
+            transform: scale(0.94);
             position: relative;
             scrollbar-width: thin;
             scrollbar-color: var(--gold-subtle) transparent;
         }
+        .modal-overlay.show .modal-content { 
+            animation: modalPopIn 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; 
+        }
+
         .modal-content::-webkit-scrollbar,
         .gmodal-scroll-area::-webkit-scrollbar {
             width: 6px;
@@ -965,7 +993,6 @@
             scrollbar-width: thin;
             scrollbar-color: var(--gold-subtle) transparent;
         }
-        .modal-overlay.show .modal-content { transform: translateY(0); opacity: 1; }
         .modal-header { padding: 1.2rem 1.8rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); position: sticky; top: 0; z-index: 5; }
         .modal-header h3 { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; color: var(--text-1); margin: 0; display: flex; align-items: center; gap: 8px; }
         .modal-close { background: transparent; border: none; color: var(--text-2); font-size: 1.2rem; cursor: pointer; transition: color 0.2s; padding: 8px; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; position: relative; }
@@ -1013,7 +1040,15 @@
             color: #4a453f !important;
         }
 
-        /* FEATURE BADGES STYLING (GENRE & TAG DISTINCTION) */
+        /* FEATURE BADGES STYLING & STAGGER REVEAL ANIMATION */
+        @keyframes badgeStaggerIn {
+            0% { opacity: 0; transform: translateY(6px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .xai-badge-with-score,
+        .xai-badge-no-score {
+            animation: badgeStaggerIn 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) both;
+        }
         .xai-badge-with-score {
             display: inline-flex;
             align-items: center;
@@ -1047,16 +1082,87 @@
             opacity: 0.9;
         }
 
-        /* TACTILE CLICK EFFECT ON MAIN BUTTONS */
-        .search-btn:active,
+        /* MINI PROGRESS BAR UNTUK MODAL SIMILARITY */
+        .gmodal-progress-track {
+            position: relative;
+            width: 100%;
+            height: 4px;
+            background: var(--border-md);
+            border-radius: 999px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+        .gmodal-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--gold-dim), var(--gold-bright));
+            border-radius: 999px;
+            transition: width 0.05s linear;
+        }
+
+        /* SCROLL REVEAL CLASS */
+        .reveal-on-scroll {
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+            will-change: opacity, transform;
+        }
+        .reveal-on-scroll.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* TACTILE CLICK EFFECT ON ALL MAIN BUTTONS */
+        button:active,
         .btn-steam:active,
         .btn-detail:active,
+        .search-btn:active,
         .btn-open-game-modal:active,
         #load-more-btn:active,
         .nav-btn:active,
-        .lang-toggle-btn:active {
-            transform: scale(0.96) !important;
+        .lang-toggle-btn:active,
+        .theme-btn:active {
+            transform: scale(0.97) !important;
             transition: transform 0.1s ease !important;
+        }
+
+        /* ACCESSIBILITY: AUTOMATIC DISABLE ANIMATIONS VIA PREFERS-REDUCED-MOTION */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+            .modal-content {
+                animation: none !important;
+                transform: none !important;
+            }
+            .modal-overlay {
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+            }
+            .rec-card:hover .rec-card-img img {
+                transform: none !important;
+            }
+            .reveal-on-scroll {
+                opacity: 1 !important;
+                transform: none !important;
+            }
+            .skeleton {
+                animation: none !important;
+            }
+            .hero-deco-ring-outer,
+            .hero-deco-ring-inner {
+                animation: none !important;
+            }
+            .xai-badge-with-score,
+            .xai-badge-no-score {
+                animation: none !important;
+                transform: none !important;
+            }
         }
 
         /* ROTATION ANIMATION ON NAVBAR TOGGLE ICONS */
@@ -1517,17 +1623,22 @@
                     <h3 id="gmodal-title" style="font-family: var(--font-display); font-size: 1.25rem; color: var(--text-1); margin-bottom: 0.75rem; font-weight: 700;"></h3>
                     
                     <!-- TINGKAT KEMIRIPAN & COSINE SCORE (User-Friendly Score Header) -->
-                    <div style="background: var(--bg-surface); border: 1px solid var(--border-md); padding: 8px 12px; border-radius: var(--r-sm); margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <span id="gmodal-match-pct" style="font-size: 1.2rem; font-weight: 700; color: var(--gold);">90%</span>
-                            <strong class="gmodal-section-label" style="font-size: 0.85rem;" data-i18n="similarity_label">Tingkat Kemiripan</strong>
-                            <span class="custom-tooltip-wrapper">
-                                <i class="fas fa-info-circle" style="color: var(--text-3); font-size: 0.78rem; cursor: pointer;"></i>
-                                <span class="tooltip-content" data-i18n="similarity-tooltip">Skor ini dihitung menggunakan Cosine Similarity dari fitur game (genre, tag, deskripsi). Semakin tinggi persentasenya, semakin mirip dengan game referensimu.</span>
-                            </span>
+                    <div style="background: var(--bg-surface); border: 1px solid var(--border-md); padding: 10px 12px; border-radius: var(--r-sm); margin-bottom: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span id="gmodal-match-pct" style="font-size: 1.2rem; font-weight: 700; color: var(--gold);">90%</span>
+                                <strong class="gmodal-section-label" style="font-size: 0.85rem;" data-i18n="similarity_label">Tingkat Kemiripan</strong>
+                                <span class="custom-tooltip-wrapper">
+                                    <i class="fas fa-info-circle" style="color: var(--text-3); font-size: 0.78rem; cursor: pointer;"></i>
+                                    <span class="tooltip-content" data-i18n="similarity-tooltip">Skor ini dihitung menggunakan Cosine Similarity dari fitur game (genre, tag, deskripsi). Semakin tinggi persentasenya, semakin mirip dengan game referensimu.</span>
+                                </span>
+                            </div>
+                            <div style="text-align: right;">
+                                <span id="gmodal-cosine-score" style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-3); opacity: 0.75;">(Cosine: 0.90)</span>
+                            </div>
                         </div>
-                        <div style="text-align: right;">
-                            <span id="gmodal-cosine-score" style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-3); opacity: 0.75;">(Cosine: 0.90)</span>
+                        <div class="gmodal-progress-track">
+                            <div id="gmodal-progress-bar" class="gmodal-progress-fill"></div>
                         </div>
                     </div>
 
@@ -1616,10 +1727,10 @@
             const gameInput = $("#game_input");
             const html = document.documentElement;
 
-            // 1. THEME TOGGLE (DARK / LIGHT MODE WITH ANIMATION & LOCALSTORAGE)
+            // 1. THEME TOGGLE (DARK / LIGHT MODE WITH MORPH ANIMATION & LOCALSTORAGE)
             document.getElementById("theme-btn").addEventListener("click", function() {
                 const btn = this;
-                btn.classList.add("rotating");
+                btn.classList.add("morphing");
                 
                 var isLight = html.getAttribute("data-theme") === "light";
                 if (isLight) {
@@ -1631,8 +1742,8 @@
                 }
                 
                 setTimeout(() => {
-                    btn.classList.remove("rotating");
-                }, 400);
+                    btn.classList.remove("morphing");
+                }, 300);
             });
 
             // 2. AUTOCOMPLETE (DINAMIS SKELETON & SEARCH SUGGESTIONS)
@@ -1679,7 +1790,7 @@
             }
             renderHistory();
 
-            // 4. SMOOTH LOADING STATE & SKELETON TRANSITION
+            // 4. SMOOTH LOADING STATE & SKELETON TRANSITION (TOP-N DYNAMIC COUNT)
             $('form').on('submit', function() {
                 let query = gameInput.val().trim();
                 if (query !== "") {
@@ -1689,6 +1800,8 @@
                     history.unshift(query); 
                     if(history.length > 5) history.pop(); 
                     localStorage.setItem('lf-history', JSON.stringify(history));
+
+                    let topNVal = parseInt($("#top_n_select").val()) || 8;
 
                     // Smooth fade out container content before displaying realistic skeleton cards
                     $(".container").fadeOut(180, function() {
@@ -1708,7 +1821,7 @@
                             <div class="skeleton skeleton-spotlight" style="height: 200px; margin-bottom: 2rem; border-radius: var(--r-lg);"></div>
                             <div class="section-header" style="margin-bottom: 1.5rem;"><span class="skeleton" style="width: 180px; height: 24px;"></span></div>
                             <div class="rec-grid">
-                                ${Array(8).fill(skeletonCardHtml).join('')}
+                                ${Array(topNVal).fill(skeletonCardHtml).join('')}
                             </div>
                         `;
                         $(this).html(skeletonHtml).fadeIn(250);
@@ -2347,8 +2460,64 @@
                         scrollContainer.scrollTop = 0;
                         checkGmodalScrollPosition(scrollContainer);
                     }
+
+                    // 2. COUNT-UP ANIMATION FOR SIMILARITY LEVEL & PROGRESS BAR FILL
+                    animateSimilarityScore(simPct);
+
+                    // 3. STAGGER REVEAL DELAYS FOR FEATURE BADGES
+                    staggerFeatureBadges();
                 }
             });
+
+            function animateSimilarityScore(targetPctStr) {
+                let targetVal = parseFloat(targetPctStr) || 0;
+                let isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                let $pctEl = $('#gmodal-match-pct');
+                let $barEl = $('#gmodal-progress-bar');
+
+                if (isReducedMotion) {
+                    $pctEl.text(targetVal.toFixed(1) + '%');
+                    $barEl.css('width', Math.min(targetVal, 100) + '%');
+                    return;
+                }
+
+                let startVal = 0;
+                let duration = 600; // ~0.6s
+                let startTime = null;
+
+                $pctEl.text('0.0%');
+                $barEl.css('width', '0%');
+
+                function step(timestamp) {
+                    if (!startTime) startTime = timestamp;
+                    let progress = Math.min((timestamp - startTime) / duration, 1);
+                    let currentVal = startVal + progress * (targetVal - startVal);
+                    
+                    $pctEl.text(currentVal.toFixed(1) + '%');
+                    $barEl.css('width', Math.min(currentVal, 100) + '%');
+
+                    if (progress < 1) {
+                        requestAnimationFrame(step);
+                    } else {
+                        $pctEl.text(targetVal.toFixed(1) + '%');
+                        $barEl.css('width', Math.min(targetVal, 100) + '%');
+                    }
+                }
+
+                requestAnimationFrame(step);
+            }
+
+            function staggerFeatureBadges() {
+                let isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                if (isReducedMotion) return;
+
+                $('#gmodal-top-features .xai-badge-with-score, #gmodal-top-features .xai-badge-no-score').each(function(idx) {
+                    $(this).css('animation-delay', (idx * 85) + 'ms');
+                });
+                $('#gmodal-other-features .xai-badge-with-score, #gmodal-other-features .xai-badge-no-score').each(function(idx) {
+                    $(this).css('animation-delay', ((idx + 2) * 85) + 'ms');
+                });
+            }
 
             function checkGmodalScrollPosition(el) {
                 if (!el) return;
@@ -2368,7 +2537,7 @@
                 checkGmodalScrollPosition(this);
             });
 
-            // GMODAL COPY LINK SECONDARY CTA BUTTON LOGIC
+            // 4. MICRO-INTERACTION & COPY GAME LINK FEEDBACK (SHARED & GMODAL)
             $(document).on('click', '#gmodal-copy-link', function(e) {
                 e.preventDefault();
                 let gameTitle = $(this).attr('data-game-title') || $('#gmodal-title').text().trim();
@@ -2380,14 +2549,38 @@
                 let originalBtnText = (i18nDict[currentLang] && i18nDict[currentLang]['gmodal-copy-btn']) ? i18nDict[currentLang]['gmodal-copy-btn'] : 'Salin Link Game';
 
                 navigator.clipboard.writeText(currentUrl).then(() => {
-                    btn.html(`<i class="fas fa-check"></i> <span>${copiedText}</span>`);
-                    btn.css({"background": "var(--gold)", "color": "#000"});
+                    btn.html(`<i class="fas fa-check" style="transform: scale(1.1); transition: transform 0.2s ease;"></i> <span>${copiedText}</span>`);
+                    btn.css({"background": "var(--gold)", "color": "#000", "border-color": "var(--gold)"});
                     setTimeout(() => { 
                         btn.html(`<i class="fas fa-link"></i> <span data-i18n="gmodal-copy-btn">${originalBtnText}</span>`); 
-                        btn.css({"background": "transparent", "color": "var(--gold)"});
-                    }, 2000);
+                        btn.css({"background": "transparent", "color": "var(--gold)", "border-color": "var(--gold)"});
+                    }, 1500);
                 });
             });
+
+            // 8. SCROLL REVEAL INTERSECTION OBSERVER
+            function initScrollReveal() {
+                const elements = document.querySelectorAll('.spotlight, .rec-card, .section-header, .hero-deco');
+                elements.forEach(el => el.classList.add('reveal-on-scroll'));
+
+                if ('IntersectionObserver' in window) {
+                    const observer = new IntersectionObserver((entries, obs) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                entry.target.classList.add('is-visible');
+                                obs.unobserve(entry.target); // Trigger only once
+                            }
+                        });
+                    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+                    elements.forEach(el => observer.observe(el));
+                } else {
+                    // Fallback for older browsers
+                    elements.forEach(el => el.classList.add('is-visible'));
+                }
+            }
+
+            initScrollReveal();
 
             // CUSTOM TOOLTIP MOBILE TOGGLE & OUTSIDE CLICK HANDLER
             $(document).on('click', '.custom-tooltip-wrapper', function(e) {
