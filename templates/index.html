@@ -928,7 +928,43 @@
         /* MODAL EXPLAINABLE AI (XAI) - SLIDE-UP FADE TRANSITION & STANDARDIZED SCROLL */
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(12, 12, 13, 0.85); backdrop-filter: blur(5px); z-index: 10000; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
         .modal-overlay.show { display: flex; opacity: 1; }
-        .modal-content { background: var(--bg-card); border: 1px solid var(--gold-dim); border-radius: var(--r-lg); width: 90%; max-width: 550px; max-height: 85vh; overflow-y: auto; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6); transform: translateY(20px); opacity: 0; transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); position: relative; }
+        .modal-content { 
+            background: var(--bg-card); 
+            border: 1px solid var(--gold-dim); 
+            border-radius: var(--r-lg); 
+            width: 90%; 
+            max-width: 550px; 
+            max-height: 85vh; 
+            overflow-y: auto; 
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6); 
+            transform: translateY(20px); 
+            opacity: 0; 
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
+            position: relative;
+            scrollbar-width: thin;
+            scrollbar-color: var(--gold-subtle) transparent;
+        }
+        .modal-content::-webkit-scrollbar,
+        .gmodal-scroll-area::-webkit-scrollbar {
+            width: 6px;
+        }
+        .modal-content::-webkit-scrollbar-track,
+        .gmodal-scroll-area::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .modal-content::-webkit-scrollbar-thumb,
+        .gmodal-scroll-area::-webkit-scrollbar-thumb {
+            background: var(--gold-subtle);
+            border-radius: 999px;
+        }
+        .modal-content::-webkit-scrollbar-thumb:hover,
+        .gmodal-scroll-area::-webkit-scrollbar-thumb:hover {
+            background: var(--gold);
+        }
+        .gmodal-scroll-area {
+            scrollbar-width: thin;
+            scrollbar-color: var(--gold-subtle) transparent;
+        }
         .modal-overlay.show .modal-content { transform: translateY(0); opacity: 1; }
         .modal-header { padding: 1.2rem 1.8rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); position: sticky; top: 0; z-index: 5; }
         .modal-header h3 { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; color: var(--text-1); margin: 0; display: flex; align-items: center; gap: 8px; }
@@ -939,6 +975,77 @@
         .modal-body ol { margin-top: 1rem; padding-left: 1.2rem; }
         .modal-body li { margin-bottom: 0.8rem; }
         .modal-footer-note { margin-top: 1.2rem; font-size: 0.85rem; color: var(--text-3); font-style: italic; border-top: 1px solid var(--border); padding-top: 1rem; }
+
+        /* SCROLL GRADIENT FADE INDICATOR */
+        .gmodal-body-wrap {
+            position: relative;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .gmodal-scroll-fade {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 28px;
+            background: linear-gradient(to bottom, transparent, var(--bg-card));
+            pointer-events: none;
+            z-index: 8;
+            transition: opacity 0.25s ease;
+            opacity: 1;
+        }
+        .gmodal-scroll-area.at-bottom + .gmodal-scroll-fade,
+        .gmodal-scroll-area.no-scroll + .gmodal-scroll-fade {
+            opacity: 0;
+        }
+
+        /* SECTION LABEL COLOR CONTRAST ENHANCEMENTS */
+        .gmodal-section-label {
+            font-size: 0.68rem;
+            color: var(--text-2) !important; /* >4.5:1 ratio in both dark & light theme */
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        [data-theme="light"] .gmodal-section-label {
+            color: #4a453f !important;
+        }
+
+        /* FEATURE BADGES STYLING (GENRE & TAG DISTINCTION) */
+        .xai-badge-with-score {
+            display: inline-flex;
+            align-items: center;
+            font-family: var(--font-body);
+            font-size: 0.72rem;
+            font-weight: 600;
+            background: rgba(245, 158, 11, 0.16);
+            color: #f59e0b;
+            border: 1px solid rgba(245, 158, 11, 0.45);
+            padding: 3px 10px;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(245, 158, 11, 0.1);
+            transition: transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.25s ease, background 0.25s ease !important;
+        }
+        [data-theme="light"] .xai-badge-with-score {
+            background: rgba(184, 131, 31, 0.15);
+            color: #9a6d1a;
+            border-color: rgba(154, 109, 26, 0.4);
+        }
+        .xai-badge-no-score {
+            display: inline-flex;
+            align-items: center;
+            font-family: var(--font-body);
+            font-size: 0.7rem;
+            font-weight: 400;
+            background: var(--bg-surface);
+            color: var(--text-2);
+            border: 1px solid var(--border-md);
+            padding: 3px 9px;
+            border-radius: 6px;
+            opacity: 0.9;
+        }
 
         /* TACTILE CLICK EFFECT ON MAIN BUTTONS */
         .search-btn:active,
@@ -1396,75 +1503,80 @@
     <div id="game-detail-modal" class="modal-overlay" aria-hidden="true">
         <div class="modal-content" style="max-width: 540px; max-height: 88vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: var(--r-md); border: 1px solid var(--border-md);">
             
-            <!-- HEADER IMAGE -->
-            <div style="position: relative; width: 100%; height: 160px; flex-shrink: 0; overflow: hidden; background: #000;">
-                <img id="gmodal-img" src="" alt="" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.85;">
-                <div style="position: absolute; inset: 0; background: linear-gradient(to top, var(--bg-card) 5%, transparent 80%);"></div>
+            <!-- HEADER IMAGE WITH DUAL GRADIENT FADE TRANSITION -->
+            <div class="modal-header-img" style="position: relative; width: 100%; height: 160px; flex-shrink: 0; overflow: hidden; background: #000;">
+                <img id="gmodal-img" src="" alt="" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.9;">
+                <div style="position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.08) 40%, var(--bg-card) 100%);"></div>
                 <button id="close-gmodal" class="modal-close" aria-label="Tutup" style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.6); color: #fff; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); z-index: 5;"><i class="fas fa-times"></i></button>
                 <span id="gmodal-match" class="match-badge" style="top: 12px; left: 12px; font-size: 0.82rem; padding: 4px 10px;"></span>
             </div>
 
-            <!-- SCROLLABLE BODY CONTENT -->
-            <div style="padding: 1.25rem 1.25rem 0.5rem 1.25rem; overflow-y: auto; flex: 1;">
-                <h3 id="gmodal-title" style="font-family: var(--font-display); font-size: 1.25rem; color: var(--text-1); margin-bottom: 0.75rem; font-weight: 700;"></h3>
-                
-                <!-- TINGKAT KEMIRIPAN & COSINE SCORE (User-Friendly Score Header) -->
-                <div style="background: var(--bg-surface); border: 1px solid var(--border-md); padding: 8px 12px; border-radius: var(--r-sm); margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span id="gmodal-match-pct" style="font-size: 1.2rem; font-weight: 700; color: var(--gold);">90%</span>
-                        <strong style="color: var(--text-1); font-size: 0.85rem; font-weight: 600;" data-i18n="similarity_label">Tingkat Kemiripan</strong>
-                        <span class="custom-tooltip-wrapper">
-                            <i class="fas fa-info-circle" style="color: var(--text-3); font-size: 0.78rem; cursor: pointer;"></i>
-                            <span class="tooltip-content" data-i18n="similarity-tooltip">Diukur menggunakan TF-IDF &amp; Cosine Similarity — metode yang membandingkan kesamaan genre, tag, dan deskripsi antar game.</span>
-                        </span>
-                    </div>
-                    <div style="text-align: right;">
-                        <span id="gmodal-cosine-score" style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-3); opacity: 0.75;">(Cosine: 0.90)</span>
-                    </div>
-                </div>
-
-
-                <!-- PENJELASAN REKOMENDASI (XAI) -->
-                <div style="background: var(--bg-elevated); padding: 0.75rem 0.9rem; border-radius: var(--r-sm); border-left: 3px solid var(--gold); margin-bottom: 0.75rem;">
-                    <p style="font-size: 0.68rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; font-weight: 600;" data-i18n="xai-title">Penjelasan Rekomendasi (XAI)</p>
-                    <p id="gmodal-xai" style="font-size: 0.82rem; color: var(--text-1); line-height: 1.45; margin: 0;"></p>
-
-                    <!-- NOTICE TRANSPARANSI UNTUK DATA DESKRIPSI KOSONG / SPARSE CORPUS -->
-                    <div id="gmodal-sparse-notice" style="display: none; margin-top: 10px; padding: 8px 12px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: var(--r-sm); font-size: 0.76rem; color: var(--gold-bright); line-height: 1.45;">
-                        <div style="display: flex; gap: 8px; align-items: flex-start;">
-                            <i class="fas fa-exclamation-triangle" style="margin-top: 2px; flex-shrink: 0; font-size: 0.85rem;"></i>
-                            <span id="gmodal-sparse-notice-text"></span>
+            <!-- SCROLLABLE BODY CONTENT WRAPPER WITH STICKY FADE INDICATOR -->
+            <div class="gmodal-body-wrap">
+                <div id="gmodal-scroll-container" class="gmodal-scroll-area" style="padding: 1.25rem 1.25rem 0.5rem 1.25rem; overflow-y: auto; flex: 1;">
+                    <h3 id="gmodal-title" style="font-family: var(--font-display); font-size: 1.25rem; color: var(--text-1); margin-bottom: 0.75rem; font-weight: 700;"></h3>
+                    
+                    <!-- TINGKAT KEMIRIPAN & COSINE SCORE (User-Friendly Score Header) -->
+                    <div style="background: var(--bg-surface); border: 1px solid var(--border-md); padding: 8px 12px; border-radius: var(--r-sm); margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span id="gmodal-match-pct" style="font-size: 1.2rem; font-weight: 700; color: var(--gold);">90%</span>
+                            <strong class="gmodal-section-label" style="font-size: 0.85rem;" data-i18n="similarity_label">Tingkat Kemiripan</strong>
+                            <span class="custom-tooltip-wrapper">
+                                <i class="fas fa-info-circle" style="color: var(--text-3); font-size: 0.78rem; cursor: pointer;"></i>
+                                <span class="tooltip-content" data-i18n="similarity-tooltip">Skor ini dihitung menggunakan Cosine Similarity dari fitur game (genre, tag, deskripsi). Semakin tinggi persentasenya, semakin mirip dengan game referensimu.</span>
+                            </span>
+                        </div>
+                        <div style="text-align: right;">
+                            <span id="gmodal-cosine-score" style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-3); opacity: 0.75;">(Cosine: 0.90)</span>
                         </div>
                     </div>
-                </div>
 
-                <!-- FITUR KONTEN YANG PALING BERKONTRIBUSI -->
-                <div style="margin-bottom: 0.75rem; background: var(--bg-surface); padding: 8px 12px; border-radius: var(--r-sm); border: 1px solid var(--border-md);">
-                    <strong style="font-size: 0.68rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 4px;" data-i18n="top_contrib_title">Fitur Konten Yang Paling Berkontribusi</strong>
-                    <div id="gmodal-top-features" style="font-size: 0.8rem; color: var(--text-1); line-height: 1.45;"></div>
-                </div>
 
-                <!-- FITUR LAIN YANG BERIRISAN -->
-                <div style="margin-bottom: 0.75rem; background: var(--bg-surface); padding: 8px 12px; border-radius: var(--r-sm); border: 1px solid var(--border-md);">
-                    <strong style="font-size: 0.68rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 4px;" data-i18n="other_shared_title">Fitur Lain Yang Beririsan</strong>
-                    <div id="gmodal-other-features" style="font-size: 0.8rem; color: var(--text-2); line-height: 1.45;"></div>
-                </div>
+                    <!-- PENJELASAN REKOMENDASI (XAI) -->
+                    <div style="background: var(--bg-elevated); padding: 0.75rem 0.9rem; border-radius: var(--r-sm); border-left: 3px solid var(--gold); margin-bottom: 0.75rem;">
+                        <p class="gmodal-section-label" style="color: var(--gold) !important; margin-bottom: 4px;" data-i18n="xai-title">Penjelasan Rekomendasi (XAI)</p>
+                        <p id="gmodal-xai" style="font-size: 0.82rem; color: var(--text-1); line-height: 1.45; margin: 0;"></p>
 
-                <!-- METODE PERHITUNGAN -->
-                <div style="margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface); padding: 6px 12px; border-radius: var(--r-sm); border: 1px solid var(--border-md);">
-                    <strong style="font-size: 0.68rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px;" data-i18n="calc_method_title">Metode Perhitungan</strong>
-                    <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--gold);" data-i18n="calc_method_desc">TF-IDF + Cosine Similarity</span>
-                </div>
-
-                <!-- Description -->
-                <div style="margin-bottom: 0.85rem;">
-                    <strong style="font-size: 0.68rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 4px;" data-i18n="synopsis-label">Sinopsis / Deskripsi Game:</strong>
-                    <div class="synopsis-lang-notice gmodal-synopsis-notice" style="display: none; margin-bottom: 6px; padding: 4px 8px; background: rgba(96, 165, 250, 0.08); border: 1px solid rgba(96, 165, 250, 0.25); border-radius: 4px; color: #60a5fa; font-size: 0.7rem; line-height: 1.35; font-family: var(--font-body);">
-                        <i class="fas fa-language" style="font-size: 0.75rem; margin-right: 4px; color: #60a5fa;"></i>
-                        <span data-i18n="synopsis-lang-notice-text">Sinopsis ini ditampilkan dalam Bahasa Inggris karena developer game belum menyediakan terjemahan resmi Bahasa Indonesia di Steam.</span>
+                        <!-- NOTICE TRANSPARANSI UNTUK DATA DESKRIPSI KOSONG / SPARSE CORPUS -->
+                        <div id="gmodal-sparse-notice" style="display: none; margin-top: 10px; padding: 8px 12px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: var(--r-sm); font-size: 0.76rem; color: var(--gold-bright); line-height: 1.45;">
+                            <div style="display: flex; gap: 8px; align-items: flex-start;">
+                                <i class="fas fa-exclamation-triangle" style="margin-top: 2px; flex-shrink: 0; font-size: 0.85rem;"></i>
+                                <span id="gmodal-sparse-notice-text"></span>
+                            </div>
+                        </div>
                     </div>
-                    <p id="gmodal-desc" style="font-size: 0.8rem; color: var(--text-2); line-height: 1.45; margin: 0; max-height: 90px; overflow-y: auto;"></p>
+
+                    <!-- FITUR KONTEN YANG PALING BERKONTRIBUSI -->
+                    <div style="margin-bottom: 0.75rem; background: var(--bg-surface); padding: 8px 12px; border-radius: var(--r-sm); border: 1px solid var(--border-md);">
+                        <strong class="gmodal-section-label" style="display: block; margin-bottom: 4px;" data-i18n="top_contrib_title">Kecocokan Utama</strong>
+                        <div id="gmodal-top-features" style="font-size: 0.8rem; color: var(--text-1); line-height: 1.45;"></div>
+                    </div>
+
+                    <!-- FITUR LAIN YANG BERIRISAN -->
+                    <div style="margin-bottom: 0.75rem; background: var(--bg-surface); padding: 8px 12px; border-radius: var(--r-sm); border: 1px solid var(--border-md);">
+                        <strong class="gmodal-section-label" style="display: block; margin-bottom: 4px;" data-i18n="other_shared_title">Kesamaan Lainnya</strong>
+                        <div id="gmodal-other-features" style="font-size: 0.8rem; color: var(--text-2); line-height: 1.45;"></div>
+                    </div>
+
+                    <!-- METODE PERHITUNGAN -->
+                    <div style="margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface); padding: 6px 12px; border-radius: var(--r-sm); border: 1px solid var(--border-md);">
+                        <strong class="gmodal-section-label" data-i18n="calc_method_title">Sistem Cerdas</strong>
+                        <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--gold);" data-i18n="calc_method_desc">TF-IDF + Cosine Similarity</span>
+                    </div>
+
+                    <!-- Description -->
+                    <div style="margin-bottom: 0.85rem;">
+                        <strong class="gmodal-section-label" style="display: block; margin-bottom: 4px;" data-i18n="synopsis-label">Sinopsis / Deskripsi Game:</strong>
+                        <div class="synopsis-lang-notice gmodal-synopsis-notice" style="display: none; margin-bottom: 6px; padding: 4px 8px; background: rgba(96, 165, 250, 0.08); border: 1px solid rgba(96, 165, 250, 0.25); border-radius: 4px; color: #60a5fa; font-size: 0.7rem; line-height: 1.35; font-family: var(--font-body);">
+                            <i class="fas fa-language" style="font-size: 0.75rem; margin-right: 4px; color: #60a5fa;"></i>
+                            <span data-i18n="synopsis-lang-notice-text">Sinopsis ini ditampilkan dalam Bahasa Inggris karena developer game belum menyediakan terjemahan resmi Bahasa Indonesia di Steam.</span>
+                        </div>
+                        <p id="gmodal-desc" style="font-size: 0.8rem; color: var(--text-2); line-height: 1.45; margin: 0; max-height: 90px; overflow-y: auto;"></p>
+                    </div>
                 </div>
+
+                <!-- GRADIENT FADE INDICATOR (AUTOMATICALLY HIDDEN WHEN SCROLLED TO BOTTOM) -->
+                <div class="gmodal-scroll-fade"></div>
             </div>
 
             <!-- STICKY FOOTER ACTION BUTTONS -->
@@ -1789,7 +1901,8 @@
                     "view_xai_btn": "Lihat Penjelasan XAI",
                     "tight_cluster_badge": "Skor Serupa",
                     "synopsis-lang-notice-text": "Sinopsis ini ditampilkan dalam Bahasa Inggris karena developer game belum menyediakan terjemahan resmi Bahasa Indonesia di Steam.",
-                    "similarity-tooltip": "Diukur menggunakan TF-IDF & Cosine Similarity — metode yang membandingkan kesamaan genre, tag, dan deskripsi antar game.",
+                    "similarity-tooltip": "Skor ini dihitung menggunakan Cosine Similarity dari fitur game (genre, tag, deskripsi). Semakin tinggi persentasenya, semakin mirip dengan game referensimu.",
+                    "no-other-matches": "Tidak ada kecocokan tambahan",
                     "gmodal-copy-btn": "Salin Link Game",
                     "copied-text": "Tersalin!",
                     "error-not-found": "Game '{game_name}' tidak ditemukan dalam sistem kami.",
@@ -1858,7 +1971,8 @@
                     "view_xai_btn": "View XAI Explanation",
                     "tight_cluster_badge": "Similar Scores",
                     "synopsis-lang-notice-text": "This synopsis is displayed in English because the game developer has not provided an official Indonesian translation on Steam.",
-                    "similarity-tooltip": "Measured using TF-IDF & Cosine Similarity — a method comparing genre, tag, and description similarities between games.",
+                    "similarity-tooltip": "This score is calculated using Cosine Similarity across game features (genre, tags, description). Higher percentage means more similar to your reference game.",
+                    "no-other-matches": "No additional matches found",
                     "gmodal-copy-btn": "Copy Game Link",
                     "copied-text": "Copied!",
                     "error-not-found": "Game '{game_name}' was not found in our system.",
@@ -2053,8 +2167,12 @@
                     .replace(/'/g, '&#039;');
             }
             function renderFeatureList(featuresObj, isTop = true) {
-                if (!featuresObj) return '<div style="color: var(--text-3); font-style: italic; font-size: 0.78rem;">-</div>';
-                let badgeClass = isTop ? 'xai-badge-top' : 'xai-badge-other';
+                let currentLang = localStorage.getItem('lf-lang') || 'id';
+                let emptyMsgKey = 'no-other-matches';
+                let emptyMsg = (i18nDict[currentLang] && i18nDict[currentLang][emptyMsgKey]) ? i18nDict[currentLang][emptyMsgKey] : (currentLang === 'en' ? 'No additional matches found' : 'Tidak ada kecocokan tambahan');
+                let emptyHtml = `<div style="color: var(--text-3); font-style: italic; font-size: 0.78rem;" data-i18n="${emptyMsgKey}">${emptyMsg}</div>`;
+
+                if (!featuresObj) return emptyHtml;
                 let items = [];
 
                 if (featuresObj.genres && Array.isArray(featuresObj.genres)) {
@@ -2074,20 +2192,24 @@
                     });
                 }
 
-                if (items.length === 0) return '<div style="color: var(--text-3); font-style: italic; font-size: 0.78rem;">-</div>';
+                if (items.length === 0) return emptyHtml;
 
                 items.sort((a, b) => (b.pct || b.score || 0) - (a.pct || a.score || 0));
 
-                let currentLang = localStorage.getItem('lf-lang') || 'id';
+                function buildBadgeHtml(item) {
+                    let label = item.type === 'Genre' ? `Genre: ${escapeHtml(item.name)}` : escapeHtml(item.name);
+                    let hasPct = (item.pct !== null && item.pct !== undefined && item.pct > 0);
+                    let badgeClass = hasPct ? 'xai-badge-with-score' : 'xai-badge-no-score';
+                    let pctText = hasPct 
+                        ? ` <span class="badge-pct" style="opacity: 0.9; font-size: 0.85em; font-weight: 600; margin-left: 4px;">· ${item.pct}%</span>` 
+                        : '';
+                    return `<span class="${badgeClass}">${label}${pctText}</span>`;
+                }
 
                 if (isTop || items.length <= 4) {
-                    let html = '<div class="xai-badge-group">';
+                    let html = '<div class="xai-badge-group" style="display: flex; flex-wrap: wrap; gap: 6px;">';
                     items.forEach(item => {
-                        let label = item.type === 'Genre' ? `Genre: ${escapeHtml(item.name)}` : escapeHtml(item.name);
-                        let pctText = (item.pct !== null && item.pct !== undefined && item.pct > 0) 
-                            ? ` <span class="badge-pct" style="opacity: 0.85; font-size: 0.85em; font-weight: normal; margin-left: 3px;">· ${item.pct}%</span>` 
-                            : '';
-                        html += `<span class="${badgeClass}">${label}${pctText}</span>`;
+                        html += buildBadgeHtml(item);
                     });
                     html += '</div>';
                     return html;
@@ -2096,24 +2218,16 @@
                     let hiddenItems = items.slice(4);
                     let hiddenCount = hiddenItems.length;
 
-                    let html = '<div class="xai-badge-group">';
+                    let html = '<div class="xai-badge-group" style="display: flex; flex-wrap: wrap; gap: 6px;">';
                     initialItems.forEach(item => {
-                        let label = item.type === 'Genre' ? `Genre: ${escapeHtml(item.name)}` : escapeHtml(item.name);
-                        let pctText = (item.pct !== null && item.pct !== undefined && item.pct > 0) 
-                            ? ` <span class="badge-pct" style="opacity: 0.85; font-size: 0.85em; font-weight: normal; margin-left: 3px;">· ${item.pct}%</span>` 
-                            : '';
-                        html += `<span class="${badgeClass}">${label}${pctText}</span>`;
+                        html += buildBadgeHtml(item);
                     });
                     html += '</div>';
 
                     html += `<div class="xai-badge-group-extra" style="display: none; margin-top: 6px;" data-hidden-count="${hiddenCount}">`;
-                    html += '<div class="xai-badge-group">';
+                    html += '<div class="xai-badge-group" style="display: flex; flex-wrap: wrap; gap: 6px;">';
                     hiddenItems.forEach(item => {
-                        let label = item.type === 'Genre' ? `Genre: ${escapeHtml(item.name)}` : escapeHtml(item.name);
-                        let pctText = (item.pct !== null && item.pct !== undefined && item.pct > 0) 
-                            ? ` <span class="badge-pct" style="opacity: 0.85; font-size: 0.85em; font-weight: normal; margin-left: 3px;">· ${item.pct}%</span>` 
-                            : '';
-                        html += `<span class="${badgeClass}">${label}${pctText}</span>`;
+                        html += buildBadgeHtml(item);
                     });
                     html += '</div>';
                     html += '</div>';
@@ -2226,7 +2340,32 @@
                     gmodal.classList.add('show');
                     gmodal.setAttribute('aria-hidden', 'false');
                     document.body.style.overflow = 'hidden';
+
+                    // Reset scroll position & update scroll fade status
+                    const scrollContainer = document.getElementById('gmodal-scroll-container');
+                    if (scrollContainer) {
+                        scrollContainer.scrollTop = 0;
+                        checkGmodalScrollPosition(scrollContainer);
+                    }
                 }
+            });
+
+            function checkGmodalScrollPosition(el) {
+                if (!el) return;
+                const isScrollable = el.scrollHeight > el.clientHeight + 5;
+                const isAtBottom = (el.scrollTop + el.clientHeight) >= (el.scrollHeight - 10);
+                
+                if (!isScrollable) {
+                    $(el).addClass('no-scroll').removeClass('at-bottom');
+                } else if (isAtBottom) {
+                    $(el).addClass('at-bottom').removeClass('no-scroll');
+                } else {
+                    $(el).removeClass('at-bottom no-scroll');
+                }
+            }
+
+            $('#gmodal-scroll-container').on('scroll', function() {
+                checkGmodalScrollPosition(this);
             });
 
             // GMODAL COPY LINK SECONDARY CTA BUTTON LOGIC
