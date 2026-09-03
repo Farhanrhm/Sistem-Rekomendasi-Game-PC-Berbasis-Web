@@ -488,7 +488,28 @@
         .rec-card-img { position: relative; height: 125px; overflow: hidden; flex-shrink: 0; }
         .rec-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1) !important; }
         .rec-card:hover .rec-card-img img { transform: scale(1.08) !important; }
-        .match-badge { position: absolute; top: 8px; right: 8px; font-family: var(--font-mono); font-size: 0.72rem; font-weight: 600; background: rgba(12, 12, 13, 0.82); border: 1px solid var(--border-md); padding: 3px 9px; border-radius: var(--r-sm); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 4px 12px rgba(0,0,0,0.6); z-index: 2; }
+        .match-badge { 
+            position: absolute; 
+            top: 8px; 
+            right: 8px; 
+            font-family: var(--font-mono); 
+            font-size: 0.72rem; 
+            font-weight: 600; 
+            background: rgba(0, 0, 0, 0.45); 
+            border: 1px solid var(--border-md); 
+            padding: 3px 9px; 
+            border-radius: var(--r-sm); 
+            backdrop-filter: blur(6px); 
+            -webkit-backdrop-filter: blur(6px); 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4); 
+            color: #ffffff !important;
+            z-index: 2; 
+        }
+        [data-theme="light"] .match-badge {
+            background: rgba(0, 0, 0, 0.55);
+            border-color: rgba(255, 255, 255, 0.25);
+            color: #ffffff !important;
+        }
         .rec-card-body { padding: 0.9rem; display: flex; flex-direction: column; flex: 1; }
         .rec-card-name { font-family: var(--font-display); font-size: 0.92rem; font-weight: 700; color: var(--text-1); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .rec-meta-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
@@ -1068,6 +1089,7 @@
             color: #9a6d1a;
             border-color: rgba(154, 109, 26, 0.4);
         }
+        /* OTHER SIMILARITIES BADGE - SUBTLE NEUTRAL GRAY STYLING FOR VISUAL HIERARCHY */
         .xai-badge-no-score {
             display: inline-flex;
             align-items: center;
@@ -1079,7 +1101,12 @@
             border: 1px solid var(--border-md);
             padding: 3px 9px;
             border-radius: 6px;
-            opacity: 0.9;
+            opacity: 0.85;
+        }
+        [data-theme="light"] .xai-badge-no-score {
+            background: #e8e2d8;
+            color: #524d46;
+            border-color: #d1c8b8;
         }
 
         /* MINI PROGRESS BAR UNTUK MODAL SIMILARITY */
@@ -1244,7 +1271,7 @@
         {% endif %}
         
         {% if tot|int > 0 %}
-            <span style="font-size: 0.7rem; color: var(--text-2); margin-left: 4px;">({{ "{:,}".format(tot|int) }} reviews)</span>
+            <span class="review-count-span" data-num="{{ tot|int }}" style="font-size: 0.7rem; color: var(--text-2); margin-left: 4px;">({{ "{:,}".format(tot|int) }} reviews)</span>
         {% endif %}
     {% endmacro %}
 
@@ -1318,7 +1345,7 @@
             <div class="hero-deco-ring-inner"></div>
             <i class="fas fa-gamepad hero-deco-icon"></i>
             <div class="hero-stats">
-                <div class="hero-stat"><span class="hero-stat-num">24.000</span><span class="hero-stat-label" data-i18n="stat-games">Game</span></div>
+                <div class="hero-stat"><span class="hero-stat-num" data-num="24000">24.000</span><span class="hero-stat-label" data-i18n="stat-games">Game</span></div>
                 <div class="hero-stat"><span class="hero-stat-num">TF-IDF</span><span class="hero-stat-label" data-i18n="stat-algo">Algoritma</span></div>
                 <div class="hero-stat"><span class="hero-stat-num">COSINE</span><span class="hero-stat-label" data-i18n="stat-sim">Similarity</span></div>
             </div>
@@ -1773,7 +1800,7 @@
             }
             triggerStaggeredFadeIn();
 
-            // 3. SEARCH HISTORY (LocalStorage)
+            // 3. SEARCH HISTORY (LocalStorage - MAX 4 CHIPS UNTUK WRAPPING RAPI)
             function renderHistory() {
                 let history = JSON.parse(localStorage.getItem('lf-history')) || [];
                 let historyContainer = $("#search-history");
@@ -1782,7 +1809,8 @@
                 if(history.length === 0) { historyContainer.hide(); return; }
                 historyContainer.css("display", "flex");
                 
-                history.forEach(item => {
+                let visibleHistory = history.slice(0, 4);
+                visibleHistory.forEach(item => {
                     let safeTitle = escapeHtml(item);
                     let chip = $(`<a href="/?q=${encodeURIComponent(item)}" class="tag hist-chip" title="${safeTitle}" style="background: transparent; cursor: pointer; border-color: var(--gold-dim); color: var(--gold); max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle;">${safeTitle}</a>`);
                     historyContainer.append(chip);
@@ -2169,7 +2197,25 @@
                 }
             };
 
+            function formatNumber(num, lang) {
+                let n = typeof num === 'number' ? num : parseFloat(num);
+                if (isNaN(n)) return num;
+                return new Intl.NumberFormat(lang === 'id' ? 'id-ID' : 'en-US').format(n);
+            }
+
             function updateDOMText(lang) {
+                $('[data-num]').each(function() {
+                    let rawNum = $(this).attr('data-num');
+                    if (rawNum) {
+                        let formatted = formatNumber(rawNum, lang);
+                        if ($(this).hasClass('review-count-span')) {
+                            $(this).text(`(${formatted} reviews)`);
+                        } else {
+                            $(this).text(formatted);
+                        }
+                    }
+                });
+
                 $('[data-i18n]').each(function() {
                     let key = $(this).attr('data-i18n');
                     if (i18nDict[lang] && i18nDict[lang][key]) {
