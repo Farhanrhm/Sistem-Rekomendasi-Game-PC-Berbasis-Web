@@ -747,6 +747,12 @@ body, .navbar, .hero, .spotlight, .rec-card, .search-wrap, .search-wrap input, .
 
 /* MOBILE BREAKPOINT (<768px) */
 @media (max-width: 767px) {
+    .modal-header-img { height: 100px !important; }
+    .drag-handle { display: block; }
+    .navbar.scrolled .logo { display: none; } /* Sembunyikan logo di HP saat mini search muncul */
+    .navbar.scrolled #mini-search { flex: 1; margin-right: 10px; }
+    .mini-search-wrap input { width: 100%; }
+
     html, body {
         overflow-x: hidden !important;
         width: 100% !important;
@@ -1265,3 +1271,12 @@ button:active,
     color: #0c0c0d;
     transform: translateY(-4px);
 }
+
+/* Drag Handle */
+.drag-handle { width: 40px; height: 5px; background: rgba(255,255,255,0.5); border-radius: 10px; position: absolute; top: 8px; left: 50%; transform: translateX(-50%); z-index: 10; display: none; }
+
+/* Mini Search */
+.mini-search-wrap { display: flex; background: var(--bg-surface); border: 1px solid var(--border-md); border-radius: 100px; padding: 2px 12px; height: 36px; align-items: center; }
+.mini-search-wrap input { background: transparent; border: none; color: var(--text-1); outline: none; width: 150px; font-size: 0.8rem; margin-right: 8px; }
+.mini-search-wrap button { background: transparent; border: none; color: var(--gold); cursor: pointer; }
+.navbar.scrolled #mini-search { display: block !important; animation: fadeIn 0.3s ease; }

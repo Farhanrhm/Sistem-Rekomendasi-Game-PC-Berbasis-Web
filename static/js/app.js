@@ -739,6 +739,22 @@ $(document).ready(function() {
     const gmodal = document.getElementById('game-detail-modal');
     const closeGModal = document.getElementById('close-gmodal');
 
+    let startY = 0, currentY = 0;
+    const $modalContent = $('#game-detail-modal .modal-content');
+    $modalContent.on('touchstart', function(e) { if($(e.target).closest('#gmodal-scroll-container').scrollTop() === 0) startY = e.originalEvent.touches[0].clientY; else startY = 0; });
+    $modalContent.on('touchmove', function(e) { 
+        if(startY === 0) return; 
+        currentY = e.originalEvent.touches[0].clientY; 
+        let diff = currentY - startY; 
+        if(diff > 0) { e.preventDefault(); $modalContent.css('transform', `translateY(${diff}px) scale(0.98)`); }
+    });
+    $modalContent.on('touchend', function(e) { 
+        if(startY === 0) return; 
+        let diff = currentY - startY; 
+        if(diff > 120) { closeGameModal(); } 
+        $modalContent.css('transform', ''); startY = 0; currentY = 0; 
+    });
+
     function renderFeatureList(featuresObj, isTop = true) {
         let emptyMsgKey = 'no-other-matches';
         let emptyMsg = (i18nDict[currentLang] && i18nDict[currentLang][emptyMsgKey]) ? i18nDict[currentLang][emptyMsgKey] : 'Tidak ada kecocokan tambahan';
@@ -894,7 +910,17 @@ $(document).ready(function() {
             $('#gmodal-desc').html(`<span data-i18n="fallback_desc">${fallbackText}</span>`);
             $('.gmodal-synopsis-notice').hide();
         } else {
-            $('#gmodal-desc').text(desc);
+            let highlightedDesc = desc;
+            if (topFeatures && (topFeatures.genres || topFeatures.tags)) {
+                let keywords = [];
+                if(topFeatures.genres) topFeatures.genres.forEach(g => keywords.push((typeof g === 'object' ? g.name : g).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+                if(topFeatures.tags) topFeatures.tags.forEach(t => keywords.push((typeof t === 'object' ? t.name : t).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+                if (keywords.length > 0) {
+                    let regex = new RegExp(`\\b(${keywords.join('|')})\\b`, 'gi');
+                    highlightedDesc = highlightedDesc.replace(regex, '<span class="xai-highlight">$1</span>');
+                }
+            }
+            $('#gmodal-desc').html(highlightedDesc);
             if (currentLang === 'id') {
                 $('.gmodal-synopsis-notice').show();
             } else {
@@ -1071,6 +1097,8 @@ $(document).ready(function() {
     });
 
     $(window).on('scroll', function() {
+        if ($(this).scrollTop() > 300) { $('.navbar').addClass('scrolled'); } 
+        else { $('.navbar').removeClass('scrolled'); }
         if ($(this).scrollTop() > 250) {
             $('#scroll-top-btn').addClass('show');
         } else {
