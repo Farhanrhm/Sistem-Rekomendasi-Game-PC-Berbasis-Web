@@ -357,17 +357,26 @@ function initNativeAutocomplete() {
     const wrap = gameInput.closest(".search-wrap");
     if (!wrap) return;
 
-    // Buat dropdown container jika belum ada
-    let menu = wrap.querySelector(".custom-autocomplete-menu");
+    // Buat dropdown container jika belum ada (append ke document.body)
+    let menu = document.querySelector(".custom-autocomplete-menu");
     if (!menu) {
         menu = document.createElement("ul");
         menu.className = "custom-autocomplete-menu";
-        wrap.appendChild(menu);
+        document.body.appendChild(menu);
     }
 
     let debounceTimer = null;
     let activeIndex = -1;
     let currentSuggestions = [];
+
+    function positionMenu() {
+        const rect = wrap.getBoundingClientRect();
+        menu.style.position = "absolute";
+        // Tambahkan offset 4px agar ada jarak rapi dari search bar
+        menu.style.top = `${rect.bottom + window.scrollY + 4}px`;
+        menu.style.left = `${rect.left + window.scrollX}px`;
+        menu.style.width = `${rect.width}px`;
+    }
 
     function hideMenu() {
         menu.classList.remove("show");
@@ -398,6 +407,7 @@ function initNativeAutocomplete() {
             menu.appendChild(li);
         });
 
+        positionMenu();
         menu.classList.add("show");
     }
 
@@ -465,12 +475,25 @@ function initNativeAutocomplete() {
         }
     });
 
-    // Tutup autocomplete saat klik di luar area search input
+    // Tutup autocomplete saat klik di luar area search input atau menu
     document.addEventListener("click", function(e) {
-        if (!wrap.contains(e.target)) {
+        if (!wrap.contains(e.target) && !menu.contains(e.target)) {
             hideMenu();
         }
     });
+
+    // Reposisi saat resize window & tutup saat scroll
+    window.addEventListener("resize", function() {
+        if (menu.classList.contains("show")) {
+            positionMenu();
+        }
+    });
+
+    window.addEventListener("scroll", function() {
+        if (menu.classList.contains("show")) {
+            hideMenu();
+        }
+    }, { passive: true });
 }
 
 // MAIN DOM READY INITIALIZATION

@@ -22,7 +22,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.4">
     
     <script>
         (function() {
@@ -544,59 +544,9 @@
     </button>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}?v=1.4"></script>
     <script>
-        const MATCH_THRESHOLDS = { HIGH: 80, MEDIUM: 60 };
-
-        function getMatchTier(simPct) {
-            let score = parseFloat(simPct) || 0;
-            if (score >= MATCH_THRESHOLDS.HIGH) {
-                return { tier: 'high', color: 'var(--gold-bright)', badgeClass: 'badge-match-high' };
-            } else if (score >= MATCH_THRESHOLDS.MEDIUM) {
-                return { tier: 'med', color: 'var(--gold)', badgeClass: 'badge-match-med' };
-            } else {
-                return { tier: 'low', color: 'var(--text-3)', badgeClass: 'badge-match-low' };
-            }
-        }
-
         $(document).ready(function() {
-            const gameInput = $("#game_input");
-            const html = document.documentElement;
-
-            // 1. THEME TOGGLE (DARK / LIGHT MODE WITH MORPH ANIMATION & LOCALSTORAGE)
-            document.getElementById("theme-btn").addEventListener("click", function() {
-                const btn = this;
-                btn.classList.add("morphing");
-                
-                var isLight = html.getAttribute("data-theme") === "light";
-                if (isLight) {
-                    html.removeAttribute("data-theme");
-                    localStorage.setItem("lf-theme", "dark");
-                } else {
-                    html.setAttribute("data-theme", "light");
-                    localStorage.setItem("lf-theme", "light");
-                }
-                
-                setTimeout(() => {
-                    btn.classList.remove("morphing");
-                }, 300);
-            });
-
-            // 2. AUTOCOMPLETE (DINAMIS SKELETON & SEARCH SUGGESTIONS)
-            gameInput.autocomplete({
-                source: "/api/search-suggestions",
-                minLength: 2,
-                select: function(event, ui) {
-                    gameInput.val(ui.item.value);
-                    $(this).closest("form").submit();
-                }
-            }).autocomplete("instance")._renderMenu = function(ul, items) {
-                var self = this;
-                $.each(items, function(i, item) { self._renderItemData(ul, item); });
-                $(ul).width(gameInput.outerWidth());
-            };
-
-            // 2. STAGGERED FADE-IN ANIMATION FOR RECOMMENDATION CARDS
             function triggerStaggeredFadeIn() {
                 const $cards = $(".rec-grid .rec-card:visible");
                 $cards.removeClass("show").addClass("stagger-anim");
