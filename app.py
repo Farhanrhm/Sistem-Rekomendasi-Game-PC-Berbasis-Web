@@ -34,11 +34,13 @@ CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5000", "http://12
 @app.after_request
 def set_secure_headers(response):
     """
-    Menambahkan header keamanan HTTP dasar ke semua response.
+    Menambahkan header keamanan HTTP dasar ke semua response serta cache header untuk static files.
     """
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-Frame-Options'] = 'DENY'
     response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    if request.path.startswith('/static/'):
+        response.headers['Cache-Control'] = 'public, max-age=604800'  # 1 minggu
     return response
 
 def sanitize_input(user_input):
@@ -547,13 +549,34 @@ def home():
 
 
 
+@app.route('/robots.txt', methods=['GET'])
+def robots_txt():
+    """
+    Endpoint untuk robots.txt sederhana yang mengizinkan crawling halaman utama.
+    """
+    content = "User-agent: *\nAllow: /\nSitemap: " + request.url_root.rstrip('/') + "/sitemap.xml\n"
+    return content, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+
+@app.route('/sitemap.xml', methods=['GET'])
+def sitemap_xml():
+    """
+    Endpoint sitemap.xml dasar untuk halaman utama LevelFind.
+    """
+    xml_content = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>{request.url_root.rstrip('/')}/</loc>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>"""
+    return xml_content, 200, {'Content-Type': 'application/xml; charset=utf-8'}
+
 @app.route('/api/search-suggestions', methods=['GET'])
-@app.route('/api/search_autocomplete', methods=['GET'])
-@app.route('/api/search_titles', methods=['GET'])
 @limiter.limit("60 per minute")
 def api_search_titles():
     """
-    Endpoint Autocomplete Judul Game untuk Frontend (Maksimal 7 judul game).
+    Endpoint Resmi Autocomplete Judul Game untuk Frontend (Maksimal 7 judul game).
     """
     raw_query = request.args.get('term', '').strip().lower() or request.args.get('q', '').strip().lower()
     query = sanitize_input(raw_query).lower()
