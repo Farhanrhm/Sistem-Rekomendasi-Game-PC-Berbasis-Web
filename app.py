@@ -15,31 +15,52 @@ import zlib
 app = Flask(__name__)
 
 # ==============================================================================
-# 1. PENGAMANAN RATE LIMITING & CORS
-# Rate limiter menggunakan RAM (memory://) agar latensi tetap 0ms
+# 1. PENGAMANAN RATE LIMITING, CORS, & SECURITY HEADERS
+# Untuk production (terutama serverless seperti Vercel), set RATELIMIT_STORAGE_URI
+# ke Redis (contoh: Upstash Redis URI) lewat Environment Variable.
+# Default fallback ke memory:// untuk pengembangan lokal.
 # ==============================================================================
+RATELIMIT_STORAGE_URI = os.environ.get("RATELIMIT_STORAGE_URI", "memory://")
+
 limiter = Limiter(
     get_remote_address,
     app=app,
     default_limits=["300 per day", "100 per hour"],
-    storage_uri="memory://"
+    storage_uri=RATELIMIT_STORAGE_URI
 )
 
 CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5000", "http://127.0.0.1:5000", "https://levelfind.vercel.app"]}})
 
+@app.after_request
+def set_secure_headers(response):
+    """
+    Menambahkan header keamanan HTTP dasar ke semua response.
+    """
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    return response
+
 def sanitize_input(user_input):
     """
     Sanitasi kata kunci pencarian dari potensi injeksi HTML tags.
+    Menggunakan iterasi loop untuk memastikan nested/malformed HTML tags sepenuhnya bersih.
     """
     if not user_input or not isinstance(user_input, str):
         return ""
     clean_str = html.unescape(user_input)
-    clean_str = re.sub(r'<[^>]*>', '', clean_str)
+    prev = None
+    while prev != clean_str:
+        prev = clean_str
+        clean_str = re.sub(r'<[^>]*>', '', clean_str)
     return clean_str.strip()[:100]
 
 # ==============================================================================
 # 2. BATASAN PEMODELAN & MEMORI & 3. LAZY LOADING
-# Muat file .pkl ke dalam RAM peladen HANYA saat aplikasi Flask menyala (bukan di dalam fungsi route)
+# PERINGATAN KEAMANAN (SECURITY NOTE):
+# `pickle.load()` dapat mengeksekusi kode arbitrary jika file .pkl berasal dari sumber 
+# yang tidak terpercaya. Seluruh file di folder `models/` HARUS selalu diproduksi dari 
+# proses build internal milik developer sendiri (bukan dari unggahan publik/pihak ketiga).
 # ==============================================================================
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 

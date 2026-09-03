@@ -1576,7 +1576,7 @@
                                 {% endif %}
                             </div>
                             <p class="rec-card-desc xai-text">
-                                {{ (row['xai_explanation']['dynamic_text'] if 'xai_explanation' in row and 'dynamic_text' in row['xai_explanation'] else row['explanation'] if 'explanation' in row else '') | safe }}
+                                {{ (row['xai_explanation']['dynamic_text'] if 'xai_explanation' in row and 'dynamic_text' in row['xai_explanation'] else row['explanation'] if 'explanation' in row else '') }}
                             </p>
                             <button class="btn-detail btn-open-game-modal" type="button"><span><span data-i18n="view_xai_btn">Lihat Penjelasan XAI</span></span></button>
                         </div>
