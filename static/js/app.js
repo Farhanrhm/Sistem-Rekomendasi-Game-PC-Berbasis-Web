@@ -724,7 +724,7 @@ $(document).ready(function() {
     });
 
     // 8. TOGGLE ACCORDION BOBOT AI
-    $("#toggle-bobot").on("click", function() {
+    $(document).off("click", "#toggle-bobot").on("click", "#toggle-bobot", function() {
         $("#content-bobot").slideToggle(300);
         $(this).find(".toggle-icon").toggleClass("rotate");
     });

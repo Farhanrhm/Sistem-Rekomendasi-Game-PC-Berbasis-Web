@@ -521,7 +521,22 @@ body, .navbar, .hero, .spotlight, .rec-card, .search-wrap, .search-wrap input, .
     color: #ffffff !important;
 }
 .rec-card-body { padding: 0.9rem; display: flex; flex-direction: column; flex: 1; }
-.rec-card-name { font-family: var(--font-display); font-size: 0.92rem; font-weight: 700; color: var(--text-1); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rec-card-name { 
+    font-family: var(--font-display); 
+    font-size: 0.92rem; 
+    font-weight: 700; 
+    color: var(--text-1); 
+    margin-bottom: 6px; 
+    
+    /* Tambahan untuk standarisasi tinggi judul (Max 2 baris) */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal; 
+    min-height: 2.4rem; /* Memaksa semua judul seragam 2 baris */
+}
 .rec-meta-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
 .rec-rating { font-size: 0.74rem; color: var(--text-2); display: flex; align-items: center; gap: 4px; }
 .rec-rating i { color: var(--gold); }
@@ -536,13 +551,14 @@ body, .navbar, .hero, .spotlight, .rec-card, .search-wrap, .search-wrap input, .
     color: var(--text-2);
     margin-top: 6px;
     margin-bottom: 0.9rem;
-    display: block !important;
-    -webkit-line-clamp: unset !important;
-    -webkit-box-orient: unset !important;
-    overflow: visible !important;
-    text-overflow: clip !important;
-    white-space: normal !important;
+    
+    /* Tambahan untuk standarisasi deskripsi (Max 3 baris) */
+    display: -webkit-box !important;
+    -webkit-line-clamp: 3 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
     height: auto !important;
+    white-space: normal !important;
 }
 .xai-highlight { color: var(--gold); font-weight: 600; }
 .btn-detail { display: block; text-align: center; padding: 0.5rem; background: transparent; border: 1px solid var(--border-md); color: var(--text-2); border-radius: var(--r-sm); font-size: 0.78rem; margin-top: auto; cursor: pointer; width: 100%; transition: all 0.2s ease; }
