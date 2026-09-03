@@ -128,6 +128,7 @@ const i18nDict = {
         "no-other-matches": "Tidak ada kecocokan tambahan",
         "gmodal-copy-btn": "Salin Link Game",
         "copied-text": "Tersalin!",
+        "autocorrect-notice": "Hasil untuk '{actual}' (dikoreksi dari '{query}')",
         "error-not-found": "Game '{game_name}' tidak ditemukan dalam sistem kami.",
         "footer-text": "LevelFind &copy; 2026 &mdash; Sistem Rekomendasi Game PC"
     },
@@ -197,6 +198,7 @@ const i18nDict = {
         "no-other-matches": "No additional matches found",
         "gmodal-copy-btn": "Copy Game Link",
         "copied-text": "Copied!",
+        "autocorrect-notice": "Showing results for '{actual}' (corrected from '{query}')",
         "error-not-found": "Game '{game_name}' was not found in our system.",
         "footer-text": "LevelFind &copy; 2026 &mdash; PC Game Recommendation System"
     }
@@ -274,6 +276,17 @@ function updateDOMText(lang) {
         if (templateStr && gameName) {
             let translatedError = templateStr.replace('{game_name}', gameName);
             $errorMsg.find('.error-text').text(translatedError);
+        }
+    }
+
+    const $autocorrectNotice = $('[data-i18n="autocorrect-notice"]');
+    if ($autocorrectNotice.length > 0) {
+        let actual = $autocorrectNotice.attr('data-actual') || '';
+        let query = $autocorrectNotice.attr('data-query') || '';
+        let tpl = i18nDict[lang]['autocorrect-notice'];
+        if (tpl && actual && query) {
+            let translatedNotice = tpl.replace('{actual}', actual).replace('{query}', query);
+            $autocorrectNotice.text(translatedNotice);
         }
     }
 

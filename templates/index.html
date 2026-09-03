@@ -172,7 +172,15 @@
                             <i class="fas fa-info"></i>
                         </button>
                     </div>
-                    <span class="section-meta">Matched: {{ actual_title }}</span>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <span class="section-meta">Matched: {{ actual_title }}</span>
+                        {% if corrected_from %}
+                        <span class="badge-autocorrect" style="font-size: 0.76rem; background: rgba(234, 179, 8, 0.12); color: var(--gold); border: 1px solid rgba(234, 179, 8, 0.3); padding: 3px 10px; border-radius: 20px; font-weight: 500;">
+                            <i class="fas fa-magic" style="margin-right: 4px;"></i>
+                            <span data-i18n="autocorrect-notice" data-actual="{{ actual_title }}" data-query="{{ corrected_from }}">Hasil untuk '{{ actual_title }}' (dikoreksi dari '{{ corrected_from }}')</span>
+                        </span>
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="spotlight">
                     <div class="spotlight-img-wrap" style="--bg-img: url('{{ row['header_image'] }}');">

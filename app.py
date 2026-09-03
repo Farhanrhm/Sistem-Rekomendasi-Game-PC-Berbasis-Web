@@ -106,6 +106,70 @@ def calc_edit_distance_ratio(title1, title2):
     return dist / max_len
 
 
+def fuzzy_find_closest_titles(query, df_target, limit=7, max_distance_ratio=0.35):
+    """
+    Fallback fuzzy search saat exact/substring match tidak menemukan hasil.
+    Menggunakan Levenshtein distance dengan pre-filtering batas panjang string
+    dan token-matching untuk performa optimal (~24.000 game).
+    """
+    if df_target is None or not query:
+        return []
+
+    query_lower = query.lower().strip()
+    q_len = len(query_lower)
+    if q_len == 0:
+        return []
+
+    q_words = [w for w in re.findall(r'\w+', query_lower) if len(w) >= 2]
+
+    # Strictness dinamis berdasarkan panjang query
+    if q_len <= 3:
+        max_distance = 1
+    elif q_len <= 6:
+        max_distance = 2
+    else:
+        max_distance = max(2, int(q_len * max_distance_ratio))
+
+    candidates = []
+    for name in df_target['name'].dropna().unique():
+        name_lower = name.lower()
+        n_len = len(name_lower)
+
+        # Skip jika beda panjang jauh sekali
+        if abs(n_len - q_len) > max(max_distance + 3, int(q_len * 0.5)):
+            continue
+
+        # 1. Direct Levenshtein Distance
+        dist = Levenshtein.distance(query_lower, name_lower)
+        if dist <= max_distance:
+            candidates.append((name, dist))
+            continue
+
+        # 2. Token-level matching untuk multi-word query (misal: "elden rign" -> "elden ring")
+        if q_words and len(q_words) > 1:
+            n_words = re.findall(r'\w+', name_lower)
+            if len(n_words) == len(q_words):
+                word_dists = [Levenshtein.distance(qw, nw) for qw, nw in zip(q_words, n_words)]
+                total_word_dist = sum(word_dists)
+                max_allowed_word_dist = sum(1 if len(qw) <= 4 else 2 for qw in q_words)
+                if total_word_dist <= max_allowed_word_dist:
+                    candidates.append((name, total_word_dist))
+
+    # Urutkan berdasarkan jarak terkecil dan selisih panjang string terkecil
+    candidates.sort(key=lambda x: (x[1], abs(len(x[0]) - q_len)))
+    
+    # Hilangkan duplikat nama dengan menjaga urutan
+    seen = set()
+    result = []
+    for name, _ in candidates:
+        if name not in seen:
+            seen.add(name)
+            result.append(name)
+            if len(result) >= limit:
+                break
+    return result
+
+
 def generate_dynamic_xai_text(genre_contributions, tag_contributions):
     """
     Fungsi pembantu untuk menghasilkan narasi XAI akademis secara dinamis 
@@ -319,8 +383,30 @@ def _cached_get_recommendations(query_clean, top_n=12):
     if matches.empty:
         matches = df[df['name'].str.lower().str.contains(query_clean, regex=False, na=False)]
         
+    corrected_from = None
+    fuzzy_suggestions = []
+
     if matches.empty:
-        return None, f"Game '{query_clean}' tidak ditemukan dalam sistem kami."
+        # Fallback 1: Fuzzy search untuk mencari game terdekat (toleransi typo)
+        closest_candidates = fuzzy_find_closest_titles(query_clean, df, limit=5)
+        if closest_candidates:
+            best_match = closest_candidates[0]
+            dist = Levenshtein.distance(query_clean, best_match.lower())
+            
+            # Jika distance sangat dekat (typo jelas), langsung auto-correct ke best match
+            if dist <= (2 if len(query_clean) >= 5 else 1):
+                corrected_from = query_clean
+                matches = df[df['name'].str.lower() == best_match.lower()]
+                if matches.empty:
+                    matches = df[df['name'].str.lower().str.contains(best_match.lower(), regex=False, na=False)]
+            else:
+                fuzzy_suggestions = closest_candidates
+
+    if matches.empty:
+        return {
+            'error_type': 'not_found',
+            'fuzzy_suggestions': fuzzy_suggestions
+        }, f"Game '{query_clean}' tidak ditemukan dalam sistem kami."
 
     target_idx = matches.index[0]
     target_row = df.iloc[target_idx]
@@ -483,7 +569,8 @@ def _cached_get_recommendations(query_clean, top_n=12):
 
     return {
         'target_game': target_data,
-        'recommendations': accepted_recommendations
+        'recommendations': accepted_recommendations,
+        'corrected_from': corrected_from
     }, None
 
 
@@ -523,14 +610,20 @@ def home():
     popular_suggestions = ["Elden Ring", "Cyberpunk 2077", "The Witcher 3", "Palworld", "Baldur's Gate 3", "Grand Theft Auto V"]
     suggestions = None
 
+    corrected_from = None
+
     if search_query:
         result, error_msg = get_recommendations_data(search_query, top_n=top_n)
         if error_msg:
             error = error_msg
-            suggestions = popular_suggestions
+            if isinstance(result, dict) and result.get('fuzzy_suggestions'):
+                suggestions = result['fuzzy_suggestions']
+            else:
+                suggestions = popular_suggestions
         else:
             target_game = result['target_game']
             rec_list = result['recommendations']
+            corrected_from = result.get('corrected_from')
             
             # Gabungkan target game di baris 0 agar kompatibel dengan template index.html
             combined_list = [target_game] + rec_list
@@ -544,6 +637,7 @@ def home():
         target_game=target_game,
         recommendations=recommendations if target_game else None,
         suggestions=suggestions,
+        corrected_from=corrected_from,
         error=error
     )
 
@@ -577,6 +671,7 @@ def sitemap_xml():
 def api_search_titles():
     """
     Endpoint Resmi Autocomplete Judul Game untuk Frontend (Maksimal 7 judul game).
+    Mendukung Exact/Substring Match dan Fuzzy Search Fallback (Toleransi Typo).
     """
     raw_query = request.args.get('term', '').strip().lower() or request.args.get('q', '').strip().lower()
     query = sanitize_input(raw_query).lower()
@@ -584,6 +679,9 @@ def api_search_titles():
         return jsonify([])
     
     matches = df[df['name'].fillna('').str.lower().str.contains(query, regex=False, na=False)]['name'].head(7).tolist()
+    if not matches:
+        matches = fuzzy_find_closest_titles(query, df, limit=7)
+        
     return jsonify(matches)
 
 
