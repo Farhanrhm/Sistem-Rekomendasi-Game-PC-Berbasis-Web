@@ -33,4 +33,13 @@ instance/
 # Scratch / Temporary Audit Scripts
 scratch/
 
+# Local Development & One-off Scripts
+smart_scraper.py
+update_reviews_db.py
+merge_dataset.py
+text_preprocessing.py
+build_model.py
+run_eval.py
+
+
 
