@@ -198,7 +198,7 @@ def generate_dynamic_xai_text(genre_contributions, tag_contributions):
     )
 
 
-def extract_tfidf_xai_explanation(target_idx, cand_idx, target_row, cand_row):
+def extract_tfidf_xai_explanation(target_pos, cand_pos, target_row, cand_row):
     """
     Ekstraksi XAI berdasarkan bobot kontribusi TF-IDF riil.
     Membagi fitur beririsan menjadi top_features (bobot tertinggi) & other_features.
@@ -214,8 +214,8 @@ def extract_tfidf_xai_explanation(target_idx, cand_idx, target_row, cand_row):
             "dynamic_text": "Game ini direkomendasikan berdasarkan tingkat kemiripan fitur utama."
         }
 
-    query_vec = tfidf_matrix[target_idx]
-    cand_vec = tfidf_matrix[cand_idx]
+    query_vec = tfidf_matrix[target_pos]
+    cand_vec = tfidf_matrix[cand_pos]
     
     prod = query_vec.multiply(cand_vec)
     vocab = tfidf_vectorizer.vocabulary_
@@ -408,13 +408,15 @@ def _cached_get_recommendations(query_clean, top_n=12):
             'fuzzy_suggestions': fuzzy_suggestions
         }, f"Game '{query_clean}' tidak ditemukan dalam sistem kami."
 
-    target_idx = matches.index[0]
-    target_row = df.iloc[target_idx]
+    # PENTING: gunakan df.index.get_loc() untuk konversi label index -> posisi baris,
+    # karena .iloc[] dan tfidf_matrix[] butuh POSISI, bukan label index DataFrame.
+    target_pos = df.index.get_loc(matches.index[0])
+    target_row = df.iloc[target_pos]
     game_target_name = target_row['name']
     t_match = time.time()
 
     # 1. REAL-TIME COSINE SIMILARITY
-    query_vec = tfidf_matrix[target_idx]
+    query_vec = tfidf_matrix[target_pos]
     sim_scores = linear_kernel(query_vec, tfidf_matrix).flatten()
     t_cosine = time.time()
 
@@ -427,8 +429,8 @@ def _cached_get_recommendations(query_clean, top_n=12):
     final_ranking_scores = sim_scores * penalty_factors
     t_sparse_sum = time.time() - t_sparse_start
 
-    # Exclude target_idx by setting score to -1
-    final_ranking_scores[target_idx] = -1.0
+    # Exclude target_pos by setting score to -1
+    final_ranking_scores[target_pos] = -1.0
 
     # Fast multi-key sorting using numpy lexsort: secondary (pos_rev_arr), primary (final_ranking_scores)
     t_sort_start = time.time()
@@ -477,7 +479,7 @@ def _cached_get_recommendations(query_clean, top_n=12):
             
             t_xai_start = time.time()
             xai_explanation = extract_tfidf_xai_explanation(
-                target_idx, cand['index'], target_row, cand_row
+                target_pos, cand['index'], target_row, cand_row
             )
             t_xai_sum += (time.time() - t_xai_start)
 
