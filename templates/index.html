@@ -22,7 +22,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=1.6">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2.0">
     
     <script>
         (function() {
@@ -34,6 +34,14 @@
             var l = localStorage.getItem("lf-lang");
             if (l === "en" || l === "id") {
                 document.documentElement.setAttribute("lang", l);
+            }
+            if (l === "en") {
+                document.addEventListener("DOMContentLoaded", function() {
+                    var m = document.querySelector('#mini-search input');
+                    if (m) { m.placeholder = "Search game..."; m.setAttribute('placeholder', "Search game..."); }
+                    var g = document.getElementById('game_input');
+                    if (g) { g.placeholder = "e.g., Elden Ring, Palworld..."; g.setAttribute('placeholder', "e.g., Elden Ring, Palworld..."); }
+                });
             }
         })();
     </script>
@@ -90,7 +98,7 @@
         </div>
         <form id="mini-search" action="/" method="GET" autocomplete="off" style="display: none;">
             <div class="mini-search-wrap">
-                <input type="text" name="q" placeholder="Cari game..." required>
+                <input type="text" name="q" placeholder="Cari game..." data-i18n-placeholder="mini-search-placeholder" required>
                 <button type="submit"><i class="fas fa-search"></i></button>
             </div>
         </form>
@@ -559,6 +567,6 @@
     </button>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="{{ url_for('static', filename='js/app.js') }}?v=1.6"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}?v=2.0"></script>
 </body>
 </html>

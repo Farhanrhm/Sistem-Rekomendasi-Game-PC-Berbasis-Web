@@ -66,6 +66,7 @@ const i18nDict = {
         "hero-title": "Mulai dengan satu game<br>yang kamu <em>suka</em>",
         "hero-sub": "Sistem AI kami menganalisis ribuan game untuk menemukan rekomendasi paling akurat berdasarkan game favorit Anda.",
         "search-placeholder": "Contoh: Elden Ring, Palworld...",
+        "mini-search-placeholder": "Cari game...",
         "search-btn": "Temukan",
         "history-label": "Terakhir Dicari:",
         "suggestion-title": "Coba salah satu game populer berikut:",
@@ -136,6 +137,7 @@ const i18nDict = {
         "hero-title": "Start with a game<br>you <em>love</em>",
         "hero-sub": "Our AI analyzes thousands of titles to find the most accurate recommendations based on your favorite games.",
         "search-placeholder": "e.g., Elden Ring, Palworld...",
+        "mini-search-placeholder": "Search game...",
         "search-btn": "Discover",
         "history-label": "Recently Searched:",
         "suggestion-title": "Try one of these popular games instead:",
@@ -263,11 +265,19 @@ function updateDOMText(lang) {
     });
 
     $('[data-i18n-placeholder]').each(function() {
-        let key = $(this).data('i18n-placeholder');
+        let key = $(this).attr('data-i18n-placeholder') || $(this).data('i18n-placeholder');
         if (i18nDict[lang] && i18nDict[lang][key]) {
-            $(this).attr('placeholder', i18nDict[lang][key]);
+            let val = i18nDict[lang][key];
+            $(this).attr('placeholder', val);
+            this.placeholder = val;
         }
     });
+
+    const miniInput = document.querySelector('#mini-search input');
+    if (miniInput && i18nDict[lang] && i18nDict[lang]['mini-search-placeholder']) {
+        miniInput.placeholder = i18nDict[lang]['mini-search-placeholder'];
+        miniInput.setAttribute('placeholder', i18nDict[lang]['mini-search-placeholder']);
+    }
 
     const $errorMsg = $('.error-msg');
     if ($errorMsg.length > 0) {
