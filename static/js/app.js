@@ -64,7 +64,7 @@ function getMatchTier(simPct) {
 const i18nDict = {
     id: {
         "hero-title": "Temukan game dengan<br>mekanik &amp; narasi <em>serupa</em>",
-        "hero-sub": "Mesin pencocokan berbasis TF-IDF &amp; Cosine Similarity dari metadata 24.000+ katalog Steam.",
+        "hero-sub": "Mesin pencocokan berbasis TF-IDF &amp; Cosine Similarity dari metadata 26.000+ katalog Steam.",
         "search-placeholder": "Contoh: Elden Ring, Palworld...",
         "mini-search-placeholder": "Cari game...",
         "search-btn": "Temukan",
@@ -136,9 +136,9 @@ const i18nDict = {
     },
     en: {
         "hero-title": "Discover games with<br>similar mechanics &amp; <em>lore</em>",
-        "hero-sub": "Matching engine powered by TF-IDF &amp; Cosine Similarity across 24,000+ Steam catalog titles.",
+        "hero-sub": "Matching engine powered by TF-IDF &amp; Cosine Similarity across 26,000+ Steam catalog titles.",
         "hero-showcase-badge": "Live Catalog Spotlight",
-        "hero-showcase-hint": "Click card to analyze instant recommendations",
+        "hero-showcase-hint": "Click card to explore instant recommendations",
         "search-placeholder": "e.g., Elden Ring, Palworld...",
         "mini-search-placeholder": "Search game...",
         "search-btn": "Discover",
@@ -266,6 +266,17 @@ function updateDOMText(lang) {
             $(this).html(i18nDict[lang][key]);
         }
     });
+
+    $('[data-i18n-title]').each(function() {
+        const key = $(this).attr('data-i18n-title');
+        if (i18nDict[lang][key]) {
+            $(this).attr('title', i18nDict[lang][key]);
+        }
+    });
+
+    // Update history clear button text if exists
+    let clearText = lang === 'en' ? 'Clear' : 'Hapus';
+    $('.hist-clear-text').text(clearText);
 
     $('[data-i18n-placeholder]').each(function() {
         let key = $(this).attr('data-i18n-placeholder') || $(this).data('i18n-placeholder');
@@ -564,11 +575,11 @@ $(document).ready(function() {
     }
     triggerStaggeredFadeIn();
 
-    // 3. SEARCH HISTORY (LocalStorage - MAX 4 CHIPS UNTUK WRAPPING RAPI)
+    // 3. SEARCH HISTORY (LocalStorage - MAX 4 CHIPS DENGAN ACTION HAPUS & CLEAR)
     function renderHistory() {
         let history = JSON.parse(localStorage.getItem('lf-history')) || [];
         let historyContainer = $("#search-history");
-        historyContainer.find('.hist-chip').remove(); 
+        historyContainer.find('.hist-chip-group, .hist-clear-all').remove(); 
 
         if(history.length === 0) { historyContainer.hide(); return; }
         historyContainer.css("display", "flex");
@@ -576,11 +587,46 @@ $(document).ready(function() {
         let visibleHistory = history.slice(0, 4);
         visibleHistory.forEach(item => {
             let safeTitle = escapeHtml(item);
-            let chip = $(`<a href="/?q=${encodeURIComponent(item)}" class="tag hist-chip" title="${safeTitle}" style="background: transparent; cursor: pointer; border-color: var(--gold-dim); color: var(--gold); max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; vertical-align: middle;">${safeTitle}</a>`);
+            let chip = $(`
+                <div class="hist-chip-group">
+                    <a href="/?q=${encodeURIComponent(item)}" class="hist-chip-link" title="${safeTitle}">${safeTitle}</a>
+                    <button type="button" class="hist-chip-del" data-query="${escapeHtml(item)}" title="Hapus dari riwayat" aria-label="Hapus ${safeTitle}">&times;</button>
+                </div>
+            `);
             historyContainer.append(chip);
         });
+
+        // Tombol bersihkan semua riwayat
+        let currentLang = localStorage.getItem('lf-lang') || 'id';
+        let clearText = currentLang === 'en' ? 'Clear' : 'Hapus';
+        let clearBtn = $(`
+            <button type="button" class="hist-clear-all" title="Bersihkan semua riwayat pencarian" aria-label="Bersihkan semua riwayat">
+                <i class="fas fa-trash-alt" style="font-size: 0.65rem;"></i>
+                <span class="hist-clear-text">${clearText}</span>
+            </button>
+        `);
+        historyContainer.append(clearBtn);
     }
     renderHistory();
+
+    // Hapus single history item
+    $(document).on('click', '.hist-chip-del', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        let targetQuery = $(this).attr('data-query');
+        let history = JSON.parse(localStorage.getItem('lf-history')) || [];
+        history = history.filter(item => item.toLowerCase() !== targetQuery.toLowerCase());
+        localStorage.setItem('lf-history', JSON.stringify(history));
+        renderHistory();
+    });
+
+    // Hapus seluruh history
+    $(document).on('click', '.hist-clear-all', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        localStorage.removeItem('lf-history');
+        renderHistory();
+    });
 
     // 4. SMOOTH LOADING STATE & SKELETON TRANSITION
     $('form').on('submit', function() {
