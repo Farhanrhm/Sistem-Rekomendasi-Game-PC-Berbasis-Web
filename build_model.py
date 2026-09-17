@@ -245,7 +245,7 @@ def save_model_artifacts(
 
 
 def build_pipeline(
-    data_path: str = 'dataset/processed/steam_new_and_fav_final_1.csv',
+    data_path: str = 'dataset/processed/steam_new_and_fav_final_4.csv',
     output_dir: str = 'models'
 ) -> None:
     """Execute end-to-end training and artifact generation pipeline.

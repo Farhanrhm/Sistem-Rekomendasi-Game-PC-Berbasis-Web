@@ -38,8 +38,8 @@ smart_scraper.py
 update_reviews_db.py
 merge_dataset.py
 text_preprocessing.py
-build_model.py
 run_eval.py
+build_model.py
 
 # Antislop / AI Agent skills & pointers
 .agents/
