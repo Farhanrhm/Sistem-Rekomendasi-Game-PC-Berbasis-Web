@@ -41,5 +41,10 @@ text_preprocessing.py
 build_model.py
 run_eval.py
 
+# Antislop / AI Agent skills & pointers
+.agents/
+AGENTS.md
+
+
 
 

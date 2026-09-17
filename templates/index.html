@@ -243,7 +243,6 @@
                             <span class="badge-pill"><i class="fas fa-database"></i> <span data-i18n="indexed">Indexed</span></span>
                         </div>
 
-                        <!-- KOMPOSISI ELEMEN CORPUS & METADATA -->
                         <div style="background: var(--bg-elevated); padding: 1.2rem; border-radius: var(--r-md); border: 1px solid var(--border-md); margin-bottom: 1.5rem;">
                             <div id="toggle-bobot" style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
                                 <p style="font-size: 0.75rem; font-weight: 500; margin: 0; color: var(--text-1); text-transform: uppercase; letter-spacing: 1px;" data-i18n="game-profile">
@@ -442,7 +441,6 @@
         <p style="font-family: var(--font-mono); font-size: 0.85rem; letter-spacing: 2px; text-transform: uppercase;" data-i18n="loading-text">Loading...</p>
     </div>
 
-    <!-- MODAL EXPLAINABLE AI -->
     <div id="ai-modal" class="modal-overlay" aria-hidden="true">
         <div class="modal-content">
             <div class="modal-header">
@@ -463,11 +461,9 @@
         </div>
     </div>
 
-    <!-- MODAL GAME DETAIL & XAI -->
     <div id="game-detail-modal" class="modal-overlay" aria-hidden="true">
         <div class="modal-content" style="max-width: 540px; max-height: 88vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; border-radius: var(--r-md); border: 1px solid var(--border-md);">
             
-            <!-- HEADER IMAGE WITH DUAL GRADIENT FADE TRANSITION -->
             <div class="modal-header-img" style="position: relative; width: 100%; height: 160px; flex-shrink: 0; overflow: hidden; background: #000;">
                 <div class="drag-handle"></div>
                 <img id="gmodal-img" src="" alt="" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.9;">
@@ -476,12 +472,10 @@
                 <span id="gmodal-match" class="match-badge" style="top: 12px; left: 12px; font-size: 0.82rem; padding: 4px 10px;"></span>
             </div>
 
-            <!-- SCROLLABLE BODY CONTENT WRAPPER WITH STICKY FADE INDICATOR -->
             <div class="gmodal-body-wrap">
                 <div id="gmodal-scroll-container" class="gmodal-scroll-area" style="padding: 1.25rem 1.25rem 0.5rem 1.25rem; overflow-y: auto; flex: 1;">
                     <h3 id="gmodal-title" style="font-family: var(--font-display); font-size: 1.25rem; color: var(--text-1); margin-bottom: 0.75rem; font-weight: 700;"></h3>
                     
-                    <!-- TINGKAT KEMIRIPAN & COSINE SCORE (User-Friendly Score Header) -->
                     <div style="background: var(--bg-surface); border: 1px solid var(--border-md); padding: 10px 12px; border-radius: var(--r-sm); margin-bottom: 0.75rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div style="display: flex; align-items: center; gap: 8px;">
@@ -501,13 +495,10 @@
                         </div>
                     </div>
 
-
-                    <!-- PENJELASAN REKOMENDASI (XAI) -->
                     <div style="background: var(--bg-elevated); padding: 0.75rem 0.9rem; border-radius: var(--r-sm); border-left: 3px solid var(--gold); margin-bottom: 0.75rem;">
                         <p class="gmodal-section-label" style="color: var(--gold) !important; margin-bottom: 4px;" data-i18n="xai-title">Penjelasan Rekomendasi (XAI)</p>
                         <p id="gmodal-xai" style="font-size: 0.82rem; color: var(--text-1); line-height: 1.45; margin: 0;"></p>
 
-                        <!-- NOTICE TRANSPARANSI UNTUK DATA DESKRIPSI KOSONG / SPARSE CORPUS -->
                         <div id="gmodal-sparse-notice" style="display: none; margin-top: 10px; padding: 8px 12px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: var(--r-sm); font-size: 0.76rem; color: var(--gold-bright); line-height: 1.45;">
                             <div style="display: flex; gap: 8px; align-items: flex-start;">
                                 <i class="fas fa-exclamation-triangle" style="margin-top: 2px; flex-shrink: 0; font-size: 0.85rem;"></i>
@@ -516,25 +507,21 @@
                         </div>
                     </div>
 
-                    <!-- FITUR KONTEN YANG PALING BERKONTRIBUSI -->
                     <div style="margin-bottom: 0.75rem; background: var(--bg-surface); padding: 8px 12px; border-radius: var(--r-sm); border: 1px solid var(--border-md);">
                         <strong class="gmodal-section-label" style="display: block; margin-bottom: 4px;" data-i18n="top_contrib_title">Kecocokan Utama</strong>
                         <div id="gmodal-top-features" style="font-size: 0.8rem; color: var(--text-1); line-height: 1.45;"></div>
                     </div>
 
-                    <!-- FITUR LAIN YANG BERIRISAN -->
                     <div style="margin-bottom: 0.75rem; background: var(--bg-surface); padding: 8px 12px; border-radius: var(--r-sm); border: 1px solid var(--border-md);">
                         <strong class="gmodal-section-label" style="display: block; margin-bottom: 4px;" data-i18n="other_shared_title">Kesamaan Lainnya</strong>
                         <div id="gmodal-other-features" style="font-size: 0.8rem; color: var(--text-2); line-height: 1.45;"></div>
                     </div>
 
-                    <!-- METODE PERHITUNGAN -->
                     <div style="margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; background: var(--bg-surface); padding: 6px 12px; border-radius: var(--r-sm); border: 1px solid var(--border-md);">
                         <strong class="gmodal-section-label" data-i18n="calc_method_title">Sistem Cerdas</strong>
                         <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--gold);" data-i18n="calc_method_desc">TF-IDF + Cosine Similarity</span>
                     </div>
 
-                    <!-- Description -->
                     <div style="margin-bottom: 0.85rem;">
                         <strong class="gmodal-section-label" style="display: block; margin-bottom: 4px;" data-i18n="synopsis-label">Sinopsis / Deskripsi Game:</strong>
                         <div class="synopsis-lang-notice gmodal-synopsis-notice" style="display: none; margin-bottom: 6px; padding: 4px 8px; background: rgba(96, 165, 250, 0.08); border: 1px solid rgba(96, 165, 250, 0.25); border-radius: 4px; color: #60a5fa; font-size: 0.7rem; line-height: 1.35; font-family: var(--font-body);">
@@ -545,11 +532,9 @@
                     </div>
                 </div>
 
-                <!-- GRADIENT FADE INDICATOR (AUTOMATICALLY HIDDEN WHEN SCROLLED TO BOTTOM) -->
                 <div class="gmodal-scroll-fade"></div>
             </div>
 
-            <!-- STICKY FOOTER ACTION BUTTONS -->
             <div style="padding: 0.85rem 1.25rem; background: var(--bg-card); border-top: 1px solid var(--border-md); flex-shrink: 0; z-index: 10; display: flex; gap: 10px; align-items: center;">
                 <a id="gmodal-steam" href="#" target="_blank" class="btn-steam" style="flex: 1; text-align: center; justify-content: center; padding: 0.6rem; display: flex; align-items: center; gap: 8px;">
                     <i class="fab fa-steam"></i> <span data-i18n="open-steam">Buka di Steam</span>
@@ -559,9 +544,8 @@
                 </button>
             </div>
 
-
         </div>
-    </div>   <!-- FLOATING SCROLL TO TOP BUTTON -->
+    </div>
     <button id="scroll-top-btn" title="Scroll to Top" aria-label="Scroll to top">
         <i class="fas fa-arrow-up"></i>
     </button>

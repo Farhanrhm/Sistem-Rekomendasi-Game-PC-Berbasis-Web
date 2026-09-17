@@ -28,12 +28,7 @@ from sklearn.metrics.pairwise import linear_kernel
 
 app = Flask(__name__)
 
-# ==============================================================================
-# 1. PENGAMANAN RATE LIMITING, CORS, & SECURITY HEADERS
-# Untuk production (terutama serverless seperti Vercel), set RATELIMIT_STORAGE_URI
-# ke Redis (contoh: Upstash Redis URI) lewat Environment Variable.
-# Default fallback ke memory:// untuk pengembangan lokal.
-# ==============================================================================
+# Fallback to in-memory storage if Redis URI is not configured in the environment.
 RATELIMIT_STORAGE_URI: str = os.environ.get("RATELIMIT_STORAGE_URI", "memory://")
 
 limiter: Limiter = Limiter(
@@ -56,13 +51,9 @@ def set_secure_headers(response: Response) -> Response:
     Returns:
         Response: Mutated HTTP response equipped with standard security headers.
     """
-    # Prevent MIME-sniffing exploits
     response.headers['X-Content-Type-Options'] = 'nosniff'
-    # Prevent framing to mitigate clickjacking attacks
     response.headers['X-Frame-Options'] = 'DENY'
-    # Restrict referrer leakage to cross-origin requests
     response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
-    # Set public caching for static assets (1 week)
     if request.path.startswith('/static/'):
         response.headers['Cache-Control'] = 'public, max-age=604800'
     return response
@@ -83,20 +74,13 @@ def sanitize_input(user_input: Optional[str]) -> str:
         return ""
     clean_str = html.unescape(user_input)
     prev = None
-    # Iteratively remove tags to neutralize nested injection vectors (e.g. <<SCRIPT>script>)
     while prev != clean_str:
         prev = clean_str
         clean_str = re.sub(r'<[^>]*>', '', clean_str)
     return clean_str.strip()[:100]
 
 
-# ==============================================================================
-# 2. BATASAN PEMODELAN & MEMORI & 3. LAZY LOADING
-# PERINGATAN KEAMANAN (SECURITY NOTE):
-# `pickle.load()` dapat mengeksekusi kode arbitrary jika file .pkl berasal dari sumber
-# yang tidak terpercaya. Seluruh file di folder `models/` HARUS selalu diproduksi dari
-# proses build internal milik developer sendiri (bukan dari unggahan publik/pihak ketiga).
-# ==============================================================================
+# Security: ensure model pickle files are only loaded from trusted internal builds.
 BASE_DIR: str = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -139,9 +123,6 @@ def load_model_artifacts(
 df, tfidf_matrix, tfidf_vectorizer, indices = load_model_artifacts()
 
 
-# ==============================================================================
-# HELPER: DIVERSIFICATION FILTERING (LEVENSHTEIN DISTANCE)
-# ==============================================================================
 def calc_edit_distance_ratio(title1: str, title2: str) -> float:
     """Calculate normalized Levenshtein edit distance ratio between two titles.
 
@@ -194,7 +175,6 @@ def fuzzy_find_closest_titles(
 
     q_words = [w for w in re.findall(r'\w+', query_lower) if len(w) >= 2]
 
-    # Dynamically adjust distance tolerance based on query character length
     if q_len <= 3:
         max_distance = 1
     elif q_len <= 6:
@@ -207,17 +187,14 @@ def fuzzy_find_closest_titles(
         name_lower = name.lower()
         n_len = len(name_lower)
 
-        # Early exit heuristic: Skip comparison if character length difference is massive
         if abs(n_len - q_len) > max(max_distance + 3, int(q_len * 0.5)):
             continue
 
-        # 1. Direct Levenshtein Distance
         dist = Levenshtein.distance(query_lower, name_lower)
         if dist <= max_distance:
             candidates.append((name, dist))
             continue
 
-        # 2. Token-level matching for multi-word queries (e.g., 'elden rign' -> 'elden ring')
         if q_words and len(q_words) > 1:
             n_words = re.findall(r'\w+', name_lower)
             if len(n_words) == len(q_words):
@@ -227,10 +204,8 @@ def fuzzy_find_closest_titles(
                 if total_word_dist <= max_allowed_word_dist:
                     candidates.append((name, total_word_dist))
 
-    # Rank candidates by smallest distance and minimum string length difference
     candidates.sort(key=lambda x: (x[1], abs(len(x[0]) - q_len)))
 
-    # Deduplicate titles while preserving score ordering
     seen: set = set()
     result: List[str] = []
     for name, _ in candidates:
@@ -261,7 +236,6 @@ def generate_dynamic_xai_text(
     for t, score in tag_contributions:
         candidates.append({'type': 'Tag', 'name': t, 'score': score})
 
-    # Sort descending by TF-IDF contribution score
     candidates.sort(key=lambda x: x['score'], reverse=True)
 
     if not candidates:
@@ -310,11 +284,9 @@ def extract_tfidf_xai_explanation(
             "dynamic_text": "Game ini direkomendasikan berdasarkan tingkat kemiripan fitur utama."
         }
 
-    # Extract sparse row vectors
     query_vec = tfidf_matrix[target_pos]
     cand_vec = tfidf_matrix[cand_pos]
 
-    # Element-wise multiplication to isolate shared term weights
     prod = query_vec.multiply(cand_vec)
     vocab = tfidf_vectorizer.vocabulary_
 
@@ -339,7 +311,6 @@ def extract_tfidf_xai_explanation(
 
     all_contributions.sort(key=lambda x: x['score'], reverse=True)
 
-    # Division-by-zero guard for relative contribution percentage calculation
     total_score = sum(item['score'] for item in all_contributions)
     if total_score > 0:
         for item in all_contributions:
@@ -368,7 +339,6 @@ def extract_tfidf_xai_explanation(
         })
 
     cand_name = str(cand_row.get('name', ''))
-    # Deterministic narrative variant selection using CRC32 hash modulo
     variant_idx = zlib.crc32(cand_name.encode('utf-8')) % 4
 
     top_genres_str = ", ".join([item['name'] for item in top_items if item['category'] == 'genres'])
@@ -477,9 +447,6 @@ def check_is_sparse_corpus(row: pd.Series) -> bool:
     return bool(both_empty or word_cnt < 15)
 
 
-# ==============================================================================
-# ALGORITMA REKOMENDASI UTAMA DENGAN IN-MEMORY LRU CACHE
-# ==============================================================================
 @lru_cache(maxsize=256)
 def _cached_get_recommendations(
     query_clean: str,
@@ -498,23 +465,19 @@ def _cached_get_recommendations(
     """
     t0 = time.time()
 
-    # Match exact title first
     matches = df[df['name'].str.lower() == query_clean]
     if matches.empty:
-        # Fallback to substring matching
         matches = df[df['name'].str.lower().str.contains(query_clean, regex=False, na=False)]
 
     corrected_from = None
     fuzzy_suggestions: List[str] = []
 
     if matches.empty:
-        # Typo-tolerant fallback: Search via Levenshtein fuzzy distance
         closest_candidates = fuzzy_find_closest_titles(query_clean, df, limit=5)
         if closest_candidates:
             best_match = closest_candidates[0]
             dist = Levenshtein.distance(query_clean, best_match.lower())
 
-            # Auto-correct if distance is tight (obvious typographical error)
             if dist <= (2 if len(query_clean) >= 5 else 1):
                 corrected_from = query_clean
                 matches = df[df['name'].str.lower() == best_match.lower()]
@@ -529,38 +492,31 @@ def _cached_get_recommendations(
             'fuzzy_suggestions': fuzzy_suggestions
         }, f"Game '{query_clean}' tidak ditemukan dalam sistem kami."
 
-    # CRITICAL: Convert DataFrame index label to integer positional row index
-    # Required for iloc slicing and accessing rows in scipy sparse CSR matrix
+    # Positional integer index required for CSR matrix row slicing
     target_pos = df.index.get_loc(matches.index[0])
     target_row = df.iloc[target_pos]
     game_target_name = target_row['name']
     t_match = time.time()
 
-    # 1. REAL-TIME COSINE SIMILARITY CALCULATION
     query_vec = tfidf_matrix[target_pos]
     sim_scores = linear_kernel(query_vec, tfidf_matrix).flatten()
     t_cosine = time.time()
 
-    # 2. TIE-BREAKER & SOFT PENALTY (PRECOMPUTED NUMPY ARRAYS FOR HIGH-SPEED VECTORIZED ACCESS)
     is_sparse_arr = df['is_sparse_corpus'].values if 'is_sparse_corpus' in df.columns else np.zeros(len(df), dtype=bool)
     pos_rev_arr = df['positive_reviews'].values if 'positive_reviews' in df.columns else np.zeros(len(df), dtype=float)
 
     t_sparse_start = time.time()
-    # Apply soft penalty (0.90x) to sparse items to prevent spurious high similarities
     penalty_factors = np.where(is_sparse_arr, 0.90, 1.00)
     final_ranking_scores = sim_scores * penalty_factors
     t_sparse_sum = time.time() - t_sparse_start
 
-    # Exclude the target game itself by nullifying its score
     final_ranking_scores[target_pos] = -1.0
 
-    # Fast multi-key sorting using numpy lexsort: secondary (pos_rev_arr), primary (final_ranking_scores)
     t_sort_start = time.time()
     sorted_indices = np.lexsort((pos_rev_arr, final_ranking_scores))[::-1]
     t_sort = time.time()
 
     candidates: List[Dict[str, Any]] = []
-    # Evaluate top 100 candidates through diversification pipeline to optimize throughput
     for idx in sorted_indices[:100]:
         if final_ranking_scores[idx] < 0:
             break
@@ -572,7 +528,6 @@ def _cached_get_recommendations(
             'positive_reviews': float(pos_rev_arr[idx])
         })
 
-    # 3. DIVERSIFICATION FILTERING & XAI EXTRACTION
     accepted_recommendations: List[Dict[str, Any]] = []
     accepted_titles: List[str] = [game_target_name]
 
@@ -585,7 +540,6 @@ def _cached_get_recommendations(
 
         t_lev_start = time.time()
         is_duplicate_sequel = False
-        # Filter out sequels/duplicate editions using normalized edit distance ratio
         for acc_title in accepted_titles:
             edit_ratio = calc_edit_distance_ratio(cand_name, acc_title)
             if edit_ratio < 0.3:
@@ -608,7 +562,6 @@ def _cached_get_recommendations(
             cand_pos = float(cand_row.get('positive_reviews', 0))
             cand_tot = float(cand_row.get('total_reviews', 0))
             cand_rating_score = float(cand_row.get('rating_score', 0))
-            # Calculate review ratio fallback if score is zero but total reviews exist
             if cand_rating_score == 0 and cand_tot > 0:
                 cand_rating_score = round((cand_pos / cand_tot) * 100, 1)
 
@@ -715,10 +668,6 @@ def get_recommendations_data(
     query_clean = sanitize_input(title).lower().strip()
     return _cached_get_recommendations(query_clean, top_n)
 
-
-# ==============================================================================
-# ROUTING API & WEB
-# ==============================================================================
 
 @app.route('/', methods=['GET', 'POST'])
 @limiter.limit("30 per minute")
@@ -856,9 +805,6 @@ def api_recommend() -> Tuple[Response, int]:
     }), 200
 
 
-# ==============================================================================
-# ERROR HANDLER UNTUK KEAMANAN STACK TRACE
-# ==============================================================================
 @app.errorhandler(429)
 def ratelimit_handler(e: Any) -> Tuple[Union[Response, str], int]:
     """Handle rate limit breach without leaking server internals.
