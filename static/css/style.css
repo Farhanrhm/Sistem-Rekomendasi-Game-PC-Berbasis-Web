@@ -279,13 +279,35 @@ body, .navbar, .hero, .spotlight, .rec-card, .search-wrap, .search-wrap input, .
     border-radius: 4px;
     overflow: hidden;
     flex-shrink: 0;
-    background: #000;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.p-card-thumb::before {
+    content: "\f11b";
+    font-family: "Font Awesome 6 Free", "Font Awesome 5 Free", sans-serif;
+    font-weight: 900;
+    font-size: 0.85rem;
+    color: var(--text-3);
+    opacity: 0.4;
+    position: absolute;
+    z-index: 1;
 }
 .p-card-thumb img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.35s ease;
+    position: relative;
+    z-index: 2;
+    transition: transform 0.35s ease, opacity 0.25s ease;
+    background: transparent;
+}
+.p-card-thumb img.img-error {
+    opacity: 0 !important;
+    pointer-events: none;
 }
 .preview-mini-card:hover .p-card-thumb img {
     transform: scale(1.1);
@@ -353,25 +375,80 @@ body, .navbar, .hero, .spotlight, .rec-card, .search-wrap, .search-wrap input, .
     background: rgba(243, 237, 227, 0.85) !important;
 }
 
-/* SEARCH HISTORY TAG TRUNCATION & FLEX WRAP */
+/* SEARCH HISTORY TAG TRUNCATION, WRAPPING & INTERACTIVITY */
 #search-history {
     display: flex !important;
     flex-wrap: wrap !important;
     align-items: center !important;
     gap: 8px !important;
 }
-.hist-chip {
-    max-width: 220px !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    display: inline-block !important;
-    vertical-align: middle !important;
-    text-transform: none !important;
-    font-family: var(--font-body) !important;
-    font-size: 0.78rem !important;
-    letter-spacing: 0px !important;
-    font-weight: 500 !important;
+.hist-chip-group {
+    display: inline-flex;
+    align-items: center;
+    background: var(--bg-card);
+    border: 1px solid var(--border-md);
+    border-radius: var(--r-sm);
+    padding: 0 4px 0 10px;
+    height: 28px;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+.hist-chip-group:hover {
+    border-color: var(--gold);
+    background: var(--bg-surface);
+    box-shadow: 0 2px 6px var(--gold-subtle);
+}
+.hist-chip-link {
+    color: var(--gold) !important;
+    text-decoration: none !important;
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    font-weight: 500;
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    vertical-align: middle;
+}
+.hist-chip-del {
+    background: transparent;
+    border: none;
+    color: var(--text-3);
+    cursor: pointer;
+    padding: 2px 6px;
+    font-size: 0.72rem;
+    line-height: 1;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 4px;
+    transition: color 0.15s ease, background-color 0.15s ease;
+}
+.hist-chip-del:hover {
+    color: var(--red);
+    background: rgba(217, 79, 79, 0.12);
+}
+.hist-clear-all {
+    background: transparent;
+    border: 1px dashed var(--border-md);
+    color: var(--text-3);
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    padding: 3px 8px;
+    border-radius: var(--r-sm);
+    cursor: pointer;
+    margin-left: 2px;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.hist-clear-all:hover {
+    color: var(--red);
+    border-color: var(--red);
+    background: rgba(217, 79, 79, 0.08);
 }
 
 /* PREMIUM NAVBAR TOGGLE BUTTONS */
