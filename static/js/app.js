@@ -95,7 +95,7 @@ const i18nDict = {
         "sort-rating": "Best Rating",
         "sort-price": "Lowest Price",
         "no-search-title": "Belum ada pencarian",
-        "no-search-sub": "Mulai dengan satu game yang kamu suka — sisanya biar kami yang urus.",
+        "no-search-sub": "Ketik nama game favoritmu di atas untuk menghitung kecocokan mekanik, tag, dan sinopsis dari katalog Steam.",
         "not-found-title": "Game Tidak Ditemukan",
         "not-found-sub": "Coba periksa kembali ejaan Anda atau masukkan judul game populer lain.",
         "rank-1": "Game Referensi Anda",
@@ -166,7 +166,7 @@ const i18nDict = {
         "sort-rating": "Best Rating",
         "sort-price": "Lowest Price",
         "no-search-title": "No search performed yet",
-        "no-search-sub": "Start with one game you love — we will handle the rest.",
+        "no-search-sub": "Type your favorite game title above to evaluate mechanics, tags, and synopsis similarity across the Steam catalog.",
         "not-found-title": "Game Not Found",
         "not-found-sub": "Please check your spelling or try searching for another popular game.",
         "rank-1": "Your Reference Game",
@@ -707,31 +707,68 @@ $(document).ready(function() {
         });
     });
 
-    // 7. MODAL XAI LOGIC
+    // 7. MODAL XAI LOGIC & ACCESSIBILITY FOCUS TRAP
     const modal = document.getElementById('ai-modal');
     const infoBtn = document.getElementById('info-btn');
     const closeBtn = document.getElementById('close-modal');
 
+    function openAiModal() {
+        if (!modal) return;
+        modal.classList.add('show');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        if (closeBtn) closeBtn.focus();
+    }
+
+    function closeAiModal() {
+        if (!modal) return;
+        modal.classList.remove('show');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        if (infoBtn) infoBtn.focus();
+    }
+
     if (infoBtn) {
-        infoBtn.addEventListener('click', function() {
-            modal.classList.add('show');
-            modal.setAttribute('aria-hidden', 'false');
-        });
+        infoBtn.addEventListener('click', openAiModal);
     }
 
     if (closeBtn) {
-        closeBtn.addEventListener('click', function() {
-            modal.classList.remove('show');
-            modal.setAttribute('aria-hidden', 'true');
-        });
+        closeBtn.addEventListener('click', closeAiModal);
     }
 
     window.addEventListener('click', function(e) {
         if (e.target === modal) {
-            modal.classList.remove('show');
-            modal.setAttribute('aria-hidden', 'true');
+            closeAiModal();
         }
     });
+
+    // Universal focus trap helper for modals (WCAG AA & Keyboard navigation)
+    function setupModalFocusTrap(modalEl, closeFunction) {
+        if (!modalEl) return;
+        modalEl.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                const focusable = modalEl.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
+                if (!focusable.length) return;
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+
+                if (e.shiftKey) {
+                    if (document.activeElement === first) {
+                        last.focus();
+                        e.preventDefault();
+                    }
+                } else {
+                    if (document.activeElement === last) {
+                        first.focus();
+                        e.preventDefault();
+                    }
+                }
+            }
+        });
+    }
+
+    setupModalFocusTrap(modal, closeAiModal);
+    setupModalFocusTrap(document.getElementById('game-detail-modal'), closeGameModal);
 
     // 8. TOGGLE ACCORDION BOBOT AI
     $(document).off("click", "#toggle-bobot").on("click", "#toggle-bobot", function() {
@@ -1096,8 +1133,12 @@ $(document).ready(function() {
     });
 
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && gmodal && gmodal.classList.contains('show')) {
-            closeGameModal();
+        if (e.key === 'Escape') {
+            if (gmodal && gmodal.classList.contains('show')) {
+                closeGameModal();
+            } else if (modal && modal.classList.contains('show')) {
+                closeAiModal();
+            }
         }
     });
 
