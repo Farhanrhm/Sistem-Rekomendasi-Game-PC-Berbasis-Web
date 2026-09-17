@@ -116,7 +116,7 @@
     <section class="hero">
         <div class="hero-left">
             <h1 data-i18n="hero-title">Temukan game dengan<br>mekanik &amp; narasi <em>serupa</em></h1>
-            <p class="hero-sub" data-i18n="hero-sub">Mesin pencocokan berbasis TF-IDF &amp; Cosine Similarity dari metadata 24.000+ katalog Steam.</p>
+            <p class="hero-sub" data-i18n="hero-sub">Mesin pencocokan berbasis TF-IDF &amp; Cosine Similarity dari metadata 26.000+ katalog Steam.</p>
             
             <form action="/" method="POST" autocomplete="off">
                 <div class="search-wrap">
@@ -162,7 +162,6 @@
                 {% endif %}
             </div>
             {% endif %}
-
         </div>
 
         <div class="hero-deco">
@@ -176,7 +175,7 @@
                 <div class="hero-preview-stack">
                     <a href="/?q=Elden+Ring" class="preview-mini-card p-card-1" title="Cari rekomendasi Elden Ring">
                         <div class="p-card-thumb">
-                            <img src="https://cdn.akamai.steamstatic.com/steam/apps/1245620/capsule_231x87.jpg" alt="Elden Ring" loading="lazy" width="90" height="34" onerror="this.style.display='none'">
+                            <img src="https://cdn.akamai.steamstatic.com/steam/apps/1245620/capsule_231x87.jpg" alt="Elden Ring" loading="lazy" width="90" height="34" onerror="this.classList.add('img-error')">
                         </div>
                         <div class="p-card-details">
                             <span class="p-card-title">Elden Ring</span>
@@ -189,7 +188,7 @@
 
                     <a href="/?q=The+Witcher+3%3A+Wild+Hunt" class="preview-mini-card p-card-2" title="Cari rekomendasi The Witcher 3: Wild Hunt">
                         <div class="p-card-thumb">
-                            <img src="https://cdn.akamai.steamstatic.com/steam/apps/292030/capsule_231x87.jpg" alt="The Witcher 3: Wild Hunt" loading="lazy" width="90" height="34" onerror="this.style.display='none'">
+                            <img src="https://cdn.akamai.steamstatic.com/steam/apps/292030/capsule_231x87.jpg" alt="The Witcher 3: Wild Hunt" loading="lazy" width="90" height="34" onerror="this.classList.add('img-error')">
                         </div>
                         <div class="p-card-details">
                             <span class="p-card-title">The Witcher 3</span>
@@ -202,7 +201,7 @@
 
                     <a href="/?q=Hades" class="preview-mini-card p-card-3" title="Cari rekomendasi Hades">
                         <div class="p-card-thumb">
-                            <img src="https://cdn.akamai.steamstatic.com/steam/apps/1145360/capsule_231x87.jpg" alt="Hades" loading="lazy" width="90" height="34" onerror="this.style.display='none'">
+                            <img src="https://cdn.akamai.steamstatic.com/steam/apps/1145360/capsule_231x87.jpg" alt="Hades" loading="lazy" width="90" height="34" onerror="this.classList.add('img-error')">
                         </div>
                         <div class="p-card-details">
                             <span class="p-card-title">Hades</span>
@@ -594,6 +593,6 @@
     </button>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="{{ url_for('static', filename='js/app.js') }}?v=2.2"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}?v=2.6"></script>
 </body>
 </html>
