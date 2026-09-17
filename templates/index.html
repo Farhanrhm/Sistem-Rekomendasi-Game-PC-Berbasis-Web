@@ -22,7 +22,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2.2">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2.3">
     
     <script>
         (function() {
@@ -391,20 +391,8 @@
                                 {% set badge_class = "badge-match-low" %}
                                 {% set badge_color = "var(--text-3)" %}
                             {% endif %}
-                            <span class="match-badge {{ badge_class }}" style="border-color: {{ badge_color }}; color: {{ badge_color }};"><span class="match-val">{{ "%.1f"|format(sim) }}</span>% <span class="similarity-text" data-i18n="similarity_label">Tingkat Kemiripan</span></span>
+                            <span class="match-badge {{ badge_class }}" style="border-color: {{ badge_color }}; color: {{ badge_color }};"><span class="match-val">{{ "%.1f"|format(sim) }}</span>%</span>
                             
-                            {% if 'is_tight_cluster' in row and row['is_tight_cluster'] %}
-                            <div style="position: absolute; bottom: 8px; left: 8px; z-index: 2;">
-                                <span class="badge-tight-cluster" 
-                                      title="Beberapa game memiliki tingkat kemiripan yang sangat berdekatan."
-                                      data-title-id="Beberapa game memiliki tingkat kemiripan yang sangat berdekatan."
-                                      data-title-en="Several games share a very close similarity level.">
-                                    <i class="fas fa-layer-group" style="font-size: 0.65rem;"></i>
-                                    <span data-i18n="tight_cluster_badge">Skor Serupa</span>
-                                </span>
-                            </div>
-                            {% endif %}
-
                         </div>
                         <div class="rec-card-body">
                             <p class="rec-card-name" title="{{ row['name'] }}">{{ row['name'] }}</p>
@@ -417,6 +405,15 @@
                                 </span>
                             </div>
                             <div class="rec-mini-tags">
+                                {% if 'is_tight_cluster' in row and row['is_tight_cluster'] %}
+                                    <span class="badge-tight-cluster" 
+                                          title="Beberapa game memiliki tingkat kemiripan yang sangat berdekatan."
+                                          data-title-id="Beberapa game memiliki tingkat kemiripan yang sangat berdekatan."
+                                          data-title-en="Several games share a very close similarity level.">
+                                        <i class="fas fa-layer-group" style="font-size: 0.65rem;"></i>
+                                        <span data-i18n="tight_cluster_badge">Skor Serupa</span>
+                                    </span>
+                                {% endif %}
                                 {% if row['xai_explanation'] is defined and row['xai_explanation'] and row['xai_explanation']['top_matching_genres'] %}
                                     {% for genre in row['xai_explanation']['top_matching_genres'][:2] %}
                                         <span class="rec-mini-tag">{{ genre }}</span>
@@ -488,10 +485,10 @@
             
             <div class="modal-header-img" style="position: relative; width: 100%; height: 160px; flex-shrink: 0; overflow: hidden; background: #000;">
                 <div class="drag-handle"></div>
-                <img id="gmodal-img" src="" alt="" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.9;">
-                <div style="position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.08) 40%, var(--bg-card) 100%);"></div>
-                <button id="close-gmodal" class="modal-close" aria-label="Tutup" style="position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.65); color: #fff; border-radius: 50%; width: 44px; height: 44px; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); z-index: 5; font-size: 1rem;"><i class="fas fa-times"></i></button>
-                <span id="gmodal-match" class="match-badge" style="top: 12px; left: 12px; font-size: 0.82rem; padding: 4px 10px;"></span>
+                <img id="gmodal-img" src="" alt="" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.95;">
+                <div style="position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.1) 40%, var(--bg-card) 100%); pointer-events: none;"></div>
+                <button id="close-gmodal" class="modal-close" aria-label="Tutup" style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.65); color: #fff; border-radius: 50%; width: 44px; height: 44px; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 5; font-size: 1rem; border: 1px solid rgba(255,255,255,0.15);"><i class="fas fa-times"></i></button>
+                <span id="gmodal-match" class="match-badge" style="top: 14px; left: 14px; font-size: 0.82rem; padding: 4px 10px;"></span>
             </div>
 
             <div class="gmodal-body-wrap">
