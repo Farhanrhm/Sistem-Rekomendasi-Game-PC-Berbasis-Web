@@ -628,6 +628,152 @@ $(document).ready(function() {
         renderHistory();
     });
 
+    // =========================================================================
+    // 3.5 DYNAMIC HERO SPOTLIGHT ROTATION (REFRESH & SHUFFLE)
+    // =========================================================================
+    const SPOTLIGHT_POOL = [
+        {
+            appid: 1245620,
+            title: "Elden Ring",
+            tag: "Action RPG",
+            score: "92%",
+            img: "https://cdn.akamai.steamstatic.com/steam/apps/1245620/capsule_231x87.jpg"
+        },
+        {
+            appid: 1091500,
+            title: "Cyberpunk 2077",
+            tag: "Cyberpunk Open World",
+            score: "85%",
+            img: "https://cdn.akamai.steamstatic.com/steam/apps/1091500/capsule_231x87.jpg"
+        },
+        {
+            appid: 1145360,
+            title: "Hades",
+            tag: "Roguelike Action",
+            score: "98%",
+            img: "https://cdn.akamai.steamstatic.com/steam/apps/1145360/capsule_231x87.jpg"
+        },
+        {
+            appid: 292030,
+            title: "The Witcher 3: Wild Hunt",
+            tag: "Story-Rich RPG",
+            score: "97%",
+            img: "https://cdn.akamai.steamstatic.com/steam/apps/292030/capsule_231x87.jpg"
+        },
+        {
+            appid: 1086940,
+            title: "Baldur's Gate 3",
+            tag: "Party-Based RPG",
+            score: "96%",
+            img: "https://cdn.akamai.steamstatic.com/steam/apps/1086940/capsule_231x87.jpg"
+        },
+        {
+            appid: 1172470,
+            title: "Apex Legends",
+            tag: "Hero Shooter",
+            score: "80%",
+            img: "https://cdn.akamai.steamstatic.com/steam/apps/1172470/capsule_231x87.jpg"
+        },
+        {
+            appid: 367520,
+            title: "Hollow Knight",
+            tag: "Metroidvania",
+            score: "97%",
+            img: "https://cdn.akamai.steamstatic.com/steam/apps/367520/capsule_231x87.jpg"
+        },
+        {
+            appid: 413150,
+            title: "Stardew Valley",
+            tag: "Farming Simulation",
+            score: "98%",
+            img: "https://cdn.akamai.steamstatic.com/steam/apps/413150/capsule_231x87.jpg"
+        },
+        {
+            appid: 105600,
+            title: "Terraria",
+            tag: "2D Sandbox Survival",
+            score: "97%",
+            img: "https://cdn.akamai.steamstatic.com/steam/apps/105600/capsule_231x87.jpg"
+        },
+        {
+            appid: 1623730,
+            title: "Palworld",
+            tag: "Creature Collector",
+            score: "93%",
+            img: "https://cdn.akamai.steamstatic.com/steam/apps/1623730/capsule_231x87.jpg"
+        },
+        {
+            appid: 582010,
+            title: "Monster Hunter: World",
+            tag: "Co-Op Action RPG",
+            score: "88%",
+            img: "https://cdn.akamai.steamstatic.com/steam/apps/582010/capsule_231x87.jpg"
+        },
+        {
+            appid: 1174180,
+            title: "Red Dead Redemption 2",
+            tag: "Cinematic Open World",
+            score: "91%",
+            img: "https://cdn.akamai.steamstatic.com/steam/apps/1174180/capsule_231x87.jpg"
+        }
+    ];
+
+    function getRandomSpotlightGames(count = 3) {
+        let pool = [...SPOTLIGHT_POOL];
+        // Fisher-Yates shuffle
+        for (let i = pool.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [pool[i], pool[j]] = [pool[j], pool[i]];
+        }
+        return pool.slice(0, count);
+    }
+
+    function renderSpotlightCards(animate = false) {
+        const $stack = $("#hero-preview-stack");
+        if ($stack.length === 0) return;
+
+        const selectedGames = getRandomSpotlightGames(3);
+        const cardHtmls = selectedGames.map((g, idx) => {
+            let safeTitle = escapeHtml(g.title);
+            let safeTag = escapeHtml(g.tag);
+            let safeScore = escapeHtml(g.score);
+            let queryParam = encodeURIComponent(g.title);
+            return `
+                <a href="/?q=${queryParam}" class="preview-mini-card p-card-${idx + 1}" title="Cari rekomendasi ${safeTitle}">
+                    <div class="p-card-thumb">
+                        <img src="${g.img}" alt="${safeTitle}" loading="lazy" width="90" height="34" onerror="this.classList.add('img-error')">
+                    </div>
+                    <div class="p-card-details">
+                        <span class="p-card-title">${safeTitle}</span>
+                        <div class="p-card-meta">
+                            <span class="p-card-tag">${safeTag}</span>
+                            <span class="p-card-score" title="Steam Positive Reviews"><i class="fab fa-steam" style="font-size: 0.68rem;"></i> ${safeScore}</span>
+                        </div>
+                    </div>
+                </a>
+            `;
+        }).join('');
+
+        if (animate) {
+            $stack.addClass('is-shuffling');
+            setTimeout(() => {
+                $stack.html(cardHtmls);
+                $stack.removeClass('is-shuffling');
+            }, 180);
+        } else {
+            $stack.html(cardHtmls);
+        }
+    }
+
+    // Rotasi otomatis setiap kali halaman di-refresh
+    renderSpotlightCards(false);
+
+    // Tombol shuffle manual
+    $('#spotlight-shuffle-btn').on('click', function(e) {
+        e.preventDefault();
+        renderSpotlightCards(true);
+    });
+
     // 4. SMOOTH LOADING STATE & SKELETON TRANSITION
     $('form').on('submit', function() {
         let query = $("#game_input").val().trim();

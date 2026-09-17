@@ -166,13 +166,18 @@
 
         <div class="hero-deco">
             <div class="hero-showcase-container">
-                <div class="hero-showcase-badge">
-                    <span class="pulse-dot"></span>
-                    <span data-i18n="hero-showcase-badge">Live Catalog Spotlight</span>
+                <div class="hero-showcase-header d-flex align-items-center justify-content-between">
+                    <div class="hero-showcase-badge">
+                        <span class="pulse-dot"></span>
+                        <span data-i18n="hero-showcase-badge">Live Catalog Spotlight</span>
+                    </div>
+                    <button type="button" id="spotlight-shuffle-btn" class="spotlight-shuffle-btn" title="Acak Game Spotlight / Shuffle Spotlight" aria-label="Acak Spotlight Game">
+                        <i class="fas fa-random"></i>
+                    </button>
                 </div>
                 
-                <!-- Floating Mini Game Cards (Interactive Ticker) -->
-                <div class="hero-preview-stack">
+                <!-- Floating Mini Game Cards (Rotates on Refresh & Shuffle) -->
+                <div class="hero-preview-stack" id="hero-preview-stack">
                     <a href="/?q=Elden+Ring" class="preview-mini-card p-card-1" title="Cari rekomendasi Elden Ring">
                         <div class="p-card-thumb">
                             <img src="https://cdn.akamai.steamstatic.com/steam/apps/1245620/capsule_231x87.jpg" alt="Elden Ring" loading="lazy" width="90" height="34" onerror="this.classList.add('img-error')">
@@ -181,20 +186,20 @@
                             <span class="p-card-title">Elden Ring</span>
                             <div class="p-card-meta">
                                 <span class="p-card-tag">Action RPG</span>
-                                <span class="p-card-score"><i class="fas fa-star"></i> 92%</span>
+                                <span class="p-card-score" title="Steam Positive Reviews"><i class="fab fa-steam" style="font-size: 0.68rem;"></i> 92%</span>
                             </div>
                         </div>
                     </a>
 
-                    <a href="/?q=The+Witcher+3%3A+Wild+Hunt" class="preview-mini-card p-card-2" title="Cari rekomendasi The Witcher 3: Wild Hunt">
+                    <a href="/?q=Cyberpunk+2077" class="preview-mini-card p-card-2" title="Cari rekomendasi Cyberpunk 2077">
                         <div class="p-card-thumb">
-                            <img src="https://cdn.akamai.steamstatic.com/steam/apps/292030/capsule_231x87.jpg" alt="The Witcher 3: Wild Hunt" loading="lazy" width="90" height="34" onerror="this.classList.add('img-error')">
+                            <img src="https://cdn.akamai.steamstatic.com/steam/apps/1091500/capsule_231x87.jpg" alt="Cyberpunk 2077" loading="lazy" width="90" height="34" onerror="this.classList.add('img-error')">
                         </div>
                         <div class="p-card-details">
-                            <span class="p-card-title">The Witcher 3</span>
+                            <span class="p-card-title">Cyberpunk 2077</span>
                             <div class="p-card-meta">
-                                <span class="p-card-tag">Story-Rich Open World</span>
-                                <span class="p-card-score"><i class="fas fa-star"></i> 97%</span>
+                                <span class="p-card-tag">Cyberpunk Open World</span>
+                                <span class="p-card-score" title="Steam Positive Reviews"><i class="fab fa-steam" style="font-size: 0.68rem;"></i> 85%</span>
                             </div>
                         </div>
                     </a>
@@ -206,8 +211,8 @@
                         <div class="p-card-details">
                             <span class="p-card-title">Hades</span>
                             <div class="p-card-meta">
-                                <span class="p-card-tag">Roguelike</span>
-                                <span class="p-card-score"><i class="fas fa-star"></i> 98%</span>
+                                <span class="p-card-tag">Roguelike Action</span>
+                                <span class="p-card-score" title="Steam Positive Reviews"><i class="fab fa-steam" style="font-size: 0.68rem;"></i> 98%</span>
                             </div>
                         </div>
                     </a>
@@ -593,6 +598,6 @@
     </button>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="{{ url_for('static', filename='js/app.js') }}?v=2.6"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}?v=2.7"></script>
 </body>
 </html>
