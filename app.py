@@ -689,7 +689,7 @@ def home() -> str:
     else:
         search_query = sanitize_input(request.args.get('q', '') or request.args.get('game_title', ''))
 
-    popular_suggestions = ["Elden Ring", "Cyberpunk 2077", "The Witcher 3", "Palworld", "Baldur's Gate 3", "Grand Theft Auto V"]
+    popular_suggestions = ["Elden Ring", "The Witcher 3: Wild Hunt", "Hades", "Palworld", "Baldur's Gate 3", "Grand Theft Auto V"]
     suggestions = None
     corrected_from = None
 
