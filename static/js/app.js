@@ -63,8 +63,8 @@ function getMatchTier(simPct) {
 // BILINGUAL DICTIONARY
 const i18nDict = {
     id: {
-        "hero-title": "Mulai dengan satu game<br>yang kamu <em>suka</em>",
-        "hero-sub": "Sistem AI kami menganalisis ribuan game untuk menemukan rekomendasi paling akurat berdasarkan game favorit Anda.",
+        "hero-title": "Temukan game dengan<br>mekanik &amp; narasi <em>serupa</em>",
+        "hero-sub": "Mesin pencocokan berbasis TF-IDF &amp; Cosine Similarity dari metadata 24.000+ katalog Steam.",
         "search-placeholder": "Contoh: Elden Ring, Palworld...",
         "mini-search-placeholder": "Cari game...",
         "search-btn": "Temukan",
@@ -134,8 +134,8 @@ const i18nDict = {
         "footer-text": "LevelFind &copy; 2026 &mdash; Sistem Rekomendasi Game PC"
     },
     en: {
-        "hero-title": "Start with a game<br>you <em>love</em>",
-        "hero-sub": "Our AI analyzes thousands of titles to find the most accurate recommendations based on your favorite games.",
+        "hero-title": "Discover games with<br>similar mechanics &amp; <em>lore</em>",
+        "hero-sub": "Matching engine powered by TF-IDF &amp; Cosine Similarity across 24,000+ Steam catalog titles.",
         "search-placeholder": "e.g., Elden Ring, Palworld...",
         "mini-search-placeholder": "Search game...",
         "search-btn": "Discover",
