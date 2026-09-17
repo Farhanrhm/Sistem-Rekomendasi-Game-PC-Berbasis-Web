@@ -130,12 +130,15 @@ const i18nDict = {
         "gmodal-copy-btn": "Salin Link Game",
         "copied-text": "Tersalin!",
         "autocorrect-notice": "Hasil untuk '{actual}' (dikoreksi dari '{query}')",
-        "error-not-found": "Game '{game_name}' tidak ditemukan dalam sistem kami.",
+        "hero-showcase-badge": "Katalog Pilihan Steam",
+        "hero-showcase-hint": "Klik kartu untuk analisis rekomendasi instan",
         "footer-text": "LevelFind &copy; 2026 &mdash; Sistem Rekomendasi Game PC"
     },
     en: {
         "hero-title": "Discover games with<br>similar mechanics &amp; <em>lore</em>",
         "hero-sub": "Matching engine powered by TF-IDF &amp; Cosine Similarity across 24,000+ Steam catalog titles.",
+        "hero-showcase-badge": "Live Catalog Spotlight",
+        "hero-showcase-hint": "Click card to analyze instant recommendations",
         "search-placeholder": "e.g., Elden Ring, Palworld...",
         "mini-search-placeholder": "Search game...",
         "search-btn": "Discover",
