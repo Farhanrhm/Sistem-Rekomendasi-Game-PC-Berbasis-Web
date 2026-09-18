@@ -22,7 +22,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2.8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2.9">
     
     <script>
         (function() {
@@ -166,17 +166,12 @@
 
         <div class="hero-deco">
             <div class="hero-showcase-container">
-                <div class="hero-showcase-header d-flex align-items-center justify-content-between">
-                    <div class="hero-showcase-badge">
-                        <span class="pulse-dot"></span>
-                        <span data-i18n="hero-showcase-badge">Live Catalog Spotlight</span>
-                    </div>
-                    <button type="button" id="spotlight-shuffle-btn" class="spotlight-shuffle-btn" title="Acak Game Spotlight / Shuffle Spotlight" aria-label="Acak Spotlight Game">
-                        <i class="fas fa-random"></i>
-                    </button>
+                <div class="hero-showcase-badge">
+                    <span class="pulse-dot"></span>
+                    <span data-i18n="hero-showcase-badge">Live Catalog Spotlight</span>
                 </div>
                 
-                <!-- Floating Mini Game Cards (Rotates on Refresh & Shuffle) -->
+                <!-- Floating Mini Game Cards (Rotates on Refresh) -->
                 <div class="hero-preview-stack" id="hero-preview-stack">
                     <a href="/?q=Elden+Ring" class="preview-mini-card p-card-1" title="Cari rekomendasi Elden Ring">
                         <div class="p-card-thumb">
@@ -598,6 +593,6 @@
     </button>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="{{ url_for('static', filename='js/app.js') }}?v=2.8"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}?v=2.9"></script>
 </body>
 </html>

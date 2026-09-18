@@ -231,29 +231,6 @@ body, .navbar, .hero, .spotlight, .rec-card, .search-wrap, .search-wrap input, .
     letter-spacing: 1px;
     color: var(--text-2);
 }
-.spotlight-shuffle-btn {
-    background: transparent;
-    border: 1px solid var(--border-md);
-    color: var(--text-3);
-    border-radius: 50%;
-    width: 26px;
-    height: 26px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 0.72rem;
-    transition: all 0.25s ease;
-}
-.spotlight-shuffle-btn:hover {
-    color: var(--gold);
-    border-color: var(--gold);
-    background: var(--gold-subtle);
-    transform: rotate(180deg);
-}
-.spotlight-shuffle-btn:active {
-    transform: scale(0.9) rotate(180deg);
-}
 .pulse-dot {
     width: 7px;
     height: 7px;

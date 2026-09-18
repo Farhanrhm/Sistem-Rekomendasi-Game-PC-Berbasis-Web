@@ -437,7 +437,11 @@ function initNativeAutocomplete() {
             li.className = "custom-autocomplete-item";
             li.textContent = typeof item === 'object' ? item.label || item.value : item;
             li.addEventListener("click", () => {
-                gameInput.value = li.textContent;
+                const selectedTitle = li.textContent.trim();
+                gameInput.value = selectedTitle;
+                if (typeof saveSearchHistory === "function") {
+                    saveSearchHistory(selectedTitle);
+                }
                 hideMenu();
                 gameInput.closest("form").submit();
             });
@@ -503,7 +507,11 @@ function initNativeAutocomplete() {
         } else if (e.key === "Enter") {
             if (activeIndex >= 0 && activeIndex < items.length) {
                 e.preventDefault();
-                gameInput.value = items[activeIndex].textContent;
+                const selectedTitle = items[activeIndex].textContent.trim();
+                gameInput.value = selectedTitle;
+                if (typeof saveSearchHistory === "function") {
+                    saveSearchHistory(selectedTitle);
+                }
                 hideMenu();
                 gameInput.closest("form").submit();
             }
@@ -575,7 +583,18 @@ $(document).ready(function() {
     }
     triggerStaggeredFadeIn();
 
-    // 3. SEARCH HISTORY (LocalStorage - MAX 4 CHIPS DENGAN ACTION HAPUS & CLEAR)
+    // 3. SEARCH HISTORY (LocalStorage - HELPER TERPUSAT & MAX 4 CHIPS)
+    function saveSearchHistory(query) {
+        if (!query || typeof query !== "string") return;
+        query = query.trim();
+        if (query === "") return;
+        let history = JSON.parse(localStorage.getItem('lf-history')) || [];
+        history = history.filter(item => item.toLowerCase() !== query.toLowerCase());
+        history.unshift(query);
+        if (history.length > 5) history.pop();
+        localStorage.setItem('lf-history', JSON.stringify(history));
+    }
+
     function renderHistory() {
         let history = JSON.parse(localStorage.getItem('lf-history')) || [];
         let historyContainer = $("#search-history");
@@ -767,21 +786,11 @@ $(document).ready(function() {
     // Rotasi otomatis setiap kali halaman di-refresh
     renderSpotlightCards(false);
 
-    // Tombol shuffle manual
-    $('#spotlight-shuffle-btn').on('click', function(e) {
-        e.preventDefault();
-        renderSpotlightCards(true);
-    });
-
     // 4. SMOOTH LOADING STATE & SKELETON TRANSITION
     $('form').on('submit', function() {
         let query = $("#game_input").val().trim();
         if (query !== "") {
-            let history = JSON.parse(localStorage.getItem('lf-history')) || [];
-            history = history.filter(item => item.toLowerCase() !== query.toLowerCase()); 
-            history.unshift(query); 
-            if(history.length > 5) history.pop(); 
-            localStorage.setItem('lf-history', JSON.stringify(history));
+            saveSearchHistory(query);
 
             let topNVal = parseInt($("#top_n_select").val()) || 8;
 
