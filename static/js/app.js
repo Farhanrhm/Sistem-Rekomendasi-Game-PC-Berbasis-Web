@@ -736,7 +736,6 @@ $(document).ready(function() {
         const cardHtmls = selectedGames.map((g, idx) => {
             let safeTitle = escapeHtml(g.title);
             let safeTag = escapeHtml(g.tag);
-            let safeScore = escapeHtml(g.score);
             let queryParam = encodeURIComponent(g.title);
             return `
                 <a href="/?q=${queryParam}" class="preview-mini-card p-card-${idx + 1}" title="Cari rekomendasi ${safeTitle}">
@@ -747,7 +746,7 @@ $(document).ready(function() {
                         <span class="p-card-title">${safeTitle}</span>
                         <div class="p-card-meta">
                             <span class="p-card-tag">${safeTag}</span>
-                            <span class="p-card-score" title="Steam Positive Reviews"><i class="fab fa-steam" style="font-size: 0.68rem;"></i> ${safeScore}</span>
+                            <span class="p-card-arrow"><i class="fas fa-arrow-right"></i></span>
                         </div>
                     </div>
                 </a>
