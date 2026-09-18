@@ -43,7 +43,7 @@ CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5000", "http://12
 
 @app.after_request
 def set_secure_headers(response: Response) -> Response:
-    """Attach baseline HTTP security headers and static caching rules to responses.
+    """Attach baseline HTTP security headers, CSP, and static caching rules to responses.
 
     Args:
         response (Response): Outgoing Flask HTTP response object.
@@ -54,6 +54,23 @@ def set_secure_headers(response: Response) -> Response:
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-Frame-Options'] = 'DENY'
     response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+
+    # Content Security Policy (CSP): Whitelist trusted CDNs, Steam assets, Google fonts, and inline styles/scripts
+    csp_directives = [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline' https://code.jquery.com https://cdnjs.cloudflare.com",
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com",
+        "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:",
+        "img-src 'self' data: https://cdn.akamai.steamstatic.com https://shared.akamai.steamstatic.com https://avatars.steamstatic.com",
+        "connect-src 'self'",
+        "frame-ancestors 'none'",
+        "base-uri 'self'",
+        "form-action 'self'"
+    ]
+    response.headers['Content-Security-Policy'] = "; ".join(csp_directives)
+
     if request.path.startswith('/static/'):
         response.headers['Cache-Control'] = 'public, max-age=604800'
     return response
@@ -72,7 +89,9 @@ def sanitize_input(user_input: Optional[str]) -> str:
     """
     if not user_input or not isinstance(user_input, str):
         return ""
-    clean_str = html.unescape(user_input)
+    # Strip null-bytes and dangerous ASCII control characters (0-8, 11-31, 127)
+    sanitized = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', user_input)
+    clean_str = html.unescape(sanitized)
     prev = None
     while prev != clean_str:
         prev = clean_str
@@ -682,7 +701,9 @@ def home() -> str:
     target_game = None
     recommendations = None
 
-    top_n = request.form.get('top_n', type=int) or request.args.get('top_n', type=int) or 12
+    raw_top_n = request.form.get('top_n', type=int) or request.args.get('top_n', type=int) or 12
+    # Security: whitelist valid top_n to prevent memory exhaustion / DoS
+    top_n = raw_top_n if raw_top_n in (6, 12, 18, 24) else 12
 
     if request.method == 'POST':
         search_query = sanitize_input(request.form.get('game_title', ''))
@@ -762,8 +783,8 @@ def api_search_titles() -> Response:
     Returns:
         Response: JSON array containing up to 7 matching game titles.
     """
-    raw_query = request.args.get('term', '').strip().lower() or request.args.get('q', '').strip().lower()
-    query = sanitize_input(raw_query).lower()
+    raw_query = request.args.get('term', '').strip() or request.args.get('q', '').strip()
+    query = sanitize_input(raw_query).lower()[:50]
     if not query or df is None:
         return jsonify([])
 
@@ -787,14 +808,22 @@ def api_recommend() -> Tuple[Response, int]:
     if request.method == 'POST':
         data = request.get_json(silent=True) or {}
         game_title = data.get('game_title') or request.form.get('game_title', '')
+        raw_top_n = data.get('top_n') or request.form.get('top_n', type=int) or 12
     else:
         game_title = request.args.get('q') or request.args.get('game_title', '')
+        raw_top_n = request.args.get('top_n', type=int) or 12
+
+    try:
+        raw_top_n_int = int(raw_top_n)
+        top_n = raw_top_n_int if raw_top_n_int in (6, 12, 18, 24) else 12
+    except (ValueError, TypeError):
+        top_n = 12
 
     game_title = sanitize_input(game_title)
     if not game_title:
         return jsonify({'status': 'error', 'message': 'Parameter game_title tidak boleh kosong.'}), 400
 
-    result, error_msg = get_recommendations_data(game_title)
+    result, error_msg = get_recommendations_data(game_title, top_n=top_n)
     if error_msg:
         status_code = 404 if 'tidak ditemukan' in error_msg else 500
         return jsonify({'status': 'error', 'message': error_msg}), status_code
